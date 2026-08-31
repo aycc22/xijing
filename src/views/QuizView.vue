@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { resolveCaseMaterial } from '../lib/case'
 import { useScoring } from '../composables/useScoring'
 import { ensureQuestionOptions } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
@@ -22,6 +23,7 @@ const error = ref('')
 const loading = ref(true)
 
 const current = computed(() => questions.value[index.value] ?? null)
+const caseMaterial = computed(() => resolveCaseMaterial(questions.value, index.value))
 const progress = computed(() =>
   questions.value.length ? ((index.value + (revealed.value ? 1 : 0)) / questions.value.length) * 100 : 0,
 )
@@ -159,6 +161,14 @@ onMounted(start)
       </div>
 
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
+        <section
+          v-if="caseMaterial"
+          class="rounded-xl border border-line bg-raise/60 px-3.5 py-3 text-sm leading-relaxed text-ink"
+        >
+          <p class="m-0 mb-1 text-xs font-semibold tracking-wide text-muted uppercase">案例材料</p>
+          <p class="m-0 whitespace-pre-wrap">{{ caseMaterial }}</p>
+        </section>
+
         <h1 class="m-0 text-[1.125rem] leading-snug font-semibold text-ink md:text-xl">
           {{ current.stem }}
         </h1>

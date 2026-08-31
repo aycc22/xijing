@@ -65,6 +65,8 @@ async function submit() {
       options: row.options,
       answer_keys: row.answer_keys,
       explanation: row.explanation,
+      case_id: row.case_id,
+      case_material: row.case_material || null,
       sort_order: i,
     }))
 
@@ -89,7 +91,7 @@ async function submit() {
       <p class="page-kicker">导入</p>
       <h1 class="page-title">上传题库</h1>
       <p class="page-lede">
-        CSV 列：type, stem, option_a…option_f, answer, explanation。多选答案用分号，如 A;C。
+        CSV 列：type, stem, option_a…option_f, answer, explanation；案例题另加 case_id, case_material。
       </p>
     </section>
 

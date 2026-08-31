@@ -6,7 +6,7 @@ Vue 3 + Supabase + GitHub Pages 的手机刷题 / 学习系统。样式使用 **
 
 - 邮箱注册 / 登录
 - 角色：`learner`（默认）→ 管理员升为 `uploader` / `admin` 后才能上传
-- CSV 导入题库（单选 / 多选 / 判断）
+- CSV 导入题库（单选 / 多选 / 判断 / 案例小题）
 - 发布题库后其他人可刷题
 - 刷题记录与正确率
 
@@ -37,6 +37,10 @@ npm run dev
 | option_a … option_f | 选项，至少 2 个（判断题可省略，固定为正确/错误） |
 | answer | 单选如 `B`；多选如 `A;C`；判断如 `TRUE` 或 `FALSE` |
 | explanation | 解析（可选） |
+| case_id | 案例标识；同一案例的小题填相同值 |
+| case_material | 案例材料；同一案例可在首行填写，会自动同步到组内各行 |
+
+案例小题仍使用 `single` / `multiple` / `judgement` 作为 type，并填写相同的 `case_id`。
 
 ## 第一个管理员
 

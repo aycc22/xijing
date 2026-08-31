@@ -32,6 +32,7 @@ export interface Question {
   options: QuestionOption[]
   answer_keys: string[]
   explanation: string
+  case_id: string | null
   case_material: string | null
   sort_order: number
 }

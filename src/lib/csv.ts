@@ -1,4 +1,5 @@
 import Papa from 'papaparse'
+import { finalizeCaseGroups } from './case'
 import { JUDGEMENT_OPTIONS } from './scoring'
 import type { QuestionOption, QuestionType } from './types'
 
@@ -8,6 +9,8 @@ export interface ParsedQuestionRow {
   options: QuestionOption[]
   answer_keys: string[]
   explanation: string
+  case_id: string | null
+  case_material: string
 }
 
 const OPTION_COLS = ['option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'option_f'] as const
@@ -19,8 +22,8 @@ function normalizeType(raw: string): QuestionType {
   if (t === 'single' || t === '单选') return 'single'
   if (t === 'multiple' || t === '多选') return 'multiple'
   if (t === 'judgement' || t === '判断') return 'judgement'
-  if (t === 'case_analysis' || t === '案例分析') {
-    throw new Error('案例分析题暂未开放导入，请先使用 single / multiple / judgement')
+  if (t === 'case' || t === 'case_analysis' || t === '案例分析') {
+    throw new Error(`第 N 行：案例小题请使用 single / multiple / judgement，并填写 case_id`)
   }
   throw new Error(`未知题型: ${raw}`)
 }
@@ -41,6 +44,15 @@ function parseJudgementAnswer(raw: string, line: number): string[] {
     throw new Error(`第 ${line} 行判断题答案须为 TRUE 或 FALSE`)
   }
   return answer_keys
+}
+
+function readCaseId(row: Record<string, string>): string | null {
+  const raw = (row.case_id ?? row['案例标识'] ?? '').trim()
+  return raw || null
+}
+
+function readCaseMaterial(row: Record<string, string>): string {
+  return (row.case_material ?? row['案例材料'] ?? '').trim()
 }
 
 export function parseQuestionCsv(file: File | string): Promise<ParsedQuestionRow[]> {
@@ -97,10 +109,12 @@ export function parseQuestionCsv(file: File | string): Promise<ParsedQuestionRow
               options,
               answer_keys,
               explanation: (row.explanation ?? row['解析'] ?? '').trim(),
+              case_id: readCaseId(row),
+              case_material: readCaseMaterial(row),
             }
           })
           if (!rows.length) reject(new Error('CSV 没有有效题目'))
-          else resolve(rows)
+          else resolve(finalizeCaseGroups(rows))
         } catch (e) {
           reject(e)
         }
