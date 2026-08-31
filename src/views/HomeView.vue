@@ -17,11 +17,8 @@ const {
 } = useInstallPrompt()
 
 function onInstallClick() {
-  if (canNativeInstall.value) {
-    void install()
-  } else {
-    openGuide()
-  }
+  // 始终先打开步骤引导；若浏览器支持原生安装，浮层内另有「立即安装」
+  openGuide()
 }
 </script>
 
