@@ -96,6 +96,19 @@
     background: var(--night);
   }
 
+  html.home-lock,
+  html.home-lock body {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  html.home-lock #app {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
   body {
     @apply bg-night font-sans text-ink antialiased;
     background-image:
