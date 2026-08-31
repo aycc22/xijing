@@ -25,6 +25,8 @@ import { useScoring } from '../composables/useScoring'
 import { ensureQuestionOptions } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 import { recordWrongQuestion } from '../lib/wrongBook'
+import { buildQuestionSnapshot } from '../lib/questionSnapshot'
+import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/userLearning'
 import { useAuth } from '../composables/useAuth'
 import type { Question, QuestionOption } from '../lib/types'
 
@@ -44,6 +46,9 @@ const error = ref('')
 const loading = ref(true)
 const resuming = ref(false)
 const sheetOpen = ref(false)
+const favoritedIds = ref<Set<string>>(new Set())
+const noteDraft = ref('')
+const noteSaving = ref(false)
 
 async function saveProgress() {
   if (!sessionId.value) return
@@ -127,15 +132,16 @@ function next() {
   goTo(index.value + 1)
 }
 
-async function persistAnswer(questionId: string, keys: string[], ok: boolean, skipped = false) {
+async function persistAnswer(question: Question, keys: string[], ok: boolean, skipped = false) {
   if (!sessionId.value) return
   const { error: aErr } = await supabase.from('attempt_answers').upsert(
     {
       session_id: sessionId.value,
-      question_id: questionId,
+      question_id: question.id,
       selected_keys: keys.map((k) => k.toUpperCase()),
       is_correct: ok,
       is_skipped: skipped,
+      question_snapshot: buildQuestionSnapshot(question),
     },
     { onConflict: 'session_id,question_id' },
   )
@@ -159,8 +165,9 @@ async function submitAnswer() {
   const attempt = markAnswered(attempts.value[index.value], ok)
   persistAttemptAt(index.value, attempt)
   revealed.value = true
-  await persistAnswer(current.value.id, selected.value, ok)
+  await persistAnswer(current.value, selected.value, ok)
   if (!ok) await handleWrong(current.value.id, selected.value)
+  await loadNoteDraft()
   await saveProgress()
 }
 
@@ -171,8 +178,9 @@ async function skipQuestion() {
   persistAttemptAt(index.value, attempt)
   selected.value = []
   revealed.value = true
-  await persistAnswer(current.value.id, [], false, true)
+  await persistAnswer(current.value, [], false, true)
   await handleWrong(current.value.id, [])
+  await loadNoteDraft()
   await saveProgress()
 }
 
@@ -188,6 +196,33 @@ async function finish() {
     await router.push(`/result/${sessionId.value}`)
   }
 }
+
+async function loadNoteDraft() {
+  if (!current.value || !auth.user.value) return
+  const notes = await loadNotes(supabase, auth.user.value.id, [current.value.id])
+  noteDraft.value = notes.get(current.value.id) ?? ''
+}
+
+async function onToggleFavorite() {
+  if (!current.value || !auth.user.value) return
+  const isFav = favoritedIds.value.has(current.value.id)
+  const next = await toggleFavorite(supabase, auth.user.value.id, current.value.id, isFav)
+  const ids = new Set(favoritedIds.value)
+  if (next) ids.add(current.value.id)
+  else ids.delete(current.value.id)
+  favoritedIds.value = ids
+}
+
+async function onSaveNote() {
+  if (!current.value || !auth.user.value) return
+  noteSaving.value = true
+  await saveNote(supabase, auth.user.value.id, current.value.id, noteDraft.value)
+  noteSaving.value = false
+}
+
+watch(index, () => {
+  if (revealed.value) void loadNoteDraft()
+})
 
 async function start() {
   loading.value = true
@@ -248,6 +283,14 @@ async function start() {
     correctCount.value = progress.correctCount
     index.value = progress.index
     applyAttemptState(attempts.value[index.value])
+    if (auth.user.value) {
+      favoritedIds.value = await loadFavoriteIds(
+        supabase,
+        auth.user.value.id,
+        questions.value.map((q) => q.id),
+      )
+    }
+    if (revealed.value) await loadNoteDraft()
     loading.value = false
     return
   }
@@ -267,6 +310,13 @@ async function start() {
     return
   }
   sessionId.value = session.id
+  if (auth.user.value) {
+    favoritedIds.value = await loadFavoriteIds(
+      supabase,
+      auth.user.value.id,
+      questions.value.map((q) => q.id),
+    )
+  }
   loading.value = false
 }
 
@@ -358,6 +408,28 @@ onMounted(start)
         <p v-if="revealed && current.explanation" class="alert-info">
           <span class="font-semibold">解析</span> · {{ current.explanation }}
         </p>
+
+        <div v-if="revealed" class="flex flex-col gap-3 border-t border-line/60 pt-3">
+          <div class="flex flex-wrap gap-2">
+            <button class="btn-secondary min-h-11" type="button" @click="onToggleFavorite">
+              {{ favoritedIds.has(current.id) ? '已收藏' : '收藏题目' }}
+            </button>
+          </div>
+          <div class="field">
+            <label :for="`note-${current.id}`">私人笔记</label>
+            <textarea
+              :id="`note-${current.id}`"
+              v-model="noteDraft"
+              rows="2"
+              maxlength="1000"
+              placeholder="记录你的思路…"
+            />
+            <button class="btn-secondary mt-2 min-h-11" type="button" :disabled="noteSaving" @click="onSaveNote">
+              {{ noteSaving ? '保存中…' : '保存笔记' }}
+            </button>
+          </div>
+        </div>
+
         <p v-if="error" class="alert-error">{{ error }}</p>
       </article>
 
