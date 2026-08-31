@@ -56,6 +56,7 @@ function toggleTheme() {
           aria-label="主导航"
         >
           <RouterLink class="nav-link" to="/banks">题库</RouterLink>
+          <RouterLink class="nav-link" to="/wrong-book">错题</RouterLink>
           <RouterLink v-if="auth.hasUpload.value" class="nav-link" to="/upload">上传</RouterLink>
           <RouterLink v-if="auth.admin.value" class="nav-link" to="/admin">权限</RouterLink>
           <button
@@ -134,6 +135,19 @@ function toggleTheme() {
             />
           </svg>
           题库
+        </RouterLink>
+        <RouterLink class="tab-link" to="/wrong-book">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 3 4.5 7v5c0 4.5 3.2 7.8 7.5 9 4.3-1.2 7.5-4.5 7.5-9V7L12 3Z"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+            <path d="M12 11v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            <circle cx="12" cy="8.5" r="0.75" fill="currentColor" />
+          </svg>
+          错题
         </RouterLink>
         <RouterLink v-if="auth.hasUpload.value" class="tab-link" to="/upload">
           <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">

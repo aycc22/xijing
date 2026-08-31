@@ -24,7 +24,7 @@ import {
 import { useScoring } from '../composables/useScoring'
 import { ensureQuestionOptions } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
-import { recordWrongQuestion } from '../lib/wrongBook'
+import { recordWrongQuestion, loadWrongQuestionIds } from '../lib/wrongBook'
 import { buildQuestionSnapshot } from '../lib/questionSnapshot'
 import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/userLearning'
 import { useAuth } from '../composables/useAuth'
@@ -72,6 +72,7 @@ const progress = computed(() =>
   questions.value.length ? ((index.value + (revealed.value ? 1 : 0)) / questions.value.length) * 100 : 0,
 )
 const submitEnabled = computed(() => canSubmitAnswer(currentAttempt.value))
+const wrongOnly = computed(() => route.query.wrong === '1')
 
 function normalizeOptions(raw: unknown): QuestionOption[] {
   if (!Array.isArray(raw)) return []
@@ -244,14 +245,24 @@ async function start() {
     options: ensureQuestionOptions(q.qtype, normalizeOptions(q.options)),
   })) as Question[]
 
-  if (!questions.value.length) {
-    error.value = '该题库没有题目'
+  if (!auth.user.value) {
+    error.value = '请先登录'
     loading.value = false
     return
   }
 
-  if (!auth.user.value) {
-    error.value = '请先登录'
+  if (wrongOnly.value) {
+    const wrongIds = await loadWrongQuestionIds(supabase, auth.user.value.id, bankId)
+    questions.value = questions.value.filter((q) => wrongIds.has(q.id))
+    if (!questions.value.length) {
+      error.value = '该题库暂无错题，先去刷题吧'
+      loading.value = false
+      return
+    }
+  }
+
+  if (!questions.value.length) {
+    error.value = '该题库没有题目'
     loading.value = false
     return
   }
@@ -273,7 +284,7 @@ async function start() {
       .is('expired_at', null)
   }
 
-  const existing = forceNew ? null : await findResumableSession(auth.user.value.id, bankId)
+  const existing = forceNew || wrongOnly.value ? null : await findResumableSession(auth.user.value.id, bankId)
 
   if (existing) {
     resuming.value = true
@@ -337,6 +348,7 @@ onMounted(start)
           <span class="font-normal text-muted"> / {{ questions.length }}</span>
         </span>
         <div class="flex items-center gap-2">
+          <span v-if="wrongOnly" class="chip-lit">错题练习</span>
           <span v-if="resuming" class="chip-lit">续做中</span>
           <button class="btn-ghost !min-h-11 !px-3 text-sm" type="button" @click="sheetOpen = !sheetOpen">
             答题卡
