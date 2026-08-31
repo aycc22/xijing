@@ -39,10 +39,13 @@ export interface Question {
   sort_order: number
 }
 
+export type SessionMode = 'practice' | 'exam'
+
 export interface AttemptSession {
   id: string
   user_id: string
   bank_id: string
+  mode: SessionMode
   total_count: number
   correct_count: number
   current_index: number

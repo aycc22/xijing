@@ -311,6 +311,7 @@ async function start() {
     .insert({
       user_id: auth.user.value.id,
       bank_id: bankId,
+      mode: 'practice',
       total_count: questions.value.length,
     })
     .select('id')

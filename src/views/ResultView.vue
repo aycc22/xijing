@@ -171,9 +171,12 @@ onMounted(load)
         </details>
       </section>
 
-      <div class="flex flex-col gap-2.5 sm:mx-auto sm:w-full sm:max-w-sm sm:flex-row">
+      <div class="flex flex-col gap-2.5 sm:mx-auto sm:w-full sm:max-w-sm sm:flex-row sm:flex-wrap">
         <button class="btn btn-block" type="button" @click="router.push(`/quiz/${session.bank_id}?new=1`)">
           再刷一遍
+        </button>
+        <button class="btn-secondary btn-block" type="button" @click="router.push('/history')">
+          历史记录
         </button>
         <button class="btn-secondary btn-block" type="button" @click="router.push('/banks')">
           返回题库

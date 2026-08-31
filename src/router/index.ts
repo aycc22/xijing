@@ -8,6 +8,7 @@ const router = createRouter({
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { guest: true } },
     { path: '/banks', name: 'banks', component: () => import('../views/BanksView.vue'), meta: { auth: true } },
     { path: '/wrong-book', name: 'wrong-book', component: () => import('../views/WrongBookView.vue'), meta: { auth: true } },
+    { path: '/history', name: 'history', component: () => import('../views/HistoryView.vue'), meta: { auth: true } },
     {
       path: '/banks/:bankId/manage',
       name: 'bank-manage',
