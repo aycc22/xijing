@@ -1,10 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { resolveCaseMaterial } from '../lib/case'
+import {
+  canGoNext,
+  canGoPrev,
+  canSubmitAnswer,
+  createPracticeState,
+  markAnswered,
+  markSkipped,
+  sheetStatus,
+  syncAttemptSelection,
+  type QuestionAttempt,
+} from '../lib/practiceSession'
 import { useScoring } from '../composables/useScoring'
 import { ensureQuestionOptions } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
+import { recordWrongQuestion } from '../lib/wrongBook'
 import { useAuth } from '../composables/useAuth'
 import type { Question, QuestionOption } from '../lib/types'
 
@@ -14,6 +26,7 @@ const auth = useAuth()
 const { isAnswerCorrect, optionRevealClass, questionTypeLabel, toggleSelection } = useScoring()
 
 const questions = ref<Question[]>([])
+const attempts = ref<QuestionAttempt[]>([])
 const index = ref(0)
 const selected = ref<string[]>([])
 const revealed = ref(false)
@@ -21,17 +34,35 @@ const sessionId = ref<string | null>(null)
 const correctCount = ref(0)
 const error = ref('')
 const loading = ref(true)
+const sheetOpen = ref(false)
 
 const current = computed(() => questions.value[index.value] ?? null)
+const currentAttempt = computed(() => attempts.value[index.value])
 const caseMaterial = computed(() => resolveCaseMaterial(questions.value, index.value))
 const progress = computed(() =>
   questions.value.length ? ((index.value + (revealed.value ? 1 : 0)) / questions.value.length) * 100 : 0,
 )
+const submitEnabled = computed(() => canSubmitAnswer(currentAttempt.value))
 
 function normalizeOptions(raw: unknown): QuestionOption[] {
   if (!Array.isArray(raw)) return []
   return raw.map((o) => o as QuestionOption)
 }
+
+function applyAttemptState(attempt: QuestionAttempt) {
+  selected.value = [...attempt.selected]
+  revealed.value = attempt.revealed
+}
+
+function persistAttemptAt(i: number, attempt: QuestionAttempt) {
+  attempts.value[i] = attempt
+}
+
+watch(selected, (keys) => {
+  const i = index.value
+  const next = syncAttemptSelection(attempts.value[i], keys)
+  if (next !== attempts.value[i]) persistAttemptAt(i, next)
+})
 
 function toggle(key: string) {
   if (revealed.value || !current.value) return
@@ -41,6 +72,93 @@ function toggle(key: string) {
 function optionClass(key: string) {
   if (!current.value) return ''
   return optionRevealClass(key, selected.value, current.value.answer_keys, revealed.value)
+}
+
+function sheetCellClass(attempt: QuestionAttempt | undefined, i: number) {
+  const base = 'min-h-11 min-w-11 rounded-xl border text-sm font-semibold tabular-nums transition'
+  if (i === index.value) return `${base} border-spark bg-spark/15 text-spark`
+  const status = sheetStatus(attempt)
+  if (status === 'answered' && attempt?.isCorrect) return `${base} border-ok/40 bg-ok/10 text-ok`
+  if (status === 'answered' && attempt?.isCorrect === false) return `${base} border-bad/40 bg-bad/10 text-bad`
+  if (status === 'skipped') return `${base} border-warn/40 bg-warn/10 text-warn`
+  return `${base} border-line bg-raise/50 text-muted`
+}
+
+function goTo(i: number) {
+  if (i < 0 || i >= questions.value.length) return
+  index.value = i
+  applyAttemptState(attempts.value[i])
+  error.value = ''
+  sheetOpen.value = false
+}
+
+function prev() {
+  if (!canGoPrev(index.value)) return
+  goTo(index.value - 1)
+}
+
+function next() {
+  if (!canGoNext(index.value, questions.value.length, attempts.value[index.value])) return
+  goTo(index.value + 1)
+}
+
+async function persistAnswer(questionId: string, keys: string[], ok: boolean) {
+  if (!sessionId.value) return
+  const { error: aErr } = await supabase.from('attempt_answers').upsert(
+    {
+      session_id: sessionId.value,
+      question_id: questionId,
+      selected_keys: keys.map((k) => k.toUpperCase()),
+      is_correct: ok,
+    },
+    { onConflict: 'session_id,question_id' },
+  )
+  if (aErr) error.value = aErr.message
+}
+
+async function handleWrong(questionId: string, keys: string[]) {
+  if (!auth.user.value) return
+  await recordWrongQuestion(supabase, auth.user.value.id, questionId, keys)
+}
+
+async function submitAnswer() {
+  if (!current.value || !sessionId.value || revealed.value) return
+  if (!submitEnabled.value) {
+    error.value = '请先选择答案'
+    return
+  }
+  error.value = ''
+  const ok = isAnswerCorrect(selected.value, current.value.answer_keys)
+  if (ok) correctCount.value += 1
+  const attempt = markAnswered(attempts.value[index.value], ok)
+  persistAttemptAt(index.value, attempt)
+  revealed.value = true
+  await persistAnswer(current.value.id, selected.value, ok)
+  if (!ok) await handleWrong(current.value.id, selected.value)
+}
+
+async function skipQuestion() {
+  if (!current.value || !sessionId.value || revealed.value) return
+  error.value = ''
+  const attempt = markSkipped(attempts.value[index.value])
+  persistAttemptAt(index.value, attempt)
+  selected.value = []
+  revealed.value = true
+  await persistAnswer(current.value.id, [], false)
+  await handleWrong(current.value.id, [])
+}
+
+async function finish() {
+  if (sessionId.value) {
+    await supabase
+      .from('attempt_sessions')
+      .update({
+        correct_count: correctCount.value,
+        finished_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId.value)
+    await router.push(`/result/${sessionId.value}`)
+  }
 }
 
 async function start() {
@@ -75,6 +193,10 @@ async function start() {
     return
   }
 
+  attempts.value = createPracticeState(questions.value.length)
+  index.value = 0
+  applyAttemptState(attempts.value[0])
+
   const { data: session, error: sErr } = await supabase
     .from('attempt_sessions')
     .insert({
@@ -93,45 +215,6 @@ async function start() {
   loading.value = false
 }
 
-async function submitAnswer() {
-  if (!current.value || !sessionId.value || revealed.value) return
-  if (!selected.value.length) {
-    error.value = '请先选择答案'
-    return
-  }
-  error.value = ''
-  const ok = isAnswerCorrect(selected.value, current.value.answer_keys)
-  if (ok) correctCount.value += 1
-  revealed.value = true
-
-  const { error: aErr } = await supabase.from('attempt_answers').insert({
-    session_id: sessionId.value,
-    question_id: current.value.id,
-    selected_keys: selected.value.map((k) => k.toUpperCase()),
-    is_correct: ok,
-  })
-  if (aErr) error.value = aErr.message
-}
-
-async function next() {
-  if (index.value + 1 >= questions.value.length) {
-    if (sessionId.value) {
-      await supabase
-        .from('attempt_sessions')
-        .update({
-          correct_count: correctCount.value,
-          finished_at: new Date().toISOString(),
-        })
-        .eq('id', sessionId.value)
-      await router.push(`/result/${sessionId.value}`)
-    }
-    return
-  }
-  index.value += 1
-  selected.value = []
-  revealed.value = false
-}
-
 onMounted(start)
 </script>
 
@@ -148,7 +231,12 @@ onMounted(start)
           {{ index + 1 }}
           <span class="font-normal text-muted"> / {{ questions.length }}</span>
         </span>
-        <span class="chip">{{ questionTypeLabel(current.qtype) }}</span>
+        <div class="flex items-center gap-2">
+          <button class="btn-ghost !min-h-11 !px-3 text-sm" type="button" @click="sheetOpen = !sheetOpen">
+            答题卡
+          </button>
+          <span class="chip">{{ questionTypeLabel(current.qtype) }}</span>
+        </div>
       </div>
 
       <div
@@ -159,6 +247,25 @@ onMounted(start)
         aria-valuemax="100"
       >
         <span class="path-fill" :style="{ width: progress + '%' }" />
+      </div>
+
+      <div
+        v-if="sheetOpen"
+        class="surface relative z-10 grid grid-cols-5 gap-2 p-3 sm:grid-cols-6"
+        role="navigation"
+        aria-label="答题卡"
+      >
+        <button
+          v-for="(q, i) in questions"
+          :key="q.id"
+          type="button"
+          :class="sheetCellClass(attempts[i], i)"
+          :aria-label="`第 ${i + 1} 题`"
+          :aria-current="i === index ? 'true' : undefined"
+          @click="goTo(i)"
+        >
+          {{ i + 1 }}
+        </button>
       </div>
 
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
@@ -181,6 +288,7 @@ onMounted(start)
             type="button"
             class="option"
             :class="optionClass(opt.key)"
+            :disabled="revealed"
             @click="toggle(opt.key)"
           >
             <span v-if="current.qtype !== 'judgement'" class="option-key">{{ opt.key }}</span>
@@ -188,19 +296,46 @@ onMounted(start)
           </button>
         </div>
 
+        <p v-if="revealed && currentAttempt?.status === 'skipped'" class="alert-warn m-0">
+          已标记为暂不会，不计入正确。
+        </p>
         <p v-if="revealed && current.explanation" class="alert-info">
           <span class="font-semibold">解析</span> · {{ current.explanation }}
         </p>
         <p v-if="error" class="alert-error">{{ error }}</p>
       </article>
 
-      <div class="sticky-action relative z-10 md:mt-1">
-        <button v-if="!revealed" class="btn btn-block" type="button" @click="submitAnswer">
+      <div class="sticky-action relative z-10 flex flex-col gap-2 md:mt-1">
+        <div v-if="!revealed" class="grid grid-cols-2 gap-2">
+          <button class="btn-secondary min-h-11" type="button" :disabled="!canGoPrev(index)" @click="prev">
+            上一题
+          </button>
+          <button class="btn-secondary min-h-11" type="button" @click="skipQuestion">暂不会</button>
+        </div>
+        <button
+          v-if="!revealed"
+          class="btn btn-block min-h-11"
+          type="button"
+          :disabled="!submitEnabled"
+          @click="submitAnswer"
+        >
           提交答案
         </button>
-        <button v-else class="btn btn-block" type="button" @click="next">
-          {{ index + 1 >= questions.length ? '查看结果' : '下一题' }}
-        </button>
+
+        <div v-else class="grid grid-cols-2 gap-2">
+          <button class="btn-secondary min-h-11" type="button" :disabled="!canGoPrev(index)" @click="prev">
+            上一题
+          </button>
+          <button
+            v-if="index + 1 < questions.length"
+            class="btn min-h-11"
+            type="button"
+            @click="next"
+          >
+            下一题
+          </button>
+          <button v-else class="btn min-h-11" type="button" @click="finish">查看结果</button>
+        </div>
       </div>
     </div>
   </div>
