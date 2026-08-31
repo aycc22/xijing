@@ -6,6 +6,11 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: () => import('../views/HomeView.vue') },
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { guest: true } },
+    {
+      path: '/auth/wechat/callback',
+      name: 'wechat-callback',
+      component: () => import('../views/WechatCallbackView.vue'),
+    },
     { path: '/banks', name: 'banks', component: () => import('../views/BanksView.vue'), meta: { auth: true } },
     { path: '/wrong-book', name: 'wrong-book', component: () => import('../views/WrongBookView.vue'), meta: { auth: true } },
     { path: '/history', name: 'history', component: () => import('../views/HistoryView.vue'), meta: { auth: true } },
