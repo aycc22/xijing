@@ -65,6 +65,7 @@ export interface PaperInstance {
   scores: number[]
   total_score: number
   counts: Record<string, number>
+  items: unknown
   created_at: string
 }
 

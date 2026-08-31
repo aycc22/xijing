@@ -8,11 +8,14 @@ import {
   createSeed,
   formatShortages,
   totalRequested,
+  type PoolQuestion,
   type TypeCounts,
 } from '../lib/paperCompose'
+import { buildPaperItems, type SnapshotSourceQuestion } from '../lib/paperSnapshot'
+import { ensureQuestionOptions } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
-import type { QuestionBank } from '../lib/types'
+import type { QuestionBank, QuestionOption } from '../lib/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,7 +25,8 @@ const bankId = computed(() => String(route.params.bankId))
 const bank = ref<QuestionBank | null>(null)
 const inventory = ref<TypeCounts>({ single: 0, multiple: 0, judgement: 0 })
 const counts = ref<TypeCounts>({ single: 5, multiple: 0, judgement: 0 })
-const pool = ref<{ id: string; qtype: string; case_id: string | null; is_active: boolean }[]>([])
+const pool = ref<PoolQuestion[]>([])
+const questionsById = ref(new Map<string, SnapshotSourceQuestion>())
 const loading = ref(true)
 const busy = ref(false)
 const error = ref('')
@@ -31,10 +35,15 @@ const shortagesText = ref('')
 const requestedTotal = computed(() => totalRequested(counts.value))
 const canGenerate = computed(() => requestedTotal.value > 0 && !shortagesText.value)
 
+function normalizeOptions(raw: unknown): QuestionOption[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((o) => o as QuestionOption)
+}
+
 watch(
   counts,
   () => {
-    const shortages = checkInventory(pool.value as never, counts.value)
+    const shortages = checkInventory(pool.value, counts.value)
     shortagesText.value = shortages.length ? formatShortages(shortages) : ''
   },
   { deep: true },
@@ -57,7 +66,7 @@ async function load() {
 
   const { data: questions, error: qErr } = await supabase
     .from('questions')
-    .select('id, qtype, case_id, is_active')
+    .select('id, qtype, stem, options, answer_keys, explanation, case_id, case_material, is_active')
     .eq('bank_id', bankId.value)
     .eq('is_active', true)
   if (qErr) {
@@ -65,8 +74,31 @@ async function load() {
     loading.value = false
     return
   }
-  pool.value = (questions ?? []) as typeof pool.value
-  inventory.value = countByType(pool.value as never)
+
+  const map = new Map<string, SnapshotSourceQuestion>()
+  const nextPool: PoolQuestion[] = []
+  for (const q of questions ?? []) {
+    const options = ensureQuestionOptions(q.qtype, normalizeOptions(q.options))
+    map.set(q.id, {
+      id: q.id,
+      qtype: q.qtype,
+      stem: q.stem,
+      options,
+      answer_keys: q.answer_keys ?? [],
+      explanation: q.explanation ?? '',
+      case_id: q.case_id,
+      case_material: q.case_material,
+    })
+    nextPool.push({
+      id: q.id,
+      qtype: q.qtype,
+      case_id: q.case_id,
+      is_active: q.is_active ?? true,
+    })
+  }
+  questionsById.value = map
+  pool.value = nextPool
+  inventory.value = countByType(pool.value)
 
   const defaults: TypeCounts = {
     single: Math.min(5, inventory.value.single),
@@ -95,11 +127,20 @@ async function generate() {
   busy.value = true
   try {
     const seed = createSeed()
-    const result = composePaper(pool.value as never, { counts: counts.value, seed })
+    const result = composePaper(pool.value, { counts: counts.value, seed })
     if (!result.ok) {
       shortagesText.value = formatShortages(result.shortages)
       error.value = shortagesText.value
       return
+    }
+    const items = buildPaperItems({
+      questionIds: result.questionIds,
+      scores: result.scores,
+      seed: result.seed,
+      questionsById: questionsById.value,
+    })
+    if (items.length !== result.questionIds.length) {
+      throw new Error('组卷快照不完整，请重试')
     }
     const { data: paper, error: pErr } = await supabase
       .from('paper_instances')
@@ -111,6 +152,7 @@ async function generate() {
         scores: result.scores,
         total_score: result.totalScore,
         counts: counts.value,
+        items,
       })
       .select('id')
       .single()
@@ -182,7 +224,9 @@ onMounted(load)
         <span class="font-semibold tabular-nums text-spark">{{ requestedTotal }}</span>
         道小题 · 默认总分 100（平均分配）
       </p>
-      <p class="m-0 text-xs text-muted">若抽中案例小题，将自动带入该案例全部有效小题，实际题量可能多于上方指定。</p>
+      <p class="m-0 text-xs text-muted">
+        若抽中案例小题，将自动带入该案例全部有效小题。生成后题目与选项顺序固化。
+      </p>
 
       <p v-if="shortagesText" class="alert-error m-0">{{ shortagesText }}</p>
       <p v-if="error && bank" class="alert-error m-0">{{ error }}</p>

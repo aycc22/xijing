@@ -2,21 +2,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import { paperItemsAsCaseRows, parsePaperItems, type PaperItem } from '../lib/paperSnapshot'
 import { questionTypeLabel } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
-import type { Question, QuestionOption } from '../lib/types'
-
-interface PaperInstance {
-  id: string
-  bank_id: string
-  seed: number
-  question_ids: string[]
-  scores: number[]
-  total_score: number
-  counts: Record<string, number>
-  created_at: string
-}
+import type { PaperInstance } from '../lib/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,24 +14,11 @@ const auth = useAuth()
 
 const paper = ref<PaperInstance | null>(null)
 const bankTitle = ref('')
-const questions = ref<Question[]>([])
+const items = ref<PaperItem[]>([])
 const loading = ref(true)
 const error = ref('')
 
-function normalizeOptions(raw: unknown): QuestionOption[] {
-  if (!Array.isArray(raw)) return []
-  return raw.map((o) => o as QuestionOption)
-}
-
-const orderedQuestions = computed(() => {
-  if (!paper.value) return [] as Question[]
-  const byId = new Map(questions.value.map((q) => [q.id, q]))
-  return paper.value.question_ids.map((id) => byId.get(id)).filter(Boolean) as Question[]
-})
-
-function scoreAt(index: number) {
-  return paper.value?.scores[index] ?? 0
-}
+const caseRows = computed(() => paperItemsAsCaseRows(items.value))
 
 async function load() {
   loading.value = true
@@ -63,6 +40,35 @@ async function load() {
     return
   }
   paper.value = paperData as PaperInstance
+  items.value = parsePaperItems(paperData.items)
+
+  // Legacy papers without items: fall back to live questions once
+  if (!items.value.length && paperData.question_ids?.length) {
+    const { data: qs } = await supabase
+      .from('questions')
+      .select('id, qtype, stem, options, answer_keys, explanation, case_id, case_material')
+      .in('id', paperData.question_ids)
+    const byId = new Map((qs ?? []).map((q) => [q.id, q]))
+    items.value = (paperData.question_ids as string[])
+      .map((id: string, index: number) => {
+        const q = byId.get(id)
+        if (!q) return null
+        return {
+          question_id: id,
+          score: Number(paperData.scores?.[index] ?? 0),
+          snapshot: {
+            stem: q.stem,
+            qtype: q.qtype,
+            options: Array.isArray(q.options) ? q.options : [],
+            answer_keys: q.answer_keys ?? [],
+            explanation: q.explanation ?? '',
+            case_id: q.case_id,
+            case_material: q.case_material,
+          },
+        }
+      })
+      .filter(Boolean) as PaperItem[]
+  }
 
   const { data: bank } = await supabase
     .from('question_banks')
@@ -70,24 +76,6 @@ async function load() {
     .eq('id', paperData.bank_id)
     .maybeSingle()
   bankTitle.value = bank?.title ?? '题库'
-
-  if (paperData.question_ids?.length) {
-    const { data: qs, error: qErr } = await supabase
-      .from('questions')
-      .select(
-        'id, bank_id, qtype, stem, options, answer_keys, explanation, case_id, case_material, is_active, sort_order, external_id',
-      )
-      .in('id', paperData.question_ids)
-    if (qErr) {
-      error.value = qErr.message
-      loading.value = false
-      return
-    }
-    questions.value = (qs ?? []).map((q) => ({
-      ...q,
-      options: normalizeOptions(q.options),
-    })) as Question[]
-  }
   loading.value = false
 }
 
@@ -104,10 +92,12 @@ onMounted(load)
         <p class="page-kicker">试卷实例</p>
         <h1 class="page-title">{{ bankTitle }}</h1>
         <p class="page-lede">
-          {{ paper.question_ids.length }} 道小题 · 总分 {{ paper.total_score }} · 种子
+          {{ items.length || paper.question_ids.length }} 道小题 · 总分 {{ paper.total_score }} · 种子
           <span class="font-mono tabular-nums">{{ paper.seed }}</span>
         </p>
-        <p class="mt-2 text-xs text-muted">题目顺序已固化，刷新本页不会换题。</p>
+        <p class="mt-2 text-xs text-muted">
+          题目内容、顺序与选项顺序已固化；刷新或换设备打开仍保持一致，不受题库后续改题影响。
+        </p>
       </section>
 
       <div class="mb-4 flex flex-wrap gap-2">
@@ -121,21 +111,33 @@ onMounted(load)
       </div>
 
       <ul class="m-0 flex list-none flex-col gap-3 p-0">
-        <li v-for="(q, idx) in orderedQuestions" :key="q.id">
-          <article class="surface flex flex-col gap-2 px-4 py-3.5">
+        <li v-for="(item, idx) in items" :key="item.question_id">
+          <article class="surface flex flex-col gap-2.5 px-4 py-3.5">
             <section
-              v-if="shouldShowCaseMaterial(orderedQuestions, idx) && resolveCaseMaterial(orderedQuestions, idx)"
+              v-if="shouldShowCaseMaterial(caseRows, idx) && resolveCaseMaterial(caseRows, idx)"
               class="rounded-xl border border-line bg-raise/60 px-3 py-3 text-sm leading-relaxed"
             >
               <p class="m-0 mb-1 text-xs font-semibold text-muted uppercase">案例材料</p>
-              <p class="m-0 whitespace-pre-wrap">{{ resolveCaseMaterial(orderedQuestions, idx) }}</p>
+              <p class="m-0 whitespace-pre-wrap">{{ resolveCaseMaterial(caseRows, idx) }}</p>
             </section>
             <div>
               <p class="m-0 text-xs text-muted">
-                第 {{ idx + 1 }} 题 · {{ questionTypeLabel(q.qtype) }} · {{ scoreAt(idx) }} 分
+                第 {{ idx + 1 }} 题 · {{ questionTypeLabel(item.snapshot.qtype) }} · {{ item.score }} 分
               </p>
-              <p class="m-0 mt-1 text-sm font-medium text-ink">{{ q.stem }}</p>
+              <p class="m-0 mt-1 text-sm font-medium text-ink">{{ item.snapshot.stem }}</p>
             </div>
+            <ul class="m-0 flex list-none flex-col gap-1.5 p-0">
+              <li
+                v-for="opt in item.snapshot.options"
+                :key="opt.key"
+                class="rounded-lg border border-line/70 bg-raise/40 px-3 py-2 text-sm text-muted"
+              >
+                <span v-if="item.snapshot.qtype !== 'judgement'" class="mr-1.5 font-semibold text-spark">
+                  {{ opt.key }}.
+                </span>
+                {{ opt.text }}
+              </li>
+            </ul>
           </article>
         </li>
       </ul>
