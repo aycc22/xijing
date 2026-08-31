@@ -1,0 +1,6 @@
+# 习径 Supabase 本地 / CLI 配置（Edge Functions 等）
+# 项目密钥与微信密钥通过 `supabase secrets set` 或 Dashboard 配置，勿写入本文件。
+
+[functions.wechat-auth]
+# 登录接口在用户尚未登录时调用，需关闭 JWT 校验
+verify_jwt = false

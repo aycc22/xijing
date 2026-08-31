@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { canUpload, isAdmin, type AppRole, type Profile } from '../lib/types'
+import type { WechatChannel } from '../lib/wechat'
 
 const session = ref<Session | null>(null)
 const profile = ref<Profile | null>(null)
@@ -71,6 +72,33 @@ export function useAuth() {
     if (error) throw error
   }
 
+  /**
+   * 微信授权码登录：调用 Edge Function 创建/匹配用户并跳过邮箱验证，
+   * 再用返回的 token_hash 建立本地会话。
+   */
+  async function signInWithWechatCode(code: string, channel: WechatChannel = 'open') {
+    const { data, error } = await supabase.functions.invoke('wechat-auth', {
+      body: { action: 'login', code, channel },
+    })
+
+    const payload = data as { token_hash?: string; error?: string } | null
+    if (payload?.error) {
+      throw new Error(payload.error)
+    }
+    if (error) {
+      throw new Error(error.message || '微信登录服务不可用')
+    }
+    if (!payload?.token_hash) {
+      throw new Error('微信登录失败：未返回凭证')
+    }
+
+    const { error: otpError } = await supabase.auth.verifyOtp({
+      token_hash: payload.token_hash,
+      type: 'magiclink',
+    })
+    if (otpError) throw otpError
+  }
+
   async function signOut() {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
@@ -97,6 +125,7 @@ export function useAuth() {
     admin,
     signInWithEmail,
     signUpWithEmail,
+    signInWithWechatCode,
     signOut,
     refreshProfile,
   }
