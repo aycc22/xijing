@@ -163,6 +163,14 @@ onMounted(load)
             >
               重新开始
             </button>
+            <button
+              class="btn-secondary flex-1 sm:flex-none"
+              type="button"
+              :disabled="bank.question_count === 0"
+              @click="router.push(`/banks/${bank.id}/paper`)"
+            >
+              随机组卷
+            </button>
             <template v-if="bank.owner_id === auth.user.value?.id || auth.admin.value">
               <button class="btn-secondary" type="button" @click="router.push(`/banks/${bank.id}/manage`)">
                 管理

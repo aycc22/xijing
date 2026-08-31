@@ -22,6 +22,18 @@ const router = createRouter({
       meta: { auth: true, upload: true },
     },
     { path: '/upload', name: 'upload', component: () => import('../views/UploadView.vue'), meta: { auth: true, upload: true } },
+    {
+      path: '/banks/:bankId/paper',
+      name: 'paper-compose',
+      component: () => import('../views/PaperComposeView.vue'),
+      meta: { auth: true },
+    },
+    {
+      path: '/papers/:paperId',
+      name: 'paper-detail',
+      component: () => import('../views/PaperDetailView.vue'),
+      meta: { auth: true },
+    },
     { path: '/quiz/:bankId', name: 'quiz', component: () => import('../views/QuizView.vue'), meta: { auth: true } },
     { path: '/result/:sessionId', name: 'result', component: () => import('../views/ResultView.vue'), meta: { auth: true } },
     { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue'), meta: { auth: true, admin: true } },

@@ -56,6 +56,18 @@ export interface AttemptSession {
   draft_selected_keys: string[]
 }
 
+export interface PaperInstance {
+  id: string
+  bank_id: string
+  user_id: string
+  seed: number
+  question_ids: string[]
+  scores: number[]
+  total_score: number
+  counts: Record<string, number>
+  created_at: string
+}
+
 export function isSessionInProgress(session: AttemptSession): boolean {
   return !session.finished_at && !session.expired_at
 }
