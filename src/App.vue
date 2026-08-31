@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useAuth } from './composables/useAuth'
 
@@ -8,12 +8,28 @@ const route = useRoute()
 
 onMounted(() => auth.init())
 
+onUnmounted(() => {
+  document.documentElement.classList.remove('home-lock')
+  document.body.classList.remove('home-lock')
+})
+
 const focusMode = computed(() => {
   const name = route.name
   return name === 'quiz' || name === 'result' || name === 'exam' || name === 'exam-result'
 })
 
+const isHome = computed(() => route.name === 'home')
+
 const showBottomNav = computed(() => Boolean(auth.user.value) && !focusMode.value)
+
+watch(
+  isHome,
+  (home) => {
+    document.documentElement.classList.toggle('home-lock', home)
+    document.body.classList.toggle('home-lock', home)
+  },
+  { immediate: true },
+)
 
 const theme = ref<'dark' | 'light'>(
   document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
@@ -37,9 +53,21 @@ function toggleTheme() {
 </script>
 
 <template>
-  <div class="app-shell" :class="showBottomNav ? 'pb-24 md:pb-10' : 'pb-10'">
+  <div
+    class="app-shell"
+    :class="[
+      isHome
+        ? 'h-dvh max-h-dvh overflow-hidden'
+        : showBottomNav
+          ? 'pb-24 md:pb-10'
+          : 'pb-10',
+      isHome && showBottomNav ? 'pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-10' : '',
+      isHome && !showBottomNav ? 'pb-0' : '',
+    ]"
+  >
     <header
-      class="app-header sticky top-0 z-30 -mx-4 flex items-center justify-between gap-3 border-b border-line/60 bg-night/85 px-4 pb-3 backdrop-blur-md md:-mx-6 md:px-6"
+      class="app-header z-30 -mx-4 flex shrink-0 items-center justify-between gap-3 border-b border-line/60 bg-night/85 px-4 pb-3 backdrop-blur-md md:-mx-6 md:px-6"
+      :class="isHome ? 'static' : 'sticky top-0'"
     >
       <RouterLink
         class="flex items-center gap-2.5 font-display text-[1.35rem] tracking-wide text-ink transition hover:text-spark"
@@ -112,9 +140,13 @@ function toggleTheme() {
       </div>
     </header>
 
-    <main class="flex-1 pt-3 md:pt-5">
+    <main class="flex min-h-0 flex-1 flex-col" :class="isHome ? 'overflow-hidden pt-2' : 'pt-3 md:pt-5'">
       <RouterView v-slot="{ Component, route: viewRoute }">
-        <div :key="viewRoute.fullPath" class="page-enter">
+        <div
+          :key="viewRoute.fullPath"
+          class="page-enter"
+          :class="isHome ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
+        >
           <component :is="Component" />
         </div>
       </RouterView>
