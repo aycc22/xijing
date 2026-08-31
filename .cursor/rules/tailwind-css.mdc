@@ -1,0 +1,39 @@
+---
+description: 本项目 UI 样式必须使用 Tailwind CSS
+alwaysApply: true
+---
+
+# 样式：Tailwind CSS
+
+本项目样式库为 **Tailwind CSS v4**（`@tailwindcss/vite`）。
+
+## 必须
+
+- 组件样式优先用 **Tailwind utility class**（写在 template 的 `class` 上）
+- 主题色 / 字号等设计 token 写在 `src/style.css` 的 `@theme { ... }` 中
+- 全局入口只保留 `src/style.css`（含 `@import "tailwindcss"`），由 `main.ts` 引入
+
+## 禁止
+
+- 不要新增独立的大型自定义 CSS 文件或手写 BEM/自定义类体系来替代 Tailwind
+- 不要引入其它 CSS 框架（Bootstrap、UnoCSS、Element Plus 默认主题体系等）作为主样式方案
+- 不要用大量 `<style scoped>` 手写布局/颜色；确需局部样式时优先 `@apply`，并 `@reference "../style.css"`
+
+## 示例
+
+```vue
+<!-- ❌ BAD：手写样式类替代 Tailwind -->
+<div class="my-card">...</div>
+
+<!-- ✅ GOOD -->
+<div class="rounded-2xl border border-line bg-card p-4 shadow-soft">...</div>
+```
+
+```css
+/* src/style.css — token 放这里 */
+@import "tailwindcss";
+@theme {
+  --color-ink: #1c2428;
+  --color-teal: #0f6e6a;
+}
+```

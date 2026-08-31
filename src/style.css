@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=ZCOOL+XiaoWei&display=swap');
+@import 'tailwindcss';
+
+/*
+ * 夜径 · 提灯 —— 暗色为默认主题。
+ * 语义色值放在 :root / [data-theme='light'] 的运行时变量里，
+ * @theme inline 让 Tailwind 工具类直接引用这些变量，切换主题即整体换肤。
+ */
+@theme inline {
+  --color-night: var(--night);
+  --color-deep: var(--deep);
+  --color-surface: var(--surface);
+  --color-raise: var(--raise);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-spark: var(--spark);
+  --color-spark-bright: var(--spark-bright);
+  --color-spark-deep: var(--spark-deep);
+  --color-spark-ink: var(--spark-ink);
+  --color-path: var(--path);
+  --color-ok: var(--ok);
+  --color-bad: var(--bad);
+  --color-warn: var(--warn);
+
+  --shadow-lift: var(--lift);
+  --shadow-glow: var(--glow);
+}
+
+@theme {
+  --font-sans: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  --font-display: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  --radius-shell: 1.25rem;
+}
+
+:root {
+  color-scheme: dark;
+  --night: #0a0e14;
+  --deep: #070a0f;
+  --surface: #121822;
+  --raise: #1a2230;
+  --line: #27313f;
+  --ink: #ece7da;
+  --muted: #8e9aa9;
+  --spark: #e6b354;
+  --spark-bright: #f2c86e;
+  --spark-deep: #b98c2e;
+  --spark-ink: #241a06;
+  --path: #7da2c8;
+  --ok: #55b489;
+  --bad: #e0654f;
+  --warn: #d99a3d;
+
+  --lift: 0 18px 40px rgb(0 0 0 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --glow: 0 0 0 1px rgb(230 179 84 / 0.35), 0 10px 30px rgb(230 179 84 / 0.18);
+  --ambient-spark: rgb(230 179 84 / 0.08);
+  --ambient-path: rgb(125 162 200 / 0.07);
+  --lantern-halo: rgb(230 179 84 / 0.55);
+  --halo: radial-gradient(closest-side, rgb(230 179 84 / 0.13), transparent 72%);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --night: #edf0f4;
+  --deep: #e2e7ee;
+  --surface: #ffffff;
+  --raise: #f1f4f8;
+  --line: #d3dae3;
+  --ink: #16202b;
+  --muted: #5d6b7a;
+  --spark: #8a6413;
+  --spark-bright: #77550f;
+  --spark-deep: #a87e1f;
+  --spark-ink: #fffaf0;
+  --path: #3d5a80;
+  --ok: #2f7d55;
+  --bad: #c23b3b;
+  --warn: #9a5b1f;
+
+  --lift: 0 12px 30px rgb(20 28 36 / 0.08);
+  --glow: 0 0 0 1px rgb(138 100 19 / 0.22), 0 8px 24px rgb(138 100 19 / 0.14);
+  --ambient-spark: rgb(168 126 31 / 0.08);
+  --ambient-path: rgb(61 90 128 / 0.09);
+  --lantern-halo: rgb(138 100 19 / 0.35);
+  --halo: radial-gradient(closest-side, rgb(168 126 31 / 0.12), transparent 72%);
+}
+
+@layer base {
+  html,
+  body,
+  #app {
+    @apply m-0 min-h-dvh;
+  }
+
+  html {
+    background: var(--night);
+  }
+
+  body {
+    @apply bg-night font-sans text-ink antialiased;
+    background-image:
+      radial-gradient(55% 38% at 88% -6%, var(--ambient-spark), transparent 62%),
+      radial-gradient(48% 36% at -8% 105%, var(--ambient-path), transparent 60%),
+      linear-gradient(180deg, var(--night) 0%, var(--deep) 100%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: var(--spark);
+    color: var(--spark-ink);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    @apply font-sans;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--spark);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply relative mx-auto flex min-h-dvh w-full max-w-lg flex-col px-4 md:max-w-3xl md:px-6;
+  }
+
+  .page-enter {
+    animation: page-rise 0.45s ease-out both;
+  }
+
+  .page-kicker {
+    @apply mb-2 text-xs font-medium tracking-[0.22em] uppercase text-spark/85;
+  }
+
+  .page-title {
+    @apply font-display m-0 text-[clamp(1.9rem,7vw,2.5rem)] leading-tight text-ink;
+  }
+
+  .page-lede {
+    @apply mt-2 max-w-prose text-[0.95rem] leading-relaxed text-muted;
+  }
+
+  .btn {
+    @apply inline-flex min-h-11 cursor-pointer appearance-none items-center justify-center gap-2 rounded-xl border border-transparent bg-spark px-5 py-2.5 text-[0.95rem] font-semibold text-spark-ink transition hover:bg-spark-bright hover:shadow-glow active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-11 cursor-pointer appearance-none items-center justify-center gap-2 rounded-xl border border-line bg-raise/70 px-5 py-2.5 text-[0.95rem] font-semibold text-ink transition hover:border-spark/45 hover:text-spark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex min-h-11 cursor-pointer appearance-none items-center justify-center gap-2 rounded-xl border border-transparent bg-transparent px-3 py-2.5 text-[0.95rem] font-medium text-muted transition hover:bg-raise hover:text-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-block {
+    @apply w-full;
+  }
+
+  .surface {
+    @apply rounded-shell border border-line/70 bg-surface p-4 shadow-lift;
+  }
+
+  .card-link {
+    @apply transition duration-200 hover:-translate-y-0.5 hover:border-spark/30;
+  }
+
+  .field {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .field label,
+  .field-caption {
+    @apply text-sm font-medium text-muted;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    @apply min-h-11 rounded-xl border border-line bg-raise/60 px-3.5 py-3 text-ink transition placeholder:text-muted/70 focus:border-spark/70 focus:bg-raise focus:ring-2 focus:ring-spark/20 focus:outline-none;
+  }
+
+  .field textarea {
+    @apply min-h-[5.5rem] resize-y;
+  }
+
+  .alert-error {
+    @apply rounded-xl border border-bad/25 bg-bad/10 px-3.5 py-3 text-sm text-bad;
+  }
+
+  .alert-info {
+    @apply rounded-xl border border-path/25 bg-path/10 px-3.5 py-3 text-sm text-path;
+  }
+
+  .alert-warn {
+    @apply rounded-xl border border-warn/25 bg-warn/10 px-3.5 py-3 text-sm text-warn;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-line/70 bg-raise/70 px-2 py-0.5 text-xs font-medium text-muted;
+  }
+
+  .chip-lit {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-spark/30 bg-spark/12 px-2 py-0.5 text-xs font-medium text-spark;
+  }
+
+  .chip-lit::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--spark-bright);
+    box-shadow: 0 0 6px var(--lantern-halo);
+  }
+
+  /* 分段控件（登录切换 / 角色设置共用） */
+  .seg {
+    @apply flex gap-1 rounded-xl border border-line bg-deep/70 p-1;
+  }
+
+  .seg-btn {
+    @apply flex-1 cursor-pointer rounded-lg border-0 bg-transparent py-2.5 text-sm font-medium text-muted transition hover:text-ink disabled:cursor-not-allowed;
+  }
+
+  .seg-btn-on {
+    @apply bg-surface text-ink shadow-sm hover:text-ink;
+  }
+
+  .seg-btn-gold {
+    @apply bg-spark text-spark-ink shadow-sm hover:text-spark-ink;
+  }
+
+  .option {
+    @apply flex w-full cursor-pointer items-start gap-3 rounded-xl border border-line bg-raise/50 p-3.5 text-left transition hover:border-spark/40 hover:bg-raise active:scale-[0.995];
+  }
+
+  .option-selected {
+    @apply border-spark/80 bg-spark/10 ring-1 ring-spark/30;
+  }
+
+  .option-correct {
+    @apply border-ok/70 bg-ok/10 ring-1 ring-ok/25;
+  }
+
+  .option-wrong {
+    @apply border-bad/70 bg-bad/10 ring-1 ring-bad/25;
+  }
+
+  .option-key {
+    @apply grid size-8 shrink-0 place-items-center rounded-lg border border-line bg-surface text-sm font-semibold text-muted transition;
+  }
+
+  .option-selected .option-key {
+    @apply border-spark bg-spark text-spark-ink;
+  }
+
+  .option-correct .option-key {
+    @apply border-ok/60 bg-ok/15 text-ok;
+  }
+
+  .option-wrong .option-key {
+    @apply border-bad/60 bg-bad/15 text-bad;
+  }
+
+  /* 签名元素：提灯小径 —— 光轨尽头一盏灯笼 */
+  .path-track {
+    @apply relative h-1.5 rounded-full bg-raise;
+  }
+
+  .path-fill {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--spark-deep), var(--spark));
+    transition: width 0.35s ease-out;
+  }
+
+  .path-fill::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    translate: 0 -50%;
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--spark-bright);
+    box-shadow: 0 0 10px 2px var(--lantern-halo);
+  }
+
+  .ink-mark {
+    @apply pointer-events-none absolute font-display leading-none text-ink/[0.05] select-none text-[clamp(5rem,28vw,9rem)];
+  }
+
+  .halo {
+    background: var(--halo);
+  }
+
+  .brand-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--spark);
+    box-shadow: 0 0 8px var(--lantern-halo);
+    animation: soft-pulse 2.6s ease-in-out infinite;
+  }
+
+  .nav-link {
+    @apply relative text-sm text-muted transition hover:text-ink;
+  }
+
+  .nav-link.router-link-active,
+  .nav-link[aria-current='page'] {
+    @apply font-semibold text-spark;
+  }
+
+  .tab-link {
+    @apply relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[0.7rem] font-medium text-muted transition hover:text-ink;
+  }
+
+  .tab-link.router-link-active,
+  .tab-link[aria-current='page'] {
+    @apply text-spark;
+  }
+
+  .tab-link.router-link-active::after,
+  .tab-link[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    translate: -50% 0;
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--spark);
+    box-shadow: 0 0 6px var(--lantern-halo);
+  }
+
+  .icon-btn {
+    @apply grid size-9 cursor-pointer place-items-center rounded-xl border border-line/70 bg-raise/60 text-muted transition hover:border-spark/45 hover:text-spark;
+  }
+
+  .sticky-action {
+    @apply sticky bottom-0 z-20 -mx-4 border-t border-line/70 bg-night/90 px-4 py-3 backdrop-blur-md md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+}
+
+@keyframes page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes path-draw {
+  from {
+    stroke-dashoffset: var(--dash-len, 260);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}

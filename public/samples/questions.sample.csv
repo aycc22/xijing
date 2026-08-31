@@ -1,0 +1,5 @@
+type,stem,option_a,option_b,option_c,option_d,option_e,answer,explanation
+single,人体正常体温约为多少摄氏度？,35℃,36.5℃,38℃,39℃,,B,成人腋温正常约 36～37℃，常用参考值约 36.5℃。
+multiple,下列哪些属于生命体征？,体温,血压,血型,呼吸,脉搏,"A;B;D;E",血型不属于生命体征。
+judgement,地球绕太阳公转,,,,,TRUE,地球围绕太阳公转，而非太阳绕地球。
+single,心肺复苏胸外按压部位是？,胸骨上段,胸骨中下段交界处,剑突,左乳头内侧,,B,按压部位为胸骨中下段交界处。
