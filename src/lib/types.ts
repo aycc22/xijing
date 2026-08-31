@@ -45,8 +45,16 @@ export interface AttemptSession {
   bank_id: string
   total_count: number
   correct_count: number
+  current_index: number
   started_at: string
   finished_at: string | null
+  expired_at: string | null
+  draft_question_id: string | null
+  draft_selected_keys: string[]
+}
+
+export function isSessionInProgress(session: AttemptSession): boolean {
+  return !session.finished_at && !session.expired_at
 }
 
 export function canUpload(role: AppRole | null | undefined): boolean {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { expireStaleSessions } from '../composables/usePracticeProgress'
+import { isResumableSession } from '../lib/practiceResume'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import type { QuestionBank } from '../lib/types'
@@ -10,8 +12,28 @@ const route = useRoute()
 const router = useRouter()
 
 const banks = ref<QuestionBank[]>([])
+const activeBankIds = ref<Set<string>>(new Set())
 const error = ref('')
 const loading = ref(true)
+
+async function loadActiveSessions() {
+  activeBankIds.value = new Set()
+  if (!auth.user.value) return
+  await expireStaleSessions(auth.user.value.id)
+  const { data } = await supabase
+    .from('attempt_sessions')
+    .select('bank_id, started_at, finished_at, expired_at')
+    .eq('user_id', auth.user.value.id)
+    .is('finished_at', null)
+    .is('expired_at', null)
+  for (const session of data ?? []) {
+    if (isResumableSession(session)) activeBankIds.value.add(session.bank_id)
+  }
+}
+
+function hasActiveSession(bankId: string) {
+  return activeBankIds.value.has(bankId)
+}
 
 async function load() {
   loading.value = true
@@ -22,6 +44,7 @@ async function load() {
     .order('updated_at', { ascending: false })
   if (err) error.value = err.message
   else banks.value = (data ?? []) as QuestionBank[]
+  await loadActiveSessions()
   loading.value = false
 }
 
@@ -116,12 +139,29 @@ onMounted(load)
           </p>
           <div class="mt-1 flex flex-wrap items-center gap-2 border-t border-line/60 pt-3">
             <button
+              v-if="hasActiveSession(bank.id)"
+              class="btn flex-1 sm:flex-none"
+              type="button"
+              @click="router.push(`/quiz/${bank.id}`)"
+            >
+              继续练习
+            </button>
+            <button
+              v-else
               class="btn flex-1 sm:flex-none"
               type="button"
               :disabled="bank.question_count === 0"
-              @click="router.push(`/quiz/${bank.id}`)"
+              @click="router.push(`/quiz/${bank.id}?new=1`)"
             >
               开始刷题
+            </button>
+            <button
+              v-if="hasActiveSession(bank.id)"
+              class="btn-secondary flex-1 sm:flex-none"
+              type="button"
+              @click="router.push(`/quiz/${bank.id}?new=1`)"
+            >
+              重新开始
             </button>
             <template v-if="bank.owner_id === auth.user.value?.id || auth.admin.value">
               <button class="btn-secondary" type="button" @click="router.push(`/banks/${bank.id}/manage`)">

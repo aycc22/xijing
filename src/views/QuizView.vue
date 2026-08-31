@@ -3,6 +3,14 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { resolveCaseMaterial } from '../lib/case'
 import {
+  expireStaleSessions,
+  findResumableSession,
+  loadSessionProgress,
+  saveSessionProgress,
+  shouldForceNewSession,
+  usePracticeAutosave,
+} from '../composables/usePracticeProgress'
+import {
   canGoNext,
   canGoPrev,
   canSubmitAnswer,
@@ -34,7 +42,23 @@ const sessionId = ref<string | null>(null)
 const correctCount = ref(0)
 const error = ref('')
 const loading = ref(true)
+const resuming = ref(false)
 const sheetOpen = ref(false)
+
+async function saveProgress() {
+  if (!sessionId.value) return
+  await saveSessionProgress({
+    sessionId: sessionId.value,
+    index: index.value,
+    correctCount: correctCount.value,
+    totalCount: questions.value.length,
+    draftQuestionId: current.value?.id ?? null,
+    draftSelectedKeys: selected.value,
+    revealed: revealed.value,
+  })
+}
+
+usePracticeAutosave(saveProgress)
 
 const current = computed(() => questions.value[index.value] ?? null)
 const currentAttempt = computed(() => attempts.value[index.value])
@@ -86,6 +110,7 @@ function sheetCellClass(attempt: QuestionAttempt | undefined, i: number) {
 
 function goTo(i: number) {
   if (i < 0 || i >= questions.value.length) return
+  void saveProgress()
   index.value = i
   applyAttemptState(attempts.value[i])
   error.value = ''
@@ -102,7 +127,7 @@ function next() {
   goTo(index.value + 1)
 }
 
-async function persistAnswer(questionId: string, keys: string[], ok: boolean) {
+async function persistAnswer(questionId: string, keys: string[], ok: boolean, skipped = false) {
   if (!sessionId.value) return
   const { error: aErr } = await supabase.from('attempt_answers').upsert(
     {
@@ -110,6 +135,7 @@ async function persistAnswer(questionId: string, keys: string[], ok: boolean) {
       question_id: questionId,
       selected_keys: keys.map((k) => k.toUpperCase()),
       is_correct: ok,
+      is_skipped: skipped,
     },
     { onConflict: 'session_id,question_id' },
   )
@@ -135,6 +161,7 @@ async function submitAnswer() {
   revealed.value = true
   await persistAnswer(current.value.id, selected.value, ok)
   if (!ok) await handleWrong(current.value.id, selected.value)
+  await saveProgress()
 }
 
 async function skipQuestion() {
@@ -144,8 +171,9 @@ async function skipQuestion() {
   persistAttemptAt(index.value, attempt)
   selected.value = []
   revealed.value = true
-  await persistAnswer(current.value.id, [], false)
+  await persistAnswer(current.value.id, [], false, true)
   await handleWrong(current.value.id, [])
+  await saveProgress()
 }
 
 async function finish() {
@@ -197,6 +225,33 @@ async function start() {
   index.value = 0
   applyAttemptState(attempts.value[0])
 
+  await expireStaleSessions(auth.user.value.id)
+
+  const forceNew = shouldForceNewSession(route)
+  if (forceNew) {
+    await supabase
+      .from('attempt_sessions')
+      .update({ expired_at: new Date().toISOString() })
+      .eq('user_id', auth.user.value.id)
+      .eq('bank_id', bankId)
+      .is('finished_at', null)
+      .is('expired_at', null)
+  }
+
+  const existing = forceNew ? null : await findResumableSession(auth.user.value.id, bankId)
+
+  if (existing) {
+    resuming.value = true
+    sessionId.value = existing.id
+    const progress = await loadSessionProgress(existing.id, questions.value)
+    attempts.value = progress.attempts
+    correctCount.value = progress.correctCount
+    index.value = progress.index
+    applyAttemptState(attempts.value[index.value])
+    loading.value = false
+    return
+  }
+
   const { data: session, error: sErr } = await supabase
     .from('attempt_sessions')
     .insert({
@@ -232,6 +287,7 @@ onMounted(start)
           <span class="font-normal text-muted"> / {{ questions.length }}</span>
         </span>
         <div class="flex items-center gap-2">
+          <span v-if="resuming" class="chip-lit">续做中</span>
           <button class="btn-ghost !min-h-11 !px-3 text-sm" type="button" @click="sheetOpen = !sheetOpen">
             答题卡
           </button>
