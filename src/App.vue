@@ -10,7 +10,7 @@ onMounted(() => auth.init())
 
 const focusMode = computed(() => {
   const name = route.name
-  return name === 'quiz' || name === 'result'
+  return name === 'quiz' || name === 'result' || name === 'exam' || name === 'exam-result'
 })
 
 const showBottomNav = computed(() => Boolean(auth.user.value) && !focusMode.value)

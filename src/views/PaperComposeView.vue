@@ -11,6 +11,7 @@ import {
   type PoolQuestion,
   type TypeCounts,
 } from '../lib/paperCompose'
+import { splitPaperForStorage } from '../lib/examSession'
 import { buildPaperItems, type SnapshotSourceQuestion } from '../lib/paperSnapshot'
 import { ensureQuestionOptions } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
@@ -133,15 +134,16 @@ async function generate() {
       error.value = shortagesText.value
       return
     }
-    const items = buildPaperItems({
+    const fullItems = buildPaperItems({
       questionIds: result.questionIds,
       scores: result.scores,
       seed: result.seed,
       questionsById: questionsById.value,
     })
-    if (items.length !== result.questionIds.length) {
+    if (fullItems.length !== result.questionIds.length) {
       throw new Error('组卷快照不完整，请重试')
     }
+    const { publicItems, grading } = splitPaperForStorage(fullItems)
     const { data: paper, error: pErr } = await supabase
       .from('paper_instances')
       .insert({
@@ -152,11 +154,19 @@ async function generate() {
         scores: result.scores,
         total_score: result.totalScore,
         counts: counts.value,
-        items,
+        items: publicItems,
       })
       .select('id')
       .single()
     if (pErr) throw pErr
+    const { error: gErr } = await supabase.from('paper_grading').insert({
+      paper_id: paper.id,
+      grading,
+    })
+    if (gErr) {
+      await supabase.from('paper_instances').delete().eq('id', paper.id)
+      throw gErr
+    }
     await router.push(`/papers/${paper.id}`)
   } catch (err) {
     error.value = err instanceof Error ? err.message : '组卷失败'

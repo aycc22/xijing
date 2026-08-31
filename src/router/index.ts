@@ -34,6 +34,18 @@ const router = createRouter({
       component: () => import('../views/PaperDetailView.vue'),
       meta: { auth: true },
     },
+    {
+      path: '/exam/:paperId',
+      name: 'exam',
+      component: () => import('../views/ExamView.vue'),
+      meta: { auth: true },
+    },
+    {
+      path: '/exam-result/:sessionId',
+      name: 'exam-result',
+      component: () => import('../views/ExamResultView.vue'),
+      meta: { auth: true },
+    },
     { path: '/quiz/:bankId', name: 'quiz', component: () => import('../views/QuizView.vue'), meta: { auth: true } },
     { path: '/result/:sessionId', name: 'result', component: () => import('../views/ResultView.vue'), meta: { auth: true } },
     { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue'), meta: { auth: true, admin: true } },

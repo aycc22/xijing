@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import { toPublicPaperItems } from '../lib/examSession'
 import { paperItemsAsCaseRows, parsePaperItems, type PaperItem } from '../lib/paperSnapshot'
 import { questionTypeLabel } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
@@ -15,10 +16,26 @@ const auth = useAuth()
 const paper = ref<PaperInstance | null>(null)
 const bankTitle = ref('')
 const items = ref<PaperItem[]>([])
+const examSessionId = ref<string | null>(null)
+const examFinished = ref(false)
 const loading = ref(true)
 const error = ref('')
 
 const caseRows = computed(() => paperItemsAsCaseRows(items.value))
+const startLabel = computed(() => {
+  if (examFinished.value) return '查看成绩'
+  if (examSessionId.value) return '继续答题'
+  return '开始答题'
+})
+
+function goExam() {
+  if (!paper.value) return
+  if (examFinished.value && examSessionId.value) {
+    void router.push(`/exam-result/${examSessionId.value}`)
+    return
+  }
+  void router.push(`/exam/${paper.value.id}`)
+}
 
 async function load() {
   loading.value = true
@@ -40,13 +57,13 @@ async function load() {
     return
   }
   paper.value = paperData as PaperInstance
-  items.value = parsePaperItems(paperData.items)
+  items.value = toPublicPaperItems(parsePaperItems(paperData.items))
 
-  // Legacy papers without items: fall back to live questions once
+  // Legacy papers without items: fall back to live questions (stem/options only)
   if (!items.value.length && paperData.question_ids?.length) {
     const { data: qs } = await supabase
       .from('questions')
-      .select('id, qtype, stem, options, answer_keys, explanation, case_id, case_material')
+      .select('id, qtype, stem, options, case_id, case_material')
       .in('id', paperData.question_ids)
     const byId = new Map((qs ?? []).map((q) => [q.id, q]))
     items.value = (paperData.question_ids as string[])
@@ -60,14 +77,25 @@ async function load() {
             stem: q.stem,
             qtype: q.qtype,
             options: Array.isArray(q.options) ? q.options : [],
-            answer_keys: q.answer_keys ?? [],
-            explanation: q.explanation ?? '',
+            answer_keys: [],
+            explanation: '',
             case_id: q.case_id,
             case_material: q.case_material,
           },
         }
       })
       .filter(Boolean) as PaperItem[]
+  }
+
+  if (auth.user.value) {
+    const { data: exam } = await supabase
+      .from('exam_sessions')
+      .select('id, finished_at')
+      .eq('paper_id', paperId)
+      .eq('user_id', auth.user.value.id)
+      .maybeSingle()
+    examSessionId.value = exam?.id ?? null
+    examFinished.value = Boolean(exam?.finished_at)
   }
 
   const { data: bank } = await supabase
@@ -101,8 +129,8 @@ onMounted(load)
       </section>
 
       <div class="mb-4 flex flex-wrap gap-2">
-        <button class="btn" type="button" disabled title="答题模式将在后续版本开放">
-          开始答题（即将开放）
+        <button class="btn" type="button" :disabled="!items.length" @click="goExam">
+          {{ startLabel }}
         </button>
         <button class="btn-secondary" type="button" @click="router.push(`/banks/${paper.bank_id}/paper`)">
           重新组卷
