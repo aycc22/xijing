@@ -39,7 +39,7 @@ function toggleTheme() {
 <template>
   <div class="app-shell" :class="showBottomNav ? 'pb-24 md:pb-10' : 'pb-10'">
     <header
-      class="sticky top-0 z-30 -mx-4 flex items-center justify-between gap-3 border-b border-line/60 bg-night/85 px-4 py-3 backdrop-blur-md md:-mx-6 md:px-6"
+      class="app-header sticky top-0 z-30 -mx-4 flex items-center justify-between gap-3 border-b border-line/60 bg-night/85 px-4 pb-3 backdrop-blur-md md:-mx-6 md:px-6"
     >
       <RouterLink
         class="flex items-center gap-2.5 font-display text-[1.35rem] tracking-wide text-ink transition hover:text-spark"
