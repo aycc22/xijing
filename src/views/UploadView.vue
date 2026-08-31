@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { parseQuestionCsv } from '../lib/csv'
+import { lintQuestionCsv, type CsvLintResult } from '../lib/csv'
+import { questionPayloadFromRow, toImportStats, type ImportStats } from '../lib/importPlan'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 
@@ -12,21 +13,25 @@ const title = ref('')
 const description = ref('')
 const publishNow = ref(true)
 const file = ref<File | null>(null)
-const previewCount = ref(0)
+const lintResult = ref<CsvLintResult | null>(null)
+const importStats = ref<ImportStats | null>(null)
 const error = ref('')
 const busy = ref(false)
+const confirmed = ref(false)
 
 async function onFileChange(e: Event) {
   error.value = ''
-  previewCount.value = 0
+  lintResult.value = null
+  importStats.value = null
+  confirmed.value = false
   const input = e.target as HTMLInputElement
   const f = input.files?.[0] ?? null
   file.value = f
   if (!f) return
   try {
-    const rows = await parseQuestionCsv(f)
-    previewCount.value = rows.length
+    lintResult.value = await lintQuestionCsv(f)
     if (!title.value) title.value = f.name.replace(/\.csv$/i, '')
+    if (!lintResult.value.valid) error.value = `预检发现 ${lintResult.value.issues.length} 处错误`
   } catch (err) {
     file.value = null
     error.value = err instanceof Error ? err.message : 'CSV 无效'
@@ -39,13 +44,17 @@ async function submit() {
     error.value = '请先登录'
     return
   }
-  if (!file.value) {
-    error.value = '请选择 CSV 文件'
+  if (!file.value || !lintResult.value?.valid) {
+    error.value = '请先选择通过预检的 CSV 文件'
+    return
+  }
+  if (!confirmed.value) {
+    confirmed.value = true
     return
   }
   busy.value = true
   try {
-    const rows = await parseQuestionCsv(file.value)
+    const rows = lintResult.value.rows
     const { data: bank, error: bankErr } = await supabase
       .from('question_banks')
       .insert({
@@ -58,27 +67,21 @@ async function submit() {
       .single()
     if (bankErr) throw bankErr
 
-    const payload = rows.map((row, i) => ({
-      bank_id: bank.id,
-      qtype: row.qtype,
-      stem: row.stem,
-      options: row.options,
-      answer_keys: row.answer_keys,
-      explanation: row.explanation,
-      case_id: row.case_id,
-      case_material: row.case_material || null,
-      sort_order: i,
-    }))
-
-    const { error: qErr } = await supabase.from('questions').insert(payload)
-    if (qErr) {
-      await supabase.from('question_banks').delete().eq('id', bank.id)
-      throw qErr
+    for (let i = 0; i < rows.length; i++) {
+      const { error: qErr } = await supabase
+        .from('questions')
+        .insert(questionPayloadFromRow(rows[i], bank.id, i))
+      if (qErr) {
+        await supabase.from('question_banks').delete().eq('id', bank.id)
+        throw qErr
+      }
     }
 
+    importStats.value = toImportStats({ inserts: rows, updates: [] })
     await router.push('/banks')
   } catch (err) {
     error.value = err instanceof Error ? err.message : '上传失败'
+    confirmed.value = false
   } finally {
     busy.value = false
   }
@@ -91,7 +94,7 @@ async function submit() {
       <p class="page-kicker">导入</p>
       <h1 class="page-title">上传题库</h1>
       <p class="page-lede">
-        CSV 列：type, stem, option_a…option_f, answer, explanation；案例题另加 case_id, case_material。
+        导入前会逐行预检；通过后确认导入。案例题使用 case_id、case_material。
       </p>
     </section>
 
@@ -122,16 +125,28 @@ async function submit() {
           </svg>
           <span v-if="file" class="text-sm font-medium text-ink">{{ file.name }}</span>
           <span v-else class="text-sm text-muted">点击选择 CSV 文件</span>
-          <span v-if="previewCount" class="chip-lit">已解析 {{ previewCount }} 题</span>
+          <span v-if="lintResult?.valid" class="chip-lit">预检通过 {{ lintResult.rows.length }} 题</span>
         </label>
       </div>
 
+      <ul v-if="lintResult && lintResult.issues.length" class="m-0 max-h-48 list-none space-y-1 overflow-y-auto rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm">
+        <li v-for="(issue, i) in lintResult.issues" :key="i" class="text-bad">
+          第 {{ issue.line }} 行：{{ issue.message }}
+        </li>
+      </ul>
+
+      <details class="rounded-xl border border-line bg-raise/40 px-3.5 py-3 text-sm text-muted">
+        <summary class="cursor-pointer font-medium text-ink">字段说明</summary>
+        <ul class="mt-2 space-y-1 pl-4">
+          <li>type：single / multiple / judgement</li>
+          <li>stem、option_a…f、answer、explanation</li>
+          <li>case_id、case_material（案例小题）</li>
+          <li>external_id（可选，用于重复导入更新）</li>
+        </ul>
+      </details>
+
       <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-raise/50 px-3.5 py-3 text-sm text-muted transition hover:border-spark/40">
-        <input
-          v-model="publishNow"
-          class="mt-0.5 size-4 accent-spark"
-          type="checkbox"
-        />
+        <input v-model="publishNow" class="mt-0.5 size-4 accent-spark" type="checkbox" />
         <span>
           <span class="block font-medium text-ink">上传后立即发布</span>
           其他人登录后就能看到并刷这套题。
@@ -139,14 +154,27 @@ async function submit() {
       </label>
 
       <p class="m-0 text-sm text-muted">
+        <a class="mr-3 font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.template.csv" download>
+          下载导入模板
+        </a>
         <a class="font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.sample.csv" download>
-          下载样例 CSV
+          样例 CSV
         </a>
       </p>
 
+      <p v-if="confirmed && lintResult?.valid" class="alert-warn m-0">
+        即将导入 {{ lintResult.rows.length }} 题到新题库，请再次点击确认。
+      </p>
+
       <p v-if="error" class="alert-error">{{ error }}</p>
-      <button class="btn btn-block" type="submit" :disabled="busy">
-        {{ busy ? '导入中…' : '导入题库' }}
+      <button class="btn btn-block" type="submit" :disabled="busy || !lintResult?.valid">
+        {{
+          busy
+            ? '导入中…'
+            : confirmed
+              ? '确认导入'
+              : '预检通过，继续'
+        }}
       </button>
     </form>
   </div>

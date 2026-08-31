@@ -7,6 +7,18 @@ const router = createRouter({
     { path: '/', name: 'home', component: () => import('../views/HomeView.vue') },
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { guest: true } },
     { path: '/banks', name: 'banks', component: () => import('../views/BanksView.vue'), meta: { auth: true } },
+    {
+      path: '/banks/:bankId/manage',
+      name: 'bank-manage',
+      component: () => import('../views/BankManageView.vue'),
+      meta: { auth: true, upload: true },
+    },
+    {
+      path: '/banks/:bankId/preview',
+      name: 'bank-preview',
+      component: () => import('../views/BankPreviewView.vue'),
+      meta: { auth: true, upload: true },
+    },
     { path: '/upload', name: 'upload', component: () => import('../views/UploadView.vue'), meta: { auth: true, upload: true } },
     { path: '/quiz/:bankId', name: 'quiz', component: () => import('../views/QuizView.vue'), meta: { auth: true } },
     { path: '/result/:sessionId', name: 'result', component: () => import('../views/ResultView.vue'), meta: { auth: true } },

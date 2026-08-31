@@ -1,0 +1,5 @@
+type,stem,case_id,case_material,option_a,option_b,option_c,option_d,option_e,answer,explanation,external_id
+single,题干示例（单选）,,,选项A,选项B,选项C,选项D,,B,解析说明（可选）,demo-single-1
+multiple,题干示例（多选）,,,选项A,选项B,选项C,选项D,,"A;C",解析说明（可选）,demo-multi-1
+judgement,题干示例（判断）,,,,,,,TRUE,解析说明（可选）,demo-judge-1
+single,案例小题示例,case-demo,案例材料写在这里。,选项A,选项B,,,A,解析,,demo-case-1

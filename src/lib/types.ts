@@ -27,6 +27,7 @@ export interface QuestionBank {
 export interface Question {
   id: string
   bank_id: string
+  external_id: string | null
   qtype: QuestionType
   stem: string
   options: QuestionOption[]
@@ -34,6 +35,7 @@ export interface Question {
   explanation: string
   case_id: string | null
   case_material: string | null
+  is_active: boolean
   sort_order: number
 }
 

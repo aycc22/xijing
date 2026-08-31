@@ -51,6 +51,7 @@ async function start() {
     .from('questions')
     .select('*')
     .eq('bank_id', bankId)
+    .eq('is_active', true)
     .order('sort_order', { ascending: true })
   if (err) {
     error.value = err.message

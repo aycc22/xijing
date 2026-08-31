@@ -124,6 +124,9 @@ onMounted(load)
               开始刷题
             </button>
             <template v-if="bank.owner_id === auth.user.value?.id || auth.admin.value">
+              <button class="btn-secondary" type="button" @click="router.push(`/banks/${bank.id}/manage`)">
+                管理
+              </button>
               <button class="btn-secondary" type="button" @click="togglePublish(bank)">
                 {{ bank.is_published ? '下架' : '发布' }}
               </button>
