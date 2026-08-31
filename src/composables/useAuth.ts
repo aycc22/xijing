@@ -8,6 +8,12 @@ const profile = ref<Profile | null>(null)
 const loading = ref(true)
 let initialized = false
 
+function authRedirectUrl(): string {
+  const base = import.meta.env.BASE_URL || '/'
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  return `${origin}${base}`.replace(/\/+$/, '') + '/'
+}
+
 async function fetchProfile(userId: string) {
   const { data, error } = await supabase
     .from('profiles')
@@ -57,7 +63,10 @@ export function useAuth() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName || undefined } },
+      options: {
+        emailRedirectTo: authRedirectUrl(),
+        data: { display_name: displayName || undefined },
+      },
     })
     if (error) throw error
   }
