@@ -15,6 +15,9 @@ import { paperItemsAsCaseRows, parsePaperItems, type PaperItem } from '../lib/pa
 import { questionTypeLabel, toggleSelection } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
+import AnswerActionBar from '../components/AnswerActionBar.vue'
+import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
+import type { QuestionType } from '../lib/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -47,6 +50,27 @@ const selected = computed({
   },
 })
 
+const sheetStatuses = computed<SheetCellState[]>(() =>
+  items.value.map((item) => examSheetStatus(answers.value[item.question_id])),
+)
+
+const currentFlagged = computed(() =>
+  Boolean(current.value && answers.value[current.value.question_id]?.flagged),
+)
+
+function qtypeDotClass(qtype: QuestionType) {
+  switch (qtype) {
+    case 'single':
+      return 'bg-spark'
+    case 'multiple':
+      return 'bg-path'
+    case 'judgement':
+      return 'bg-ok'
+    case 'case_analysis':
+      return 'bg-warn'
+  }
+}
+
 function scheduleSave() {
   if (saveTimer.value) clearTimeout(saveTimer.value)
   saveTimer.value = setTimeout(() => {
@@ -75,15 +99,6 @@ function onToggleFlag() {
   if (!current.value) return
   answers.value = toggleFlag(answers.value, current.value.question_id)
   scheduleSave()
-}
-
-function sheetClass(questionId: string, i: number) {
-  const base = 'min-h-11 min-w-11 rounded-xl border text-sm font-semibold tabular-nums'
-  if (i === index.value) return `${base} border-spark bg-spark/15 text-spark`
-  const status = examSheetStatus(answers.value[questionId])
-  if (status === 'flagged') return `${base} border-warn/40 bg-warn/10 text-warn`
-  if (status === 'answered') return `${base} border-path/40 bg-path/10 text-path`
-  return `${base} border-line bg-raise/50 text-muted`
 }
 
 function goTo(i: number) {
@@ -233,43 +248,22 @@ onMounted(load)
       </div>
     </div>
 
-    <div v-else-if="current" class="relative flex flex-col gap-4 pb-2">
-      <div class="relative z-10 flex flex-wrap items-center justify-between gap-2 text-sm text-muted">
-        <span class="font-semibold text-ink tabular-nums">
+    <div v-else-if="current" class="relative flex flex-col gap-4 pb-28">
+      <div class="relative z-10 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="chip">
+            <span
+              class="size-1.5 rounded-full"
+              :class="qtypeDotClass(current.snapshot.qtype)"
+              aria-hidden="true"
+            />
+            {{ questionTypeLabel(current.snapshot.qtype) }} · {{ current.score }} 分
+          </span>
+        </div>
+        <span class="font-display text-lg font-semibold text-ink tabular-nums leading-none">
           {{ index + 1 }}
-          <span class="font-normal text-muted"> / {{ items.length }}</span>
+          <span class="text-sm font-normal text-muted"> / {{ items.length }}</span>
         </span>
-        <div class="flex items-center gap-2">
-          <span class="chip">答题</span>
-          <button class="btn-ghost !min-h-11 !px-3 text-sm" type="button" @click="sheetOpen = !sheetOpen">
-            答题卡
-          </button>
-        </div>
-      </div>
-
-      <div
-        v-if="sheetOpen"
-        class="surface relative z-10 flex flex-col gap-3 p-3"
-        role="navigation"
-        aria-label="答题卡"
-      >
-        <div class="grid grid-cols-5 gap-2 sm:grid-cols-6">
-          <button
-            v-for="(item, i) in items"
-            :key="item.question_id"
-            type="button"
-            :class="sheetClass(item.question_id, i)"
-            :aria-label="`第 ${i + 1} 题`"
-            :aria-current="i === index ? 'true' : undefined"
-            @click="goTo(i)"
-          >
-            {{ i + 1 }}
-          </button>
-        </div>
-        <p class="m-0 text-xs text-muted">未答 {{ unanswered }} 道</p>
-        <button class="btn btn-block min-h-11" type="button" :disabled="busy" @click="submitExam">
-          {{ busy ? '交卷中…' : '交卷' }}
-        </button>
       </div>
 
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
@@ -281,9 +275,6 @@ onMounted(load)
           <p class="m-0 whitespace-pre-wrap">{{ resolveCaseMaterial(caseRows, index) }}</p>
         </section>
 
-        <p class="m-0 text-xs text-muted">
-          {{ questionTypeLabel(current.snapshot.qtype) }} · {{ current.score }} 分
-        </p>
         <h1 class="m-0 text-[1.125rem] leading-snug font-semibold text-ink md:text-xl">
           {{ current.snapshot.stem }}
         </h1>
@@ -304,18 +295,37 @@ onMounted(load)
         <p v-if="error" class="alert-error m-0">{{ error }}</p>
       </article>
 
-      <div class="sticky-action relative z-10 flex flex-col gap-2">
-        <div class="grid grid-cols-2 gap-2">
-          <button class="btn-secondary min-h-11" type="button" :disabled="index === 0" @click="goTo(index - 1)">
-            上一题
-          </button>
-          <button class="btn-secondary min-h-11" type="button" @click="onToggleFlag">
-            {{ answers[current.question_id]?.flagged ? '取消标记' : '标记待检查' }}
-          </button>
-        </div>
+      <AnswerActionBar @open-sheet="sheetOpen = true">
+        <button
+          type="button"
+          class="icon-btn !size-11 shrink-0"
+          :disabled="index === 0"
+          aria-label="上一题"
+          @click="goTo(index - 1)"
+        >
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M15 6 9 12l6 6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          class="btn-secondary !px-3 min-h-11 shrink-0"
+          :class="currentFlagged ? '!border-warn/50 !bg-warn/15 !text-warn' : ''"
+          @click="onToggleFlag"
+        >
+          {{ currentFlagged ? '取消标记' : '标记' }}
+        </button>
+
         <button
           v-if="index + 1 < items.length"
-          class="btn btn-block min-h-11"
+          class="btn min-h-11 flex-1"
           type="button"
           @click="goTo(index + 1)"
         >
@@ -323,14 +333,27 @@ onMounted(load)
         </button>
         <button
           v-else
-          class="btn btn-block min-h-11"
+          class="btn min-h-11 flex-1"
           type="button"
           :disabled="busy"
           @click="submitExam"
         >
           {{ busy ? '交卷中…' : '交卷' }}
         </button>
-      </div>
+      </AnswerActionBar>
+
+      <AnswerSheetDrawer
+        :open="sheetOpen"
+        :total="items.length"
+        :statuses="sheetStatuses"
+        :current="index"
+        variant="exam"
+        :unanswered="unanswered"
+        :submit-busy="busy"
+        @close="sheetOpen = false"
+        @go-to="goTo"
+        @submit="submitExam"
+      />
     </div>
   </div>
 </template>

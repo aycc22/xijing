@@ -28,7 +28,9 @@ import { recordWrongQuestion, loadWrongQuestionIds } from '../lib/wrongBook'
 import { buildQuestionSnapshot } from '../lib/questionSnapshot'
 import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/userLearning'
 import { useAuth } from '../composables/useAuth'
-import type { Question, QuestionOption } from '../lib/types'
+import AnswerActionBar from '../components/AnswerActionBar.vue'
+import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
+import type { Question, QuestionOption, QuestionType } from '../lib/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -74,6 +76,29 @@ const progress = computed(() =>
 const submitEnabled = computed(() => canSubmitAnswer(currentAttempt.value))
 const wrongOnly = computed(() => route.query.wrong === '1')
 
+const sheetStatuses = computed<SheetCellState[]>(() =>
+  attempts.value.map((attempt) => {
+    const status = sheetStatus(attempt)
+    if (status === 'answered' && attempt.isCorrect) return 'correct'
+    if (status === 'answered' && attempt.isCorrect === false) return 'wrong'
+    if (status === 'skipped') return 'skipped'
+    return 'unanswered'
+  }),
+)
+
+function qtypeDotClass(qtype: QuestionType) {
+  switch (qtype) {
+    case 'single':
+      return 'bg-spark'
+    case 'multiple':
+      return 'bg-path'
+    case 'judgement':
+      return 'bg-ok'
+    case 'case_analysis':
+      return 'bg-warn'
+  }
+}
+
 function normalizeOptions(raw: unknown): QuestionOption[] {
   if (!Array.isArray(raw)) return []
   return raw.map((o) => o as QuestionOption)
@@ -102,16 +127,6 @@ function toggle(key: string) {
 function optionClass(key: string) {
   if (!current.value) return ''
   return optionRevealClass(key, selected.value, current.value.answer_keys, revealed.value)
-}
-
-function sheetCellClass(attempt: QuestionAttempt | undefined, i: number) {
-  const base = 'min-h-11 min-w-11 rounded-xl border text-sm font-semibold tabular-nums transition'
-  if (i === index.value) return `${base} border-spark bg-spark/15 text-spark`
-  const status = sheetStatus(attempt)
-  if (status === 'answered' && attempt?.isCorrect) return `${base} border-ok/40 bg-ok/10 text-ok`
-  if (status === 'answered' && attempt?.isCorrect === false) return `${base} border-bad/40 bg-bad/10 text-bad`
-  if (status === 'skipped') return `${base} border-warn/40 bg-warn/10 text-warn`
-  return `${base} border-line bg-raise/50 text-muted`
 }
 
 function goTo(i: number) {
@@ -340,51 +355,34 @@ onMounted(start)
     <p v-if="loading" class="px-3 py-16 text-center text-muted">准备题目…</p>
     <p v-else-if="error && !current" class="alert-error">{{ error }}</p>
 
-    <div v-else-if="current" class="relative flex flex-col gap-4 pb-2">
+    <div v-else-if="current" class="relative flex flex-col gap-4 pb-28">
       <span class="ink-mark -top-3 right-0" aria-hidden="true">{{ index + 1 }}</span>
 
-      <div class="relative z-10 flex flex-wrap items-center justify-between gap-2 text-sm text-muted">
-        <span class="font-semibold text-ink tabular-nums">
-          {{ index + 1 }}
-          <span class="font-normal text-muted"> / {{ questions.length }}</span>
-        </span>
-        <div class="flex items-center gap-2">
-          <span v-if="wrongOnly" class="chip-lit">错题练习</span>
-          <span v-if="resuming" class="chip-lit">续做中</span>
-          <button class="btn-ghost !min-h-11 !px-3 text-sm" type="button" @click="sheetOpen = !sheetOpen">
-            答题卡
-          </button>
-          <span class="chip">{{ questionTypeLabel(current.qtype) }}</span>
+      <div class="relative z-10 flex flex-col gap-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="chip">
+              <span class="size-1.5 rounded-full" :class="qtypeDotClass(current.qtype)" aria-hidden="true" />
+              {{ questionTypeLabel(current.qtype) }}
+            </span>
+            <span v-if="wrongOnly" class="chip-lit">错题练习</span>
+            <span v-if="resuming" class="chip-lit">续做中</span>
+          </div>
+          <span class="font-display text-lg font-semibold text-ink tabular-nums leading-none">
+            {{ index + 1 }}
+            <span class="text-sm font-normal text-muted"> / {{ questions.length }}</span>
+          </span>
         </div>
-      </div>
 
-      <div
-        class="path-track relative z-10 mx-1"
-        role="progressbar"
-        :aria-valuenow="Math.round(progress)"
-        aria-valuemin="0"
-        aria-valuemax="100"
-      >
-        <span class="path-fill" :style="{ width: progress + '%' }" />
-      </div>
-
-      <div
-        v-if="sheetOpen"
-        class="surface relative z-10 grid grid-cols-5 gap-2 p-3 sm:grid-cols-6"
-        role="navigation"
-        aria-label="答题卡"
-      >
-        <button
-          v-for="(q, i) in questions"
-          :key="q.id"
-          type="button"
-          :class="sheetCellClass(attempts[i], i)"
-          :aria-label="`第 ${i + 1} 题`"
-          :aria-current="i === index ? 'true' : undefined"
-          @click="goTo(i)"
+        <div
+          class="path-track relative z-10"
+          role="progressbar"
+          :aria-valuenow="Math.round(progress)"
+          aria-valuemin="0"
+          aria-valuemax="100"
         >
-          {{ i + 1 }}
-        </button>
+          <span class="path-fill" :style="{ width: progress + '%' }" />
+        </div>
       </div>
 
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
@@ -446,38 +444,61 @@ onMounted(start)
         <p v-if="error" class="alert-error">{{ error }}</p>
       </article>
 
-      <div class="sticky-action relative z-10 flex flex-col gap-2 md:mt-1">
-        <div v-if="!revealed" class="grid grid-cols-2 gap-2">
-          <button class="btn-secondary min-h-11" type="button" :disabled="!canGoPrev(index)" @click="prev">
-            上一题
-          </button>
-          <button class="btn-secondary min-h-11" type="button" @click="skipQuestion">暂不会</button>
-        </div>
+      <AnswerActionBar @open-sheet="sheetOpen = true">
         <button
-          v-if="!revealed"
-          class="btn btn-block min-h-11"
           type="button"
-          :disabled="!submitEnabled"
-          @click="submitAnswer"
+          class="icon-btn !size-11 shrink-0"
+          :disabled="!canGoPrev(index)"
+          aria-label="上一题"
+          @click="prev"
         >
-          提交答案
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M15 6 9 12l6 6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
         </button>
 
-        <div v-else class="grid grid-cols-2 gap-2">
-          <button class="btn-secondary min-h-11" type="button" :disabled="!canGoPrev(index)" @click="prev">
-            上一题
+        <template v-if="!revealed">
+          <button class="btn-secondary !px-3 min-h-11 shrink-0" type="button" @click="skipQuestion">
+            暂不会
           </button>
           <button
+            class="btn min-h-11 flex-1"
+            type="button"
+            :disabled="!submitEnabled"
+            @click="submitAnswer"
+          >
+            提交答案
+          </button>
+        </template>
+
+        <template v-else>
+          <button
             v-if="index + 1 < questions.length"
-            class="btn min-h-11"
+            class="btn min-h-11 flex-1"
             type="button"
             @click="next"
           >
             下一题
           </button>
-          <button v-else class="btn min-h-11" type="button" @click="finish">查看结果</button>
-        </div>
-      </div>
+          <button v-else class="btn min-h-11 flex-1" type="button" @click="finish">查看结果</button>
+        </template>
+      </AnswerActionBar>
+
+      <AnswerSheetDrawer
+        :open="sheetOpen"
+        :total="questions.length"
+        :statuses="sheetStatuses"
+        :current="index"
+        variant="practice"
+        @close="sheetOpen = false"
+        @go-to="goTo"
+      />
     </div>
   </div>
 </template>

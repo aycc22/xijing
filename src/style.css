@@ -290,7 +290,7 @@
 
   /* 签名元素：提灯小径 —— 光轨尽头一盏灯笼 */
   .path-track {
-    @apply relative h-1.5 rounded-full bg-raise;
+    @apply relative h-1 rounded-full bg-raise;
   }
 
   .path-fill {
@@ -305,14 +305,14 @@
   .path-fill::after {
     content: '';
     position: absolute;
-    right: -4px;
+    right: -3px;
     top: 50%;
     translate: 0 -50%;
-    width: 9px;
-    height: 9px;
+    width: 7px;
+    height: 7px;
     border-radius: 999px;
     background: var(--spark-bright);
-    box-shadow: 0 0 10px 2px var(--lantern-halo);
+    box-shadow: 0 0 8px 2px var(--lantern-halo);
   }
 
   .ink-mark {
@@ -402,4 +402,25 @@
   50% {
     opacity: 1;
   }
+}
+
+/* 答题卡抽屉过渡 */
+.sheet-fade-enter-active,
+.sheet-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.sheet-fade-enter-from,
+.sheet-fade-leave-to {
+  opacity: 0;
+}
+
+.sheet-slide-enter-active,
+.sheet-slide-leave-active {
+  transition: transform 0.3s ease-out;
+}
+
+.sheet-slide-enter-from,
+.sheet-slide-leave-to {
+  transform: translateY(100%);
 }
