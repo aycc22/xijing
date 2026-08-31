@@ -1,0 +1,36 @@
+---
+description: Git 提交说明一律使用中文
+alwaysApply: true
+---
+
+# Git 提交说明
+
+本项目的 commit message **一律使用中文**（标题与正文均用中文）。
+
+## 格式
+
+沿用 Conventional Commits 前缀，冒号后的说明用中文：
+
+- `feat:` 新功能
+- `fix:` 缺陷修复
+- `refactor:` 重构
+- `docs:` 文档
+- `test:` 测试
+- `chore:` 构建 / 工具 / 杂项
+
+## 示例
+
+```
+fix: 修复 iOS 主屏幕全屏模式下顶部被状态栏遮挡
+
+为顶栏增加 safe-area-inset-top 内边距，避免灵动岛与状态栏挡住导航内容。
+```
+
+```
+feat: 支持试卷考试模式与交卷判分
+```
+
+## 禁止
+
+- 不要用英文写提交标题或正文（类型前缀 `feat:` / `fix:` 等除外）
+- 不要写无意义的说明，如 `update`、`fix bug`、`WIP`
