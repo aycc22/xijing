@@ -97,10 +97,15 @@ supabase secrets set WECHAT_MP_APP_SECRET=公众号AppSecret
 
 ### 3. 部署 Edge Function 与迁移
 
+上线前需将 `supabase/migrations/` 下**全部**迁移同步到远程（含错题本 `202608310006_wrong_question_items.sql` 等），否则对应功能会加载失败：
+
 ```bash
-supabase db push   # 或在 SQL Editor 执行 migrations/202608310013_wechat_auth_profile.sql
+supabase link --project-ref <你的项目 ref>
+supabase db push
 supabase functions deploy wechat-auth
 ```
+
+若未安装 CLI，也可在 Supabase SQL Editor 中按文件名顺序执行各迁移文件。
 
 登录流程：扫码/授权 → 回调站点根路径 `?code=&state=` → 前端转入 `/#/auth/wechat/callback` → `wechat-auth` 用 Admin API 创建用户（`email_confirm: true`，合成邮箱 `wx_{openid}@wechat.xijing.app`）→ `verifyOtp` 建会话。用户无需输入或验证真实邮箱。
 
