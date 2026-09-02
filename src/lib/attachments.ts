@@ -7,13 +7,24 @@ export interface CaseAttachment {
 
 export const DEFAULT_EXAM_ASSETS_BASE = '/data/exams/2022-isec/images'
 
+/** 为站点根路径静态资源加上 Vite `BASE_URL`（如 GitHub Pages 项目站的 `/xijing/`） */
+export function withBaseUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path
+  if (!path.startsWith('/')) return path
+  const base = import.meta.env.BASE_URL || '/'
+  if (base === '/') return path
+  return `${base.replace(/\/$/, '')}${path}`
+}
+
 export function resolveAttachmentUrl(
   attachment: CaseAttachment,
   assetsBase = DEFAULT_EXAM_ASSETS_BASE,
 ): string | null {
-  if (attachment.url?.trim()) return attachment.url.trim()
-  if (attachment.id?.trim()) return `${assetsBase.replace(/\/$/, '')}/${attachment.id.trim()}.svg`
-  return null
+  let resolved: string | null = null
+  if (attachment.url?.trim()) resolved = attachment.url.trim()
+  else if (attachment.id?.trim())
+    resolved = `${assetsBase.replace(/\/$/, '')}/${attachment.id.trim()}.svg`
+  return resolved ? withBaseUrl(resolved) : null
 }
 
 export function normalizeAttachments(
