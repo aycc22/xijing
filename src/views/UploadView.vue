@@ -2,13 +2,15 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { lintQuestionCsv, type CsvLintResult } from '../lib/csv'
+import { lintExamPaperJson, type ExamPaperLintResult } from '../lib/examPaperJson'
+import { examBankDescription, examBankTitle, examMetaPayload } from '../lib/examPaperImport'
 import { lintQuestionJson } from '../lib/questionJson'
 import { QUESTION_JSON_SAMPLE } from '../lib/questionJsonSample'
 import { questionPayloadFromRow, toImportStats, type ImportStats } from '../lib/importPlan'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 
-type ImportMode = 'csv' | 'json'
+type ImportMode = 'csv' | 'json' | 'exam'
 
 const auth = useAuth()
 const router = useRouter()
@@ -20,6 +22,7 @@ const publishNow = ref(true)
 const file = ref<File | null>(null)
 const jsonText = ref('')
 const lintResult = ref<CsvLintResult | null>(null)
+const examLint = ref<ExamPaperLintResult | null>(null)
 const issueUnit = ref<'行' | '题'>('行')
 const importStats = ref<ImportStats | null>(null)
 const error = ref('')
@@ -29,6 +32,7 @@ const sampleCopied = ref(false)
 
 function resetLint() {
   lintResult.value = null
+  examLint.value = null
   importStats.value = null
   confirmed.value = false
   error.value = ''
@@ -50,13 +54,20 @@ async function onFileChange(e: Event) {
   file.value = f
   if (!f) return
   try {
+    if (importMode.value === 'exam') {
+      const text = await f.text()
+      jsonText.value = text
+      lintExam()
+      if (!title.value) title.value = f.name.replace(/\.json$/i, '')
+      return
+    }
     lintResult.value = await lintQuestionCsv(f)
     issueUnit.value = '行'
     if (!title.value) title.value = f.name.replace(/\.csv$/i, '')
     if (!lintResult.value.valid) error.value = `预检发现 ${lintResult.value.issues.length} 处错误`
   } catch (err) {
     file.value = null
-    error.value = err instanceof Error ? err.message : 'CSV 无效'
+    error.value = err instanceof Error ? err.message : '文件无效'
   }
 }
 
@@ -71,6 +82,22 @@ function lintJson() {
   issueUnit.value = '题'
   if (result.meta?.title && !title.value) title.value = result.meta.title
   if (result.meta?.description && !description.value) description.value = result.meta.description
+  if (!result.valid) error.value = `预检发现 ${result.issues.length} 处错误`
+}
+
+function lintExam() {
+  resetLint()
+  if (!jsonText.value.trim()) {
+    error.value = '请粘贴或选择试卷 JSON'
+    return
+  }
+  const result = lintExamPaperJson(jsonText.value)
+  examLint.value = result
+  issueUnit.value = '题'
+  if (result.bundle) {
+    if (!title.value) title.value = examBankTitle(result.bundle)
+    if (!description.value) description.value = examBankDescription(result.bundle)
+  }
   if (!result.valid) error.value = `预检发现 ${result.issues.length} 处错误`
 }
 
@@ -91,8 +118,16 @@ function fillSampleJson() {
   resetLint()
 }
 
+const examPreviewValid = () => examLint.value?.valid
+const questionPreviewValid = () => lintResult.value?.valid
+
 async function ensureLinted() {
   if (importMode.value === 'csv') return lintResult.value?.valid
+  if (importMode.value === 'exam') {
+    if (examLint.value?.valid) return true
+    lintExam()
+    return examLint.value?.valid
+  }
   if (lintResult.value?.valid) return true
   lintJson()
   return lintResult.value?.valid
@@ -105,9 +140,13 @@ async function submit() {
     return
   }
   const ready = await ensureLinted()
-  if (!ready || !lintResult.value?.valid) {
+  if (!ready) {
     error.value =
-      importMode.value === 'csv' ? '请先选择通过预检的 CSV 文件' : '请先粘贴并通过预检的 JSON'
+      importMode.value === 'csv'
+        ? '请先选择通过预检的 CSV 文件'
+        : importMode.value === 'exam'
+          ? '请先粘贴并通过预检的试卷 JSON'
+          : '请先粘贴并通过预检的 JSON'
     return
   }
   if (!confirmed.value) {
@@ -116,14 +155,21 @@ async function submit() {
   }
   busy.value = true
   try {
-    const rows = lintResult.value.rows
+    const isExam = importMode.value === 'exam'
+    const rows = isExam ? (examLint.value?.rows ?? []) : (lintResult.value?.rows ?? [])
+    const bundle = examLint.value?.bundle
+
     const { data: bank, error: bankErr } = await supabase
       .from('question_banks')
       .insert({
-        title: title.value.trim() || '未命名题库',
-        description: description.value.trim(),
+        title: title.value.trim() || (isExam && bundle ? examBankTitle(bundle) : '未命名题库'),
+        description:
+          description.value.trim() ||
+          (isExam && bundle ? examBankDescription(bundle) : ''),
         owner_id: auth.user.value.id,
         is_published: publishNow.value,
+        bank_kind: isExam ? 'exam' : 'pool',
+        exam_meta: isExam && bundle ? examMetaPayload(bundle) : null,
       })
       .select('*')
       .single()
@@ -140,7 +186,7 @@ async function submit() {
     }
 
     importStats.value = toImportStats({ inserts: rows, updates: [] })
-    await router.push('/banks')
+    await router.push(isExam ? `/banks/${bank.id}/exam` : '/banks')
   } catch (err) {
     error.value = err instanceof Error ? err.message : '上传失败'
     confirmed.value = false
@@ -156,7 +202,7 @@ async function submit() {
       <p class="page-kicker">导入</p>
       <h1 class="page-title">上传题库</h1>
       <p class="page-lede">
-        支持 CSV 文件或 JSON 粘贴；导入前会逐题预检，通过后确认导入。案例题使用 case_id、case_material。
+        支持 CSV、题库 JSON 或完整试卷 JSON（xijing-exam-paper）；导入前预检，通过后确认导入。
       </p>
     </section>
 
@@ -172,14 +218,14 @@ async function submit() {
 
       <div class="field">
         <span class="field-caption">导入方式</span>
-        <div class="grid grid-cols-2 gap-2 rounded-xl border border-line bg-raise/40 p-1">
+        <div class="grid grid-cols-3 gap-2 rounded-xl border border-line bg-raise/40 p-1">
           <button
             class="rounded-lg px-3 py-2 text-sm font-medium transition"
             :class="importMode === 'csv' ? 'bg-card text-ink shadow-soft' : 'text-muted hover:text-ink'"
             type="button"
             @click="switchMode('csv')"
           >
-            CSV 文件
+            CSV
           </button>
           <button
             class="rounded-lg px-3 py-2 text-sm font-medium transition"
@@ -187,7 +233,15 @@ async function submit() {
             type="button"
             @click="switchMode('json')"
           >
-            JSON 粘贴
+            题库 JSON
+          </button>
+          <button
+            class="rounded-lg px-3 py-2 text-sm font-medium transition"
+            :class="importMode === 'exam' ? 'bg-card text-ink shadow-soft' : 'text-muted hover:text-ink'"
+            type="button"
+            @click="switchMode('exam')"
+          >
+            试卷 JSON
           </button>
         </div>
       </div>
@@ -213,6 +267,36 @@ async function submit() {
         </label>
       </div>
 
+      <div v-else-if="importMode === 'exam'" class="field">
+        <span class="field-caption">试卷 JSON（xijing-exam-paper）</span>
+        <label
+          class="mb-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-raise/40 px-4 py-6 text-center transition hover:border-spark/50 hover:bg-raise/70"
+        >
+          <input type="file" class="sr-only" accept=".json,application/json" @change="onFileChange" />
+          <span v-if="file" class="text-sm font-medium text-ink">{{ file.name }}</span>
+          <span v-else class="text-sm text-muted">点击选择试卷 JSON 文件</span>
+        </label>
+        <textarea
+          v-model="jsonText"
+          class="min-h-48 font-mono text-sm"
+          placeholder='粘贴 xijing-exam-paper 格式 JSON，例如 public/data/exams/2022-isec-engineer.json'
+          spellcheck="false"
+        />
+        <div class="mt-2 flex flex-wrap items-center gap-2">
+          <button class="btn-secondary !min-h-9 text-sm" type="button" @click="lintExam">预检试卷</button>
+          <span v-if="examPreviewValid()" class="chip-lit">
+            预检通过 {{ examLint?.stats?.total }} 题（上午 {{ examLint?.stats?.morning }} · 下午
+            {{ examLint?.stats?.afternoon }}）
+          </span>
+        </div>
+        <p class="m-0 mt-2 text-xs text-muted">
+          样例文件：
+          <a class="text-spark underline-offset-2 hover:underline" href="./data/exams/2022-isec-engineer.json" download>
+            2022-isec-engineer.json
+          </a>
+        </p>
+      </div>
+
       <div v-else class="field">
         <span class="field-caption">JSON 文本</span>
         <textarea
@@ -235,8 +319,15 @@ async function submit() {
         </details>
       </div>
 
-      <ul v-if="lintResult && lintResult.issues.length" class="m-0 max-h-48 list-none space-y-1 overflow-y-auto rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm">
-        <li v-for="(issue, i) in lintResult.issues" :key="i" class="text-bad">
+      <ul
+        v-if="(importMode === 'exam' ? examLint : lintResult) && (importMode === 'exam' ? examLint!.issues : lintResult!.issues).length"
+        class="m-0 max-h-48 list-none space-y-1 overflow-y-auto rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm"
+      >
+        <li
+          v-for="(issue, i) in importMode === 'exam' ? examLint!.issues : lintResult!.issues"
+          :key="i"
+          class="text-bad"
+        >
           <template v-if="issue.line > 0">第 {{ issue.line }} {{ issueUnit }}：{{ issue.message }}</template>
           <template v-else>{{ issue.message }}</template>
         </li>
@@ -250,6 +341,13 @@ async function submit() {
             <li>stem、option_a…f、answer、explanation</li>
             <li>case_id、case_material（案例小题）</li>
             <li>external_id（可选，用于重复导入更新）</li>
+          </ul>
+        </template>
+        <template v-else-if="importMode === 'exam'">
+          <ul class="mt-2 space-y-1 pl-4">
+            <li>format: xijing-exam-paper，含 exam 与 papers</li>
+            <li>上午 choice 支持 single / cloze；下午 case 支持 short_answer</li>
+            <li>导入后生成真题题库，可固定组卷模考</li>
           </ul>
         </template>
         <template v-else>
@@ -279,15 +377,24 @@ async function submit() {
         </a>
       </p>
 
-      <p v-if="confirmed && lintResult?.valid" class="alert-warn m-0">
-        即将导入 {{ lintResult.rows.length }} 题到新题库，请再次点击确认。
+      <p v-if="confirmed && (importMode === 'exam' ? examPreviewValid() : questionPreviewValid())" class="alert-warn m-0">
+        即将导入
+        {{ importMode === 'exam' ? examLint?.stats?.total : lintResult?.rows.length }}
+        题到{{ importMode === 'exam' ? '真题试卷' : '新题库' }}，请再次点击确认。
       </p>
 
       <p v-if="error" class="alert-error">{{ error }}</p>
       <button
         class="btn btn-block"
         type="submit"
-        :disabled="busy || (importMode === 'csv' ? !lintResult?.valid : !jsonText.trim())"
+        :disabled="
+          busy ||
+          (importMode === 'csv'
+            ? !questionPreviewValid()
+            : importMode === 'exam'
+              ? !jsonText.trim()
+              : !jsonText.trim())
+        "
       >
         {{
           busy

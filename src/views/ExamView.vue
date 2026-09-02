@@ -9,6 +9,7 @@ import {
   toggleFlag,
   toPublicPaperItems,
   updateExamSelection,
+  updateExamTextAnswer,
   type ExamAnswerMap,
 } from '../lib/examSession'
 import { paperItemsAsCaseRows, parsePaperItems, type PaperItem } from '../lib/paperSnapshot'
@@ -38,14 +39,25 @@ const error = ref('')
 const saveTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const questionIds = computed(() => items.value.map((i) => i.question_id))
+const qtypeById = computed(() =>
+  Object.fromEntries(items.value.map((i) => [i.question_id, i.snapshot.qtype])),
+)
 const current = computed(() => items.value[index.value] ?? null)
 const caseRows = computed(() => paperItemsAsCaseRows(items.value))
-const unanswered = computed(() => countUnanswered(answers.value, questionIds.value))
+const unanswered = computed(() => countUnanswered(answers.value, questionIds.value, qtypeById.value))
 const selected = computed({
   get: () => answers.value[current.value?.question_id ?? '']?.selected ?? [],
   set: (keys: string[]) => {
     if (!current.value) return
     answers.value = updateExamSelection(answers.value, current.value.question_id, keys)
+    scheduleSave()
+  },
+})
+const textAnswer = computed({
+  get: () => selected.value[0] ?? '',
+  set: (text: string) => {
+    if (!current.value) return
+    answers.value = updateExamTextAnswer(answers.value, current.value.question_id, text)
     scheduleSave()
   },
 })
@@ -67,6 +79,8 @@ function qtypeDotClass(qtype: QuestionType) {
     case 'judgement':
       return 'bg-ok'
     case 'case_analysis':
+      return 'bg-warn'
+    case 'short_answer':
       return 'bg-warn'
   }
 }
@@ -279,7 +293,17 @@ onMounted(load)
           {{ current.snapshot.stem }}
         </h1>
 
-        <div class="flex flex-col gap-2.5">
+        <div v-if="current.snapshot.qtype === 'short_answer'" class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-muted" :for="`answer-${current.question_id}`">你的作答</label>
+          <textarea
+            :id="`answer-${current.question_id}`"
+            v-model="textAnswer"
+            class="min-h-36 font-mono text-sm"
+            placeholder="请输入答案（支持多行）"
+            spellcheck="false"
+          />
+        </div>
+        <div v-else class="flex flex-col gap-2.5">
           <button
             v-for="opt in current.snapshot.options"
             :key="opt.key"

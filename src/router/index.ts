@@ -34,6 +34,12 @@ const router = createRouter({
       meta: { auth: true },
     },
     {
+      path: '/banks/:bankId/exam',
+      name: 'exam-paper-start',
+      component: () => import('../views/ExamPaperStartView.vue'),
+      meta: { auth: true },
+    },
+    {
       path: '/papers/:paperId',
       name: 'paper-detail',
       component: () => import('../views/PaperDetailView.vue'),

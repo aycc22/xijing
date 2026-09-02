@@ -150,12 +150,18 @@ onMounted(load)
             </section>
             <p class="m-0">
               <span class="font-medium text-muted">你的答案：</span>
-              {{ formatAnswerLabel(row.selected_keys, row.snapshot.qtype, row.snapshot.options) }}
+              {{
+                row.snapshot.qtype === 'short_answer'
+                  ? row.selected_keys[0] || '（未作答）'
+                  : formatAnswerLabel(row.selected_keys, row.snapshot.qtype, row.snapshot.options)
+              }}
             </p>
             <p class="m-0">
               <span class="font-medium text-muted">标准答案：</span>
               {{
-                formatAnswerLabel(row.snapshot.answer_keys, row.snapshot.qtype, row.snapshot.options)
+                row.snapshot.qtype === 'short_answer'
+                  ? row.snapshot.reference_answer || '（无参考答案）'
+                  : formatAnswerLabel(row.snapshot.answer_keys, row.snapshot.qtype, row.snapshot.options)
               }}
             </p>
             <p v-if="row.snapshot.explanation" class="alert-info m-0">

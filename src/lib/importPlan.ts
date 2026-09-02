@@ -39,7 +39,23 @@ export function toImportStats(plan: ImportPlan, failed = 0): ImportStats {
   }
 }
 
-export function questionPayloadFromRow(row: ParsedQuestionRow, bankId: string, sortOrder: number) {
+export function questionPayloadFromRow(
+  row: ParsedQuestionRow,
+  bankId: string,
+  sortOrder: number,
+  extras?: {
+    score?: number | null
+    section?: string | null
+    attachments?: unknown[] | null
+    reference_answer?: string
+  },
+) {
+  const extended = row as ParsedQuestionRow & {
+    score?: number | null
+    section?: string | null
+    attachments?: unknown[] | null
+    reference_answer?: string
+  }
   return {
     bank_id: bankId,
     external_id: row.external_id,
@@ -52,5 +68,9 @@ export function questionPayloadFromRow(row: ParsedQuestionRow, bankId: string, s
     case_material: row.case_material || null,
     sort_order: sortOrder,
     is_active: true,
+    score: extras?.score ?? extended.score ?? null,
+    section: extras?.section ?? extended.section ?? null,
+    attachments: extras?.attachments ?? extended.attachments ?? null,
+    reference_answer: extras?.reference_answer ?? extended.reference_answer ?? '',
   }
 }
