@@ -1,14 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 340" font-family="ui-monospace, Menlo, Consolas, monospace">
-  <rect width="820" height="340" fill="#0f172a"/>
-  <text x="20" y="24" font-size="13" fill="#94a3b8">˛ 3-2 NTA hAœê  Ôë RDP Aœtcp.port == 3389	</text>
-  <text x="20" y="52" font-size="11" fill="#64748b">No.  Time        Source          Destination     Protocol  Info</text>
-  <text x="20" y="72" font-size="11" fill="#e2e8f0">12   0.001234    203.0.113.58    192.168.1.10    TCP       52341 í 3389 [SYN]</text>
-  <text x="20" y="92" font-size="11" fill="#e2e8f0">13   0.001456    192.168.1.10    203.0.113.58    TCP       3389 í 52341 [SYN, ACK]</text>
-  <text x="20" y="112" font-size="11" fill="#e2e8f0">14   0.001512    203.0.113.58    192.168.1.10    TCP       52341 í 3389 [ACK]</text>
-  <text x="20" y="132" font-size="11" fill="#fbbf24">15   0.002100    192.168.1.10    203.0.113.58    TLSv1.2   Server Hello, Certificate</text>
-  <text x="20" y="152" font-size="11" fill="#fbbf24">16   0.002340    203.0.113.58    192.168.1.10    TLSv1.2   Client Key Exchange</text>
-  <text x="20" y="172" font-size="11" fill="#86efac">17   0.002500    192.168.1.10    203.0.113.58    TLSv1.2   Change Cipher Spec</text>
-  <text x="20" y="192" font-size="11" fill="#86efac">18   0.002520    203.0.113.58    192.168.1.10    TLSv1.2   Change Cipher Spec</text>
-  <text x="20" y="230" font-size="12" fill="#fca5a5">;˚Ô„: 3389RDP ‹Lb	</text>
-  <text x="20" y="254" font-size="12" fill="#94a3b8">¡fpn: No.15 ∑ †∆pnwÀ: No.17</text>
-</svg>

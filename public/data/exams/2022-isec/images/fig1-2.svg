@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" font-family="ui-monospace, Menlo, Consolas, monospace">
   <rect width="720" height="280" fill="#0f172a"/>
-  <text x="20" y="24" font-size="13" fill="#94a3b8">þ 1-2 iptables Ø¤ÇäÄ</text>
+  <text x="20" y="24" font-size="13" fill="#94a3b8">? 1-2 iptables ??????</text>
   <text x="20" y="52" font-size="13" fill="#e2e8f0">Chain INPUT (policy ACCEPT)</text>
   <text x="20" y="72" font-size="12" fill="#86efac">target     prot opt source               destination</text>
   <text x="20" y="100" font-size="13" fill="#e2e8f0">Chain FORWARD (policy ACCEPT)</text>
   <text x="20" y="120" font-size="12" fill="#86efac">target     prot opt source               destination</text>
   <text x="20" y="148" font-size="13" fill="#e2e8f0">Chain OUTPUT (policy ACCEPT)</text>
   <text x="20" y="168" font-size="12" fill="#86efac">target     prot opt source               destination</text>
-  <text x="20" y="220" font-size="12" fill="#fbbf24">ô	aþØ¤VeG: ACCEPTÑUVe	</text>
+  <text x="20" y="220" font-size="12" fill="#fbbf24">???????? ACCEPT????/?????????????</text>
 </svg>

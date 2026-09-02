@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 OUTPUT = Path(__file__).resolve().parent.parent / "public/data/exams/2022-isec-engineer.json"
+IMG_BASE = "/data/exams/2022-isec/images"
 
 # 上午综合知识 1-70 题（来源：信管网公开真题整理）
 MORNING_QUESTIONS = [
@@ -642,11 +643,17 @@ AFTERNOON_CASES = [
             "王所使用的办公电脑IP地址为192.168.11.2。"
         ),
         "attachments": [
-            {"type": "image", "id": "fig1-1", "description": "网络拓扑结构图（DMZ区、内网办公区、生产区）"},
+            {
+                "type": "image",
+                "id": "fig1-1",
+                "description": "网络拓扑结构图（DMZ区、内网办公区、生产区）",
+                "url": f"{IMG_BASE}/fig1-1.png",
+            },
             {
                 "type": "image",
                 "id": "fig1-2",
                 "description": "iptables 默认过滤规则（INPUT/FORWARD/OUTPUT 链）",
+                "url": f"{IMG_BASE}/fig1-2.svg",
             },
         ],
         "sub_questions": [
@@ -738,7 +745,14 @@ AFTERNOON_CASES = [
             "目录是文件，硬件设备(键盘、监视器、硬盘、打印机)是文件，就连网络套接字等也都是文件。"
             "在Linux Ubuntu 系统下执行 ls -l 命令后显示的结果如图2-1所示。"
         ),
-        "attachments": [{"type": "image", "id": "fig2-1", "description": "ls -l 命令输出结果"}],
+        "attachments": [
+            {
+                "type": "image",
+                "id": "fig2-1",
+                "description": "ls -l 命令输出结果",
+                "url": f"{IMG_BASE}/fig2-1.png",
+            }
+        ],
         "sub_questions": [
             {
                 "number": "1",
@@ -837,8 +851,18 @@ AFTERNOON_CASES = [
             "找到了对应的可疑流量，请分析其中可能的安全事件。"
         ),
         "attachments": [
-            {"type": "image", "id": "fig3-1", "description": "Windows 事件日志（事件ID 4625）"},
-            {"type": "image", "id": "fig3-2", "description": "NTA 全流量分析可疑网络分组"},
+            {
+                "type": "image",
+                "id": "fig3-1",
+                "description": "Windows 事件日志（事件ID 4625）",
+                "url": f"{IMG_BASE}/fig3-1.png",
+            },
+            {
+                "type": "image",
+                "id": "fig3-2",
+                "description": "NTA 全流量分析可疑网络分组",
+                "url": f"{IMG_BASE}/fig3-2.png",
+            },
         ],
         "sub_questions": [
             {
@@ -1099,7 +1123,7 @@ def main():
                 "2022年信息安全工程师仅在11月举行一次考试（下半年）。"
                 "下午卷共4道大题（试题一至试题四），总分75分。"
                 "部分题目依赖原卷配图（拓扑图、ls -l 输出、事件日志、流量抓包等），"
-                "JSON 中以 attachments 字段记录配图说明，图片文件需另行补充。"
+                "JSON 中以 attachments 字段记录配图说明；配图位于 public/data/exams/2022-isec/images。"
             ),
         },
         "papers": [
