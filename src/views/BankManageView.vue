@@ -5,6 +5,7 @@ import { useScoring } from '../composables/useScoring'
 import { JUDGEMENT_OPTIONS } from '../lib/scoring'
 import { lintQuestionCsv } from '../lib/csv'
 import { lintQuestionJson } from '../lib/questionJson'
+import { QUESTION_JSON_SAMPLE } from '../lib/questionJsonSample'
 import {
   planQuestionImport,
   questionPayloadFromRow,
@@ -41,6 +42,7 @@ const lintResult = ref<CsvLintResult | null>(null)
 const issueUnit = ref<'行' | '题'>('行')
 const importStats = ref<ImportStats | null>(null)
 const importBusy = ref(false)
+const sampleCopied = ref(false)
 
 function emptyDraft() {
   return {
@@ -244,6 +246,23 @@ function lintJsonImport() {
   issueUnit.value = '题'
 }
 
+async function copySampleJson() {
+  try {
+    await navigator.clipboard.writeText(QUESTION_JSON_SAMPLE)
+    sampleCopied.value = true
+    window.setTimeout(() => {
+      sampleCopied.value = false
+    }, 2000)
+  } catch {
+    error.value = '复制失败，请手动选中下方样例文本'
+  }
+}
+
+function fillSampleJson() {
+  jsonText.value = QUESTION_JSON_SAMPLE
+  resetImportLint()
+}
+
 async function confirmImport() {
   if (importMode.value === 'json' && !lintResult.value?.valid) {
     lintJsonImport()
@@ -441,14 +460,19 @@ onMounted(load)
             placeholder='粘贴题目 JSON 数组'
             spellcheck="false"
           />
-          <button class="btn-secondary !min-h-9 self-start text-sm" type="button" @click="lintJsonImport">
-            预检 JSON
-          </button>
-          <p class="m-0 text-sm text-muted">
-            <a class="font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.sample.json" download>
-              下载样例 JSON
-            </a>
-          </p>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn-secondary !min-h-9 text-sm" type="button" @click="lintJsonImport">
+              预检 JSON
+            </button>
+            <button class="btn-ghost !min-h-9 text-sm" type="button" @click="fillSampleJson">填入样例</button>
+            <button class="btn-ghost !min-h-9 text-sm" type="button" @click="copySampleJson">
+              {{ sampleCopied ? '已复制' : '复制样例' }}
+            </button>
+          </div>
+          <details class="rounded-xl border border-line bg-raise/40 px-3.5 py-3 text-sm" open>
+            <summary class="cursor-pointer font-medium text-ink">样例 JSON（可直接选中复制）</summary>
+            <pre class="mt-3 max-h-64 overflow-auto rounded-lg border border-line bg-card p-3 font-mono text-xs leading-relaxed text-ink whitespace-pre-wrap break-words">{{ QUESTION_JSON_SAMPLE }}</pre>
+          </details>
         </template>
 
         <ul v-if="lintResult && lintResult.issues.length" class="m-0 list-none space-y-1 rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm">
