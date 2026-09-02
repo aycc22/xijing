@@ -7,13 +7,54 @@ export interface CaseAttachment {
 
 export const DEFAULT_EXAM_ASSETS_BASE = '/data/exams/2022-isec/images'
 
-/** 为站点根路径静态资源加上 Vite `BASE_URL`（如 GitHub Pages 项目站的 `/xijing/`） */
-export function withBaseUrl(path: string): string {
-  if (/^https?:\/\//i.test(path)) return path
-  if (!path.startsWith('/')) return path
+/** 已知真题配图的文件后缀（fig1-2 为文字规则示意，仍为 svg） */
+const KNOWN_ATTACHMENT_EXTENSIONS: Record<string, string> = {
+  'fig1-1': 'png',
+  'fig1-2': 'svg',
+  'fig2-1': 'png',
+  'fig3-1': 'png',
+  'fig3-2': 'png',
+}
+
+export function appBasePath(): string {
   const base = import.meta.env.BASE_URL || '/'
-  if (base === '/') return path
-  return `${base.replace(/\/$/, '')}${path}`
+  if (base === '/') return ''
+  return base.endsWith('/') ? base.slice(0, -1) : base
+}
+
+/** 解析为可请求的绝对 URL（兼容 GitHub Pages 子路径与 iOS PWA 独立模式） */
+export function toAbsoluteAssetUrl(path: string): string {
+  if (!path?.trim()) return path
+  const trimmed = path.trim()
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+
+  const basePath = appBasePath()
+  let pathname = trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+
+  if (basePath) {
+    const alreadyPrefixed =
+      pathname === basePath || pathname.startsWith(`${basePath}/`)
+    if (!alreadyPrefixed) pathname = `${basePath}${pathname}`
+  }
+
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}${pathname}`
+  }
+  return pathname
+}
+
+/** @deprecated 请优先使用 toAbsoluteAssetUrl；保留别名便于现有调用 */
+export function withBaseUrl(path: string): string {
+  return toAbsoluteAssetUrl(path)
+}
+
+function attachmentExtension(attachment: CaseAttachment): string {
+  const fromUrl = attachment.url?.trim().match(/\.([a-z0-9]+)$/i)?.[1]
+  if (fromUrl) return fromUrl.toLowerCase()
+  if (attachment.id?.trim()) {
+    return KNOWN_ATTACHMENT_EXTENSIONS[attachment.id.trim()] ?? 'png'
+  }
+  return 'png'
 }
 
 export function resolveAttachmentUrl(
@@ -22,9 +63,11 @@ export function resolveAttachmentUrl(
 ): string | null {
   let resolved: string | null = null
   if (attachment.url?.trim()) resolved = attachment.url.trim()
-  else if (attachment.id?.trim())
-    resolved = `${assetsBase.replace(/\/$/, '')}/${attachment.id.trim()}.svg`
-  return resolved ? withBaseUrl(resolved) : null
+  else if (attachment.id?.trim()) {
+    const ext = attachmentExtension(attachment)
+    resolved = `${assetsBase.replace(/\/$/, '')}/${attachment.id.trim()}.${ext}`
+  }
+  return resolved ? toAbsoluteAssetUrl(resolved) : null
 }
 
 export function normalizeAttachments(

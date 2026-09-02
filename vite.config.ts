@@ -38,6 +38,19 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          navigateFallbackDenylist: [
+            new RegExp(`${base.replace(/\/$/, '')}/data/`.replace(/\//g, '\\/')),
+          ],
+          runtimeCaching: [
+            {
+              urlPattern: ({ url }) => url.pathname.includes('/data/exams/'),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'exam-attachments',
+                expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              },
+            },
+          ],
         },
       }),
     ],
