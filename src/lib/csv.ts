@@ -1,5 +1,11 @@
 import Papa from 'papaparse'
 import { validateCaseGroups, type CsvRowIssue } from './case'
+import {
+  normalizeQuestionType,
+  parseAnswerKeys,
+  parseJudgementAnswer,
+  validateChoiceAnswers,
+} from './questionParse'
 import { JUDGEMENT_OPTIONS } from './scoring'
 import type { QuestionOption, QuestionType } from './types'
 
@@ -23,38 +29,13 @@ export interface CsvLintResult {
 
 export type { CsvRowIssue }
 
+export interface LintParsedOptions {
+  emptyMessage?: string
+  duplicateUnit?: '行' | '题'
+}
+
 const OPTION_COLS = ['option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'option_f'] as const
 const KEYS = ['A', 'B', 'C', 'D', 'E', 'F'] as const
-const JUDGEMENT_ANSWERS = new Set(['TRUE', 'FALSE'])
-
-function normalizeType(raw: string): QuestionType {
-  const t = raw.trim().toLowerCase()
-  if (t === 'single' || t === '单选') return 'single'
-  if (t === 'multiple' || t === '多选') return 'multiple'
-  if (t === 'judgement' || t === '判断') return 'judgement'
-  if (t === 'case' || t === 'case_analysis' || t === '案例分析') {
-    throw new Error('案例小题请使用 single / multiple / judgement，并填写 case_id')
-  }
-  throw new Error(`未知题型: ${raw}`)
-}
-
-function parseAnswers(raw: string): string[] {
-  return raw
-    .split(/[;；,，|/\s]+/)
-    .map((s) => s.trim().toUpperCase())
-    .filter(Boolean)
-}
-
-function parseJudgementAnswer(raw: string): string[] {
-  const normalized = raw.trim().toUpperCase()
-  if (normalized === '正确') return ['TRUE']
-  if (normalized === '错误') return ['FALSE']
-  const answer_keys = parseAnswers(raw)
-  if (answer_keys.length !== 1 || !JUDGEMENT_ANSWERS.has(answer_keys[0])) {
-    throw new Error('判断题答案须为 TRUE 或 FALSE')
-  }
-  return answer_keys
-}
 
 function readExternalId(row: Record<string, string>): string | null {
   const raw = (row.external_id ?? row['外部标识'] ?? '').trim()
@@ -74,7 +55,7 @@ export function parseQuestionRow(row: Record<string, string>, line: number): Par
   const stem = (row.stem ?? row['题干'] ?? '').trim()
   if (!stem) throw new Error('缺少 stem（题干）')
 
-    const qtype = normalizeType(row.type ?? row['题型'] ?? 'single')
+  const qtype = normalizeQuestionType(row.type ?? row['题型'] ?? 'single')
   const answerRaw = (row.answer ?? row['答案'] ?? '').trim()
   if (!answerRaw) throw new Error('缺少 answer（答案）')
 
@@ -90,18 +71,8 @@ export function parseQuestionRow(row: Record<string, string>, line: number): Par
       const text = (row[col] ?? '').trim()
       if (text) options.push({ key: KEYS[i], text })
     })
-    if (options.length < 2) throw new Error('至少需要 2 个选项')
-    answer_keys = parseAnswers(answerRaw)
-    const valid = new Set(options.map((o) => o.key))
-    for (const k of answer_keys) {
-      if (!valid.has(k)) throw new Error(`答案 ${k} 不在选项中`)
-    }
-    if (qtype === 'single' && answer_keys.length !== 1) {
-      throw new Error('单选题答案只能有 1 个')
-    }
-    if (qtype === 'multiple' && answer_keys.length < 2) {
-      throw new Error('多选题至少 2 个答案')
-    }
+    answer_keys = parseAnswerKeys(answerRaw)
+    validateChoiceAnswers(qtype, options, answer_keys)
   }
 
   return {
@@ -130,7 +101,10 @@ function finalizeRows(rows: ParsedQuestionRow[]): ParsedQuestionRow[] {
   })
 }
 
-function lintDuplicateExternalIds(rows: ParsedQuestionRow[]): CsvRowIssue[] {
+function lintDuplicateExternalIds(
+  rows: ParsedQuestionRow[],
+  unit: '行' | '题' = '行',
+): CsvRowIssue[] {
   const seen = new Map<string, number>()
   const issues: CsvRowIssue[] = []
   for (const row of rows) {
@@ -139,13 +113,32 @@ function lintDuplicateExternalIds(rows: ParsedQuestionRow[]): CsvRowIssue[] {
     if (prev !== undefined) {
       issues.push({
         line: row.line,
-        message: `external_id「${row.external_id}」与第 ${prev} 行重复`,
+        message: `external_id「${row.external_id}」与第 ${prev} ${unit}重复`,
       })
     } else {
       seen.set(row.external_id, row.line)
     }
   }
   return issues
+}
+
+export function lintParsedQuestionRows(
+  rows: ParsedQuestionRow[],
+  options: LintParsedOptions = {},
+): CsvLintResult {
+  const issues: CsvRowIssue[] = []
+  const duplicateUnit = options.duplicateUnit ?? '行'
+  const emptyMessage = options.emptyMessage ?? '没有有效题目'
+
+  if (!rows.length) {
+    issues.push({ line: 0, message: emptyMessage })
+  } else {
+    issues.push(...validateCaseGroups(rows))
+    issues.push(...lintDuplicateExternalIds(rows, duplicateUnit))
+  }
+
+  const valid = issues.length === 0 && rows.length > 0
+  return { issues, rows: valid ? finalizeRows(rows) : rows, valid }
 }
 
 export function lintQuestionCsvRows(
@@ -172,13 +165,17 @@ export function lintQuestionCsvRows(
 
   if (!data.length) {
     issues.push({ line: 0, message: 'CSV 没有有效题目' })
-  } else if (rows.length) {
-    issues.push(...validateCaseGroups(rows))
-    issues.push(...lintDuplicateExternalIds(rows))
+    return { issues, rows, valid: false }
   }
 
-  const valid = issues.length === 0 && rows.length > 0
-  return { issues, rows: valid ? finalizeRows(rows) : rows, valid }
+  if (rows.length) {
+    const parsed = lintParsedQuestionRows(rows, { duplicateUnit: '行' })
+    issues.push(...parsed.issues)
+    const valid = issues.length === 0
+    return { issues, rows: valid ? parsed.rows : rows, valid }
+  }
+
+  return { issues, rows, valid: false }
 }
 
 export function lintQuestionCsv(file: File | string): Promise<CsvLintResult> {

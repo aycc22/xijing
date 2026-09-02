@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useScoring } from '../composables/useScoring'
 import { JUDGEMENT_OPTIONS } from '../lib/scoring'
 import { lintQuestionCsv } from '../lib/csv'
+import { lintQuestionJson } from '../lib/questionJson'
 import {
   planQuestionImport,
   questionPayloadFromRow,
@@ -31,8 +32,13 @@ const editingId = ref<string | null>(null)
 const showForm = ref(false)
 const draft = ref(emptyDraft())
 
+type ImportMode = 'csv' | 'json'
+
+const importMode = ref<ImportMode>('csv')
 const importFile = ref<File | null>(null)
+const jsonText = ref('')
 const lintResult = ref<CsvLintResult | null>(null)
+const issueUnit = ref<'行' | '题'>('行')
 const importStats = ref<ImportStats | null>(null)
 const importBusy = ref(false)
 
@@ -207,18 +213,42 @@ async function moveQuestion(q: Question, dir: -1 | 1) {
   await load()
 }
 
-async function onImportFile(e: Event) {
+function resetImportLint() {
   lintResult.value = null
   importStats.value = null
+}
+
+function switchImportMode(mode: ImportMode) {
+  if (importMode.value === mode) return
+  importMode.value = mode
+  importFile.value = null
+  jsonText.value = ''
+  issueUnit.value = mode === 'csv' ? '行' : '题'
+  resetImportLint()
+}
+
+async function onImportFile(e: Event) {
+  resetImportLint()
   const input = e.target as HTMLInputElement
   const f = input.files?.[0] ?? null
   importFile.value = f
   if (!f) return
   lintResult.value = await lintQuestionCsv(f)
+  issueUnit.value = '行'
+}
+
+function lintJsonImport() {
+  resetImportLint()
+  if (!jsonText.value.trim()) return
+  lintResult.value = lintQuestionJson(jsonText.value)
+  issueUnit.value = '题'
 }
 
 async function confirmImport() {
-  if (!lintResult.value?.valid || !importFile.value) return
+  if (importMode.value === 'json' && !lintResult.value?.valid) {
+    lintJsonImport()
+  }
+  if (!lintResult.value?.valid) return
   importBusy.value = true
   error.value = ''
   try {
@@ -245,6 +275,7 @@ async function confirmImport() {
     }
     importStats.value = toImportStats(plan)
     importFile.value = null
+    jsonText.value = ''
     lintResult.value = null
     await load()
   } catch (err) {
@@ -263,7 +294,7 @@ onMounted(load)
       <div>
         <p class="page-kicker">管理</p>
         <h1 class="page-title">{{ bank?.title ?? '题库题目' }}</h1>
-        <p class="page-lede">新增、编辑、停用题目；CSV 导入前会逐行预检。</p>
+        <p class="page-lede">新增、编辑、停用题目；批量导入前会逐题预检。</p>
       </div>
       <div class="flex flex-wrap gap-2">
         <button class="btn-secondary" type="button" @click="router.push(`/banks/${bankId}/preview`)">
@@ -364,26 +395,66 @@ onMounted(load)
           </div>
         </li>
       </ul>
-      <p v-else class="surface py-10 text-center text-sm text-muted">还没有题目，可新增或导入 CSV。</p>
+      <p v-else class="surface py-10 text-center text-sm text-muted">还没有题目，可新增或导入题目。</p>
 
       <section class="surface mt-6 flex flex-col gap-4 md:p-6">
         <div>
-          <h2 class="m-0 text-lg font-semibold text-ink">CSV 导入</h2>
-          <p class="mt-1 text-sm text-muted">
-            预检通过后确认导入。
+          <h2 class="m-0 text-lg font-semibold text-ink">批量导入</h2>
+          <p class="mt-1 text-sm text-muted">支持 CSV 文件或 JSON 粘贴，预检通过后确认导入。</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 rounded-xl border border-line bg-raise/40 p-1">
+          <button
+            class="rounded-lg px-3 py-2 text-sm font-medium transition"
+            :class="importMode === 'csv' ? 'bg-card text-ink shadow-soft' : 'text-muted hover:text-ink'"
+            type="button"
+            @click="switchImportMode('csv')"
+          >
+            CSV 文件
+          </button>
+          <button
+            class="rounded-lg px-3 py-2 text-sm font-medium transition"
+            :class="importMode === 'json' ? 'bg-card text-ink shadow-soft' : 'text-muted hover:text-ink'"
+            type="button"
+            @click="switchImportMode('json')"
+          >
+            JSON 粘贴
+          </button>
+        </div>
+
+        <template v-if="importMode === 'csv'">
+          <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-raise/40 px-4 py-6 text-center">
+            <input type="file" class="sr-only" accept=".csv,text/csv" @change="onImportFile" />
+            <span class="text-sm text-muted">{{ importFile ? importFile.name : '选择 CSV 文件' }}</span>
+          </label>
+          <p class="m-0 text-sm text-muted">
             <a class="font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.template.csv" download>
-              下载模板
+              下载 CSV 模板
             </a>
           </p>
-        </div>
-        <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-raise/40 px-4 py-6 text-center">
-          <input type="file" class="sr-only" accept=".csv,text/csv" @change="onImportFile" />
-          <span class="text-sm text-muted">{{ importFile ? importFile.name : '选择 CSV 文件' }}</span>
-        </label>
+        </template>
+
+        <template v-else>
+          <textarea
+            v-model="jsonText"
+            class="min-h-40 font-mono text-sm"
+            placeholder='粘贴题目 JSON 数组'
+            spellcheck="false"
+          />
+          <button class="btn-secondary !min-h-9 self-start text-sm" type="button" @click="lintJsonImport">
+            预检 JSON
+          </button>
+          <p class="m-0 text-sm text-muted">
+            <a class="font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.sample.json" download>
+              下载样例 JSON
+            </a>
+          </p>
+        </template>
 
         <ul v-if="lintResult && lintResult.issues.length" class="m-0 list-none space-y-1 rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm">
           <li v-for="(issue, i) in lintResult.issues" :key="i" class="text-bad">
-            第 {{ issue.line }} 行：{{ issue.message }}
+            <template v-if="issue.line > 0">第 {{ issue.line }} {{ issueUnit }}：{{ issue.message }}</template>
+            <template v-else>{{ issue.message }}</template>
           </li>
         </ul>
 
