@@ -1,26 +1,48 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  appBasePath,
   normalizeAttachments,
   resolveAttachmentUrl,
   stripAttachmentPlaceholders,
+  toAbsoluteAssetUrl,
   withBaseUrl,
 } from './attachments'
 
 describe('attachments', () => {
-  it('resolves url from attachment id', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+  })
+
+  it('resolves url from attachment id with png default', () => {
     expect(resolveAttachmentUrl({ type: 'image', id: 'fig1-1' })).toBe(
-      '/data/exams/2022-isec/images/fig1-1.svg',
+      '/data/exams/2022-isec/images/fig1-1.png',
     )
   })
 
-  it('keeps explicit url', () => {
+  it('keeps explicit url and applies base path', () => {
     expect(
       resolveAttachmentUrl({ type: 'image', id: 'fig1-1', url: '/custom/fig1-1.png' }),
     ).toBe('/custom/fig1-1.png')
   })
 
+  it('builds absolute url with window origin', () => {
+    vi.stubGlobal('window', { location: { origin: 'https://example.com' } })
+    expect(toAbsoluteAssetUrl('/data/exams/fig1-1.png')).toBe(
+      'https://example.com/data/exams/fig1-1.png',
+    )
+  })
+
   it('leaves absolute http urls unchanged', () => {
     expect(withBaseUrl('https://cdn.example.com/fig.png')).toBe('https://cdn.example.com/fig.png')
+  })
+
+  it('does not double-prefix when url already includes base path', () => {
+    vi.stubGlobal('window', { location: { origin: 'https://example.com' } })
+    vi.stubEnv('BASE_URL', '/xijing/')
+    expect(toAbsoluteAssetUrl('/xijing/data/exams/fig1-1.png')).toBe(
+      'https://example.com/xijing/data/exams/fig1-1.png',
+    )
   })
 
   it('normalizes raw attachment array', () => {
@@ -28,7 +50,7 @@ describe('attachments', () => {
       { type: 'image', id: 'fig2-1', description: 'ls -l 输出' },
     ])
     expect(items).toHaveLength(1)
-    expect(items[0].url).toBe('/data/exams/2022-isec/images/fig2-1.svg')
+    expect(items[0].url).toBe('/data/exams/2022-isec/images/fig2-1.png')
   })
 
   it('strips legacy placeholder lines from case material', () => {
@@ -37,5 +59,9 @@ describe('attachments', () => {
 【配图 fig1-1】网络拓扑结构图（DMZ区、内网办公区、生产区）
 【配图 fig1-2】iptables 默认过滤规则（INPUT/FORWARD/OUTPUT 链）`
     expect(stripAttachmentPlaceholders(material)).toBe('已知某公司网络环境结构……')
+  })
+
+  it('exposes app base path helper', () => {
+    expect(appBasePath()).toBe('')
   })
 })
