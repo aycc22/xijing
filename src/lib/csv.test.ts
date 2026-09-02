@@ -56,3 +56,28 @@ single,无材料小题,case2,,A,B,A`
     await expect(parseQuestionCsv(bad)).rejects.toThrow(/材料/)
   })
 })
+
+const SORT_CSV = `序号,type,stem,option_a,option_b,answer
+3,single,第三题,A,B,A
+1,single,第一题,A,B,A
+,single,第二题,A,B,B`
+
+describe('parseQuestionCsv sort order', () => {
+  it('parses 序号 and sorts rows before import', async () => {
+    const rows = await parseQuestionCsv(SORT_CSV)
+    expect(rows).toHaveLength(3)
+    expect(rows[0].stem).toBe('第一题')
+    expect(rows[1].stem).toBe('第二题')
+    expect(rows[2].stem).toBe('第三题')
+    expect(rows[0].sort_order).toBe(0)
+    expect(rows[2].sort_order).toBe(2)
+    expect(rows[1].sort_order_explicit).toBe(false)
+  })
+
+  it('rejects duplicate 序号', async () => {
+    const bad = `序号,type,stem,option_a,option_b,answer
+1,single,Q1,A,B,A
+1,single,Q2,A,B,A`
+    await expect(parseQuestionCsv(bad)).rejects.toThrow(/序号 1/)
+  })
+})

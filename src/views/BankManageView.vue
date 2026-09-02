@@ -8,6 +8,7 @@ import { lintQuestionJson } from '../lib/questionJson'
 import { QUESTION_JSON_SAMPLE } from '../lib/questionJsonSample'
 import {
   planQuestionImport,
+  questionContentFromRow,
   questionPayloadFromRow,
   toImportStats,
   type ImportStats,
@@ -276,19 +277,26 @@ async function confirmImport() {
       if (q.external_id) existing.set(q.external_id, q.id)
     }
     const plan = planQuestionImport(lintResult.value.rows, existing)
-    let sortBase = questions.value.length
+    const sortBase = questions.value.length
       ? Math.max(...questions.value.map((q) => q.sort_order)) + 1
       : 0
+    let autoSort = sortBase
     for (const row of plan.inserts) {
+      const sort_order = row.sort_order_explicit ? row.sort_order! : autoSort++
       const { error: err } = await supabase
         .from('questions')
-        .insert(questionPayloadFromRow(row, bankId.value, sortBase++))
+        .insert(questionPayloadFromRow(row, bankId.value, sort_order))
       if (err) throw err
     }
     for (const { row, questionId } of plan.updates) {
+      const payload = questionContentFromRow(row)
       const { error: err } = await supabase
         .from('questions')
-        .update(questionPayloadFromRow(row, bankId.value, 0))
+        .update(
+          row.sort_order_explicit
+            ? { ...payload, sort_order: row.sort_order! }
+            : payload,
+        )
         .eq('id', questionId)
       if (err) throw err
     }

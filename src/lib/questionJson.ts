@@ -9,6 +9,7 @@ import {
   parseAnswerKeys,
   parseJudgementAnswer,
   parseOptionsFromJson,
+  readImportSortOrder,
   validateChoiceAnswers,
 } from './questionParse'
 
@@ -64,8 +65,11 @@ export function parseQuestionJsonItem(item: unknown, index: number): ParsedQuest
     validateChoiceAnswers(qtype, options, answer_keys)
   }
 
+  const sort_order = readImportSortOrder(row)
   return {
     line,
+    sort_order,
+    sort_order_explicit: sort_order !== null,
     external_id: readNullableStringField(row, 'external_id', '外部标识'),
     qtype,
     stem,

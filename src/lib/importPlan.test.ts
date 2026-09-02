@@ -4,6 +4,8 @@ import type { ParsedQuestionRow } from './csv'
 
 const row = (external_id: string | null): ParsedQuestionRow => ({
   line: 2,
+  sort_order: null,
+  sort_order_explicit: false,
   external_id,
   qtype: 'single',
   stem: '题干',

@@ -1,5 +1,6 @@
 [
   {
+    "序号": 1,
     "type": "single",
     "stem": "人体正常体温约为多少摄氏度？",
     "options": {
@@ -12,6 +13,7 @@
     "explanation": "成人腋温正常约 36～37℃，常用参考值约 36.5℃。"
   },
   {
+    "序号": 2,
     "type": "multiple",
     "stem": "下列哪些属于生命体征？",
     "options": {
@@ -25,12 +27,14 @@
     "explanation": "血型不属于生命体征。"
   },
   {
+    "序号": 3,
     "type": "judgement",
     "stem": "地球绕太阳公转",
     "answer": "TRUE",
     "explanation": "地球围绕太阳公转，而非太阳绕地球。"
   },
   {
+    "序号": 4,
     "type": "single",
     "stem": "患者最可能的诊断是？",
     "case_id": "case1",
@@ -45,6 +49,7 @@
     "explanation": "典型胸痛加大汗需警惕心梗。"
   },
   {
+    "序号": 5,
     "type": "judgement",
     "stem": "该患者需要立即转诊急诊吗？",
     "case_id": "case1",
@@ -52,6 +57,7 @@
     "explanation": "高危症状应立刻就医。"
   },
   {
+    "序号": 6,
     "type": "single",
     "stem": "心肺复苏胸外按压部位是？",
     "options": ["胸骨上段", "胸骨中下段交界处", "剑突", "左乳头内侧"],

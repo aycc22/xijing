@@ -39,9 +39,8 @@ export function toImportStats(plan: ImportPlan, failed = 0): ImportStats {
   }
 }
 
-export function questionPayloadFromRow(row: ParsedQuestionRow, bankId: string, sortOrder: number) {
+export function questionContentFromRow(row: ParsedQuestionRow) {
   return {
-    bank_id: bankId,
     external_id: row.external_id,
     qtype: row.qtype,
     stem: row.stem,
@@ -50,7 +49,15 @@ export function questionPayloadFromRow(row: ParsedQuestionRow, bankId: string, s
     explanation: row.explanation,
     case_id: row.case_id,
     case_material: row.case_material || null,
-    sort_order: sortOrder,
+  }
+}
+
+export function questionPayloadFromRow(row: ParsedQuestionRow, bankId: string, sortOrder?: number) {
+  const sort_order = sortOrder ?? row.sort_order ?? 0
+  return {
+    bank_id: bankId,
+    ...questionContentFromRow(row),
+    sort_order,
     is_active: true,
   }
 }
