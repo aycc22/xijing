@@ -56,13 +56,12 @@ function toggleTheme() {
   <div
     class="app-shell"
     :class="[
-      isHome
-        ? 'h-dvh max-h-dvh overflow-hidden'
-        : showBottomNav
-          ? 'pb-24 md:pb-10'
+      isHome ? 'h-dvh max-h-dvh overflow-hidden' : '',
+      showBottomNav
+        ? 'pb-[calc(3rem+env(safe-area-inset-bottom,0px))] md:pb-10'
+        : isHome
+          ? 'pb-0'
           : 'pb-10',
-      isHome && showBottomNav ? 'pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-10' : '',
-      isHome && !showBottomNav ? 'pb-0' : '',
     ]"
   >
     <header
@@ -152,14 +151,10 @@ function toggleTheme() {
       </RouterView>
     </main>
 
-    <nav
-      v-if="showBottomNav"
-      class="fixed inset-x-0 bottom-0 z-30 border-t border-line/70 bg-surface/95 backdrop-blur-md md:hidden"
-      style="padding-bottom: env(safe-area-inset-bottom)"
-      aria-label="底部导航"
-    >
-      <div class="mx-auto flex max-w-lg">
-        <RouterLink class="tab-link" to="/banks">
+    <Teleport to="body">
+      <nav v-if="showBottomNav" class="bottom-bar md:hidden" aria-label="底部导航">
+        <div class="bottom-bar-inner">
+          <RouterLink class="tab-link" to="/banks">
           <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
               d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10v16H5.5A1.5 1.5 0 0 1 4 18.5v-13ZM14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14V4Z"
@@ -224,7 +219,8 @@ function toggleTheme() {
           </svg>
           退出
         </button>
-      </div>
-    </nav>
+        </div>
+      </nav>
+    </Teleport>
   </div>
 </template>
