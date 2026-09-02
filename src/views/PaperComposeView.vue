@@ -14,6 +14,7 @@ import {
 import { splitPaperForStorage } from '../lib/examSession'
 import { buildPaperItems, type SnapshotSourceQuestion } from '../lib/paperSnapshot'
 import { ensureQuestionOptions } from '../lib/scoring'
+import { formatErrorMessage } from '../lib/errors'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import type { QuestionBank, QuestionOption } from '../lib/types'
@@ -67,7 +68,7 @@ async function load() {
 
   const { data: questions, error: qErr } = await supabase
     .from('questions')
-    .select('id, qtype, stem, options, answer_keys, explanation, case_id, case_material, is_active')
+    .select('id, qtype, stem, options, answer_keys, explanation, case_id, case_material, attachments, is_active')
     .eq('bank_id', bankId.value)
     .eq('is_active', true)
   if (qErr) {
@@ -89,6 +90,7 @@ async function load() {
       explanation: q.explanation ?? '',
       case_id: q.case_id,
       case_material: q.case_material,
+      attachments: q.attachments ?? null,
     })
     nextPool.push({
       id: q.id,
@@ -169,7 +171,7 @@ async function generate() {
     }
     await router.push(`/papers/${paper.id}`)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '组卷失败'
+    error.value = formatErrorMessage(err, '组卷失败')
   } finally {
     busy.value = false
   }

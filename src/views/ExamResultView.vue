@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
 import { formatExamDuration, summarizeByType, type GradedExamItem } from '../lib/examSession'
 import {
   computePracticeSummary,
@@ -141,21 +142,25 @@ onMounted(load)
             </span>
           </summary>
           <div class="flex flex-col gap-3 border-t border-line/60 px-4 py-3.5 text-sm">
-            <section
-              v-if="row.snapshot.case_material"
-              class="rounded-xl border border-line bg-raise/60 px-3 py-3 leading-relaxed"
-            >
-              <p class="m-0 mb-1 text-xs font-semibold text-muted uppercase">案例材料</p>
-              <p class="m-0 whitespace-pre-wrap">{{ row.snapshot.case_material }}</p>
-            </section>
+            <CaseMaterialPanel
+              v-if="row.snapshot.case_material || row.snapshot.attachments?.length"
+              :material="row.snapshot.case_material"
+              :attachments="row.snapshot.attachments"
+            />
             <p class="m-0">
               <span class="font-medium text-muted">你的答案：</span>
-              {{ formatAnswerLabel(row.selected_keys, row.snapshot.qtype, row.snapshot.options) }}
+              {{
+                row.snapshot.qtype === 'short_answer'
+                  ? row.selected_keys[0] || '（未作答）'
+                  : formatAnswerLabel(row.selected_keys, row.snapshot.qtype, row.snapshot.options)
+              }}
             </p>
             <p class="m-0">
               <span class="font-medium text-muted">标准答案：</span>
               {{
-                formatAnswerLabel(row.snapshot.answer_keys, row.snapshot.qtype, row.snapshot.options)
+                row.snapshot.qtype === 'short_answer'
+                  ? row.snapshot.reference_answer || '（无参考答案）'
+                  : formatAnswerLabel(row.snapshot.answer_keys, row.snapshot.qtype, row.snapshot.options)
               }}
             </p>
             <p v-if="row.snapshot.explanation" class="alert-info m-0">

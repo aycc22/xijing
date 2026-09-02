@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import { resolveCaseAttachments, resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
 import {
   countUnanswered,
   createExamState,
@@ -9,10 +10,12 @@ import {
   toggleFlag,
   toPublicPaperItems,
   updateExamSelection,
+  updateExamTextAnswer,
   type ExamAnswerMap,
 } from '../lib/examSession'
 import { paperItemsAsCaseRows, parsePaperItems, type PaperItem } from '../lib/paperSnapshot'
 import { questionTypeLabel, toggleSelection } from '../lib/scoring'
+import { formatErrorMessage } from '../lib/errors'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
@@ -38,14 +41,25 @@ const error = ref('')
 const saveTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const questionIds = computed(() => items.value.map((i) => i.question_id))
+const qtypeById = computed(() =>
+  Object.fromEntries(items.value.map((i) => [i.question_id, i.snapshot.qtype])),
+)
 const current = computed(() => items.value[index.value] ?? null)
 const caseRows = computed(() => paperItemsAsCaseRows(items.value))
-const unanswered = computed(() => countUnanswered(answers.value, questionIds.value))
+const unanswered = computed(() => countUnanswered(answers.value, questionIds.value, qtypeById.value))
 const selected = computed({
   get: () => answers.value[current.value?.question_id ?? '']?.selected ?? [],
   set: (keys: string[]) => {
     if (!current.value) return
     answers.value = updateExamSelection(answers.value, current.value.question_id, keys)
+    scheduleSave()
+  },
+})
+const textAnswer = computed({
+  get: () => selected.value[0] ?? '',
+  set: (text: string) => {
+    if (!current.value) return
+    answers.value = updateExamTextAnswer(answers.value, current.value.question_id, text)
     scheduleSave()
   },
 })
@@ -68,6 +82,8 @@ function qtypeDotClass(qtype: QuestionType) {
       return 'bg-ok'
     case 'case_analysis':
       return 'bg-warn'
+    case 'short_answer':
+      return 'bg-warn'
   }
 }
 
@@ -78,9 +94,9 @@ function scheduleSave() {
   }, 400)
 }
 
-async function saveProgress() {
-  if (!sessionId.value || !started.value) return
-  await supabase
+async function saveProgress(): Promise<string | null> {
+  if (!sessionId.value || !started.value) return null
+  const { error: saveErr } = await supabase
     .from('exam_sessions')
     .update({
       answers: answers.value,
@@ -88,6 +104,23 @@ async function saveProgress() {
     })
     .eq('id', sessionId.value)
     .is('finished_at', null)
+  return saveErr?.message ?? null
+}
+
+async function redirectToResult(id: string) {
+  await router.push(`/exam-result/${id}`)
+}
+
+async function tryRedirectIfFinished(): Promise<boolean> {
+  if (!sessionId.value) return false
+  const { data } = await supabase
+    .from('exam_sessions')
+    .select('id, finished_at')
+    .eq('id', sessionId.value)
+    .maybeSingle()
+  if (!data?.finished_at) return false
+  await redirectToResult(data.id)
+  return true
 }
 
 function toggle(key: string) {
@@ -132,14 +165,17 @@ async function begin() {
     answers.value = next
     started.value = true
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '无法开始答题'
+    error.value = formatErrorMessage(err, '无法开始答题')
   } finally {
     busy.value = false
   }
 }
 
 async function submitExam() {
-  if (!sessionId.value) return
+  if (!sessionId.value) {
+    error.value = '答题尚未开始，请返回重新开始'
+    return
+  }
   if (unanswered.value > 0) {
     const ok = confirm(`还有 ${unanswered.value} 道未答题，确定交卷吗？`)
     if (!ok) return
@@ -147,15 +183,21 @@ async function submitExam() {
   busy.value = true
   error.value = ''
   try {
-    await saveProgress()
+    const saveErr = await saveProgress()
+    if (saveErr) throw new Error(saveErr)
+
     const { data, error: err } = await supabase.rpc('finish_exam_session', {
       p_session_id: sessionId.value,
     })
-    if (err) throw err
+    if (err) {
+      if (await tryRedirectIfFinished()) return
+      throw err
+    }
     const id = (data as { id?: string })?.id ?? sessionId.value
-    await router.push(`/exam-result/${id}`)
+    await redirectToResult(id)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '交卷失败，请重试'
+    if (await tryRedirectIfFinished()) return
+    error.value = formatErrorMessage(err, '交卷失败，请重试')
   } finally {
     busy.value = false
   }
@@ -249,6 +291,22 @@ onMounted(load)
     </div>
 
     <div v-else-if="current" class="relative flex flex-col gap-4 pb-28">
+      <div
+        v-if="busy"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-ink/35 px-6 backdrop-blur-[2px]"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div class="surface flex max-w-xs flex-col items-center gap-3 px-6 py-5 text-center shadow-soft">
+          <span
+            class="size-8 animate-spin rounded-full border-2 border-line border-t-spark"
+            aria-hidden="true"
+          />
+          <p class="m-0 text-sm font-medium text-ink">交卷中，正在判分…</p>
+          <p class="m-0 text-xs text-muted">请稍候，不要关闭页面</p>
+        </div>
+      </div>
       <div class="relative z-10 flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2">
           <span class="chip">
@@ -267,19 +325,27 @@ onMounted(load)
       </div>
 
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
-        <section
-          v-if="shouldShowCaseMaterial(caseRows, index) && resolveCaseMaterial(caseRows, index)"
-          class="rounded-xl border border-line bg-raise/60 px-3.5 py-3 text-sm leading-relaxed"
-        >
-          <p class="m-0 mb-1 text-xs font-semibold text-muted uppercase">案例材料</p>
-          <p class="m-0 whitespace-pre-wrap">{{ resolveCaseMaterial(caseRows, index) }}</p>
-        </section>
+        <CaseMaterialPanel
+          v-if="shouldShowCaseMaterial(caseRows, index)"
+          :material="resolveCaseMaterial(caseRows, index)"
+          :attachments="resolveCaseAttachments(caseRows, index)"
+        />
 
         <h1 class="m-0 text-[1.125rem] leading-snug font-semibold text-ink md:text-xl">
           {{ current.snapshot.stem }}
         </h1>
 
-        <div class="flex flex-col gap-2.5">
+        <div v-if="current.snapshot.qtype === 'short_answer'" class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-muted" :for="`answer-${current.question_id}`">你的作答</label>
+          <textarea
+            :id="`answer-${current.question_id}`"
+            v-model="textAnswer"
+            class="min-h-36 font-mono text-sm"
+            placeholder="请输入答案（支持多行）"
+            spellcheck="false"
+          />
+        </div>
+        <div v-else class="flex flex-col gap-2.5">
           <button
             v-for="opt in current.snapshot.options"
             :key="opt.key"

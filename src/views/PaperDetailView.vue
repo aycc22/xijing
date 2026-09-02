@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import { resolveCaseAttachments, resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
 import { toPublicPaperItems } from '../lib/examSession'
 import { paperItemsAsCaseRows, parsePaperItems, type PaperItem } from '../lib/paperSnapshot'
 import { questionTypeLabel } from '../lib/scoring'
@@ -63,7 +64,7 @@ async function load() {
   if (!items.value.length && paperData.question_ids?.length) {
     const { data: qs } = await supabase
       .from('questions')
-      .select('id, qtype, stem, options, case_id, case_material')
+      .select('id, qtype, stem, options, case_id, case_material, attachments')
       .in('id', paperData.question_ids)
     const byId = new Map((qs ?? []).map((q) => [q.id, q]))
     items.value = (paperData.question_ids as string[])
@@ -81,6 +82,7 @@ async function load() {
             explanation: '',
             case_id: q.case_id,
             case_material: q.case_material,
+            attachments: q.attachments ?? null,
           },
         }
       })
@@ -141,13 +143,11 @@ onMounted(load)
       <ul class="m-0 flex list-none flex-col gap-3 p-0">
         <li v-for="(item, idx) in items" :key="item.question_id">
           <article class="surface flex flex-col gap-2.5 px-4 py-3.5">
-            <section
-              v-if="shouldShowCaseMaterial(caseRows, idx) && resolveCaseMaterial(caseRows, idx)"
-              class="rounded-xl border border-line bg-raise/60 px-3 py-3 text-sm leading-relaxed"
-            >
-              <p class="m-0 mb-1 text-xs font-semibold text-muted uppercase">案例材料</p>
-              <p class="m-0 whitespace-pre-wrap">{{ resolveCaseMaterial(caseRows, idx) }}</p>
-            </section>
+            <CaseMaterialPanel
+              v-if="shouldShowCaseMaterial(caseRows, idx)"
+              :material="resolveCaseMaterial(caseRows, idx)"
+              :attachments="resolveCaseAttachments(caseRows, idx)"
+            />
             <div>
               <p class="m-0 text-xs text-muted">
                 第 {{ idx + 1 }} 题 · {{ questionTypeLabel(item.snapshot.qtype) }} · {{ item.score }} 分

@@ -52,12 +52,31 @@ export function questionContentFromRow(row: ParsedQuestionRow) {
   }
 }
 
-export function questionPayloadFromRow(row: ParsedQuestionRow, bankId: string, sortOrder?: number) {
-  const sort_order = sortOrder ?? row.sort_order ?? 0
+export function questionPayloadFromRow(
+  row: ParsedQuestionRow,
+  bankId: string,
+  sortOrder?: number,
+  extras?: {
+    score?: number | null
+    section?: string | null
+    attachments?: unknown[] | null
+    reference_answer?: string
+  },
+) {
+  const extended = row as ParsedQuestionRow & {
+    score?: number | null
+    section?: string | null
+    attachments?: unknown[] | null
+    reference_answer?: string
+  }
   return {
     bank_id: bankId,
     ...questionContentFromRow(row),
-    sort_order,
+    sort_order: sortOrder ?? row.sort_order ?? 0,
     is_active: true,
+    score: extras?.score ?? extended.score ?? null,
+    section: extras?.section ?? extended.section ?? null,
+    attachments: extras?.attachments ?? extended.attachments ?? null,
+    reference_answer: extras?.reference_answer ?? extended.reference_answer ?? '',
   }
 }

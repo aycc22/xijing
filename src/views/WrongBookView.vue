@@ -30,9 +30,18 @@ function startWrongPractice(bankId: string) {
   router.push(`/quiz/${bankId}?wrong=1&new=1`)
 }
 
+function loadErrorMessage(err: unknown): string {
+  const msg = err instanceof Error ? err.message : ''
+  if (msg.includes('wrong_question_items') || msg.includes('schema cache')) {
+    return '错题本服务未就绪，请稍后再试'
+  }
+  return msg || '加载失败'
+}
+
 async function load() {
   loading.value = true
   error.value = ''
+  await auth.init()
   if (!auth.user.value) {
     error.value = '请先登录'
     loading.value = false
@@ -41,7 +50,7 @@ async function load() {
   try {
     entries.value = await loadWrongBookEntries(supabase, auth.user.value.id)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '加载失败'
+    error.value = loadErrorMessage(err)
   }
   loading.value = false
 }

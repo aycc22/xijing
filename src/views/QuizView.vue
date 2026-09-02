@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { resolveCaseMaterial } from '../lib/case'
+import { resolveCaseAttachments, resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
 import {
   expireStaleSessions,
   findResumableSession,
@@ -70,6 +71,8 @@ usePracticeAutosave(saveProgress)
 const current = computed(() => questions.value[index.value] ?? null)
 const currentAttempt = computed(() => attempts.value[index.value])
 const caseMaterial = computed(() => resolveCaseMaterial(questions.value, index.value))
+const caseAttachments = computed(() => resolveCaseAttachments(questions.value, index.value))
+const showCasePanel = computed(() => shouldShowCaseMaterial(questions.value, index.value))
 const progress = computed(() =>
   questions.value.length ? ((index.value + (revealed.value ? 1 : 0)) / questions.value.length) * 100 : 0,
 )
@@ -386,13 +389,11 @@ onMounted(start)
       </div>
 
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
-        <section
-          v-if="caseMaterial"
-          class="rounded-xl border border-line bg-raise/60 px-3.5 py-3 text-sm leading-relaxed text-ink"
-        >
-          <p class="m-0 mb-1 text-xs font-semibold tracking-wide text-muted uppercase">案例材料</p>
-          <p class="m-0 whitespace-pre-wrap">{{ caseMaterial }}</p>
-        </section>
+        <CaseMaterialPanel
+          v-if="showCasePanel"
+          :material="caseMaterial"
+          :attachments="caseAttachments"
+        />
 
         <h1 class="m-0 text-[1.125rem] leading-snug font-semibold text-ink md:text-xl">
           {{ current.stem }}

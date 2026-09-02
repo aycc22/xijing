@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { finalizeCaseGroups, resolveCaseMaterial, shouldShowCaseMaterial } from './case'
+import { finalizeCaseGroups, resolveCaseAttachments, resolveCaseMaterial, shouldShowCaseMaterial } from './case'
 import type { Question } from './types'
 
 const caseQuestions: Pick<Question, 'case_id' | 'case_material' | 'stem'>[] = [
@@ -26,8 +26,33 @@ describe('shouldShowCaseMaterial', () => {
   })
 })
 
+describe('resolveCaseAttachments', () => {
+  it('finds attachments from any row in the same case group', () => {
+    const rows = [
+      {
+        case_id: 'c1',
+        case_material: '材料',
+        attachments: [{ type: 'image', id: 'fig1', url: '/img/fig1.svg' }],
+        stem: 'Q1',
+      },
+      { case_id: 'c1', case_material: '材料', attachments: null, stem: 'Q2' },
+    ]
+    expect(resolveCaseAttachments(rows, 1)).toHaveLength(1)
+    expect(resolveCaseAttachments(rows, 1)[0].url).toBe('/img/fig1.svg')
+  })
+})
+
 describe('finalizeCaseGroups', () => {
-  it('propagates material and rejects cases without material', () => {
+  it('propagates material and attachments across case rows', () => {
+    const rows = finalizeCaseGroups([
+      { case_id: 'c1', case_material: '材料A', attachments: [{ type: 'image', id: 'f1' }], stem: 'Q1' },
+      { case_id: 'c1', case_material: '', stem: 'Q2' },
+    ])
+    expect(rows[1].case_material).toBe('材料A')
+    expect(rows[1].attachments).toEqual([{ type: 'image', id: 'f1' }])
+  })
+
+  it('rejects cases without material', () => {
     const rows = finalizeCaseGroups([
       { case_id: 'c1', case_material: '材料A', stem: 'Q1' },
       { case_id: 'c1', case_material: '', stem: 'Q2' },

@@ -4,7 +4,7 @@ Vue 3 + Supabase + GitHub Pages 的手机刷题 / 学习系统。样式使用 **
 
 ## 功能（MVP）
 
-- 邮箱注册 / 登录
+- 邮箱注册 / 登录（注册后可直接登录，无需邮箱验证）
 - 微信登录（开放平台扫码；可选公众号网页授权），无需填写或验证邮箱
 - 角色：`learner`（默认）→ 管理员升为 `uploader` / `admin` 后才能上传
 - CSV 导入题库（单选 / 多选 / 判断 / 案例小题），导入前逐行预检
@@ -97,10 +97,15 @@ supabase secrets set WECHAT_MP_APP_SECRET=公众号AppSecret
 
 ### 3. 部署 Edge Function 与迁移
 
+上线前需将 `supabase/migrations/` 下**全部**迁移同步到远程（含错题本 `202608310006_wrong_question_items.sql` 等），否则对应功能会加载失败：
+
 ```bash
-supabase db push   # 或在 SQL Editor 执行 migrations/202608310013_wechat_auth_profile.sql
+supabase link --project-ref <你的项目 ref>
+supabase db push
 supabase functions deploy wechat-auth
 ```
+
+若未安装 CLI，也可在 Supabase SQL Editor 中按文件名顺序执行各迁移文件。
 
 登录流程：扫码/授权 → 回调站点根路径 `?code=&state=` → 前端转入 `/#/auth/wechat/callback` → `wechat-auth` 用 Admin API 创建用户（`email_confirm: true`，合成邮箱 `wx_{openid}@wechat.xijing.app`）→ `verifyOtp` 建会话。用户无需输入或验证真实邮箱。
 

@@ -152,6 +152,7 @@ onMounted(load)
               <div class="flex items-start justify-between gap-3">
                 <h2 class="m-0 text-lg font-semibold leading-snug text-ink">{{ bank.title }}</h2>
                 <div class="flex shrink-0 items-center gap-2">
+                  <span v-if="bank.bank_kind === 'exam'" class="chip">真题卷</span>
                   <span v-if="bank.is_published" class="chip-lit">已发布</span>
                   <span v-else class="chip">未发布</span>
                   <button
@@ -190,7 +191,16 @@ onMounted(load)
 
             <div class="flex flex-wrap items-center gap-2 border-t border-line/60 pt-3">
               <button
-                v-if="hasActiveSession(bank.id)"
+                v-if="bank.bank_kind === 'exam'"
+                class="btn flex-1 sm:flex-none"
+                type="button"
+                :disabled="bank.question_count === 0"
+                @click="router.push(`/banks/${bank.id}/exam`)"
+              >
+                真题模考
+              </button>
+              <button
+                v-else-if="hasActiveSession(bank.id)"
                 class="btn flex-1 sm:flex-none"
                 type="button"
                 @click="router.push(`/quiz/${bank.id}`)"
@@ -224,12 +234,22 @@ onMounted(load)
                   重新开始
                 </button>
                 <button
+                  v-if="bank.bank_kind !== 'exam'"
                   class="btn-secondary"
                   type="button"
                   :disabled="bank.question_count === 0"
                   @click="router.push(`/banks/${bank.id}/paper`)"
                 >
                   随机组卷
+                </button>
+                <button
+                  v-else
+                  class="btn-secondary"
+                  type="button"
+                  :disabled="bank.question_count === 0"
+                  @click="router.push(`/banks/${bank.id}/exam`)"
+                >
+                  选择分卷模考
                 </button>
                 <template v-if="canManage(bank)">
                   <span class="mx-0.5 hidden h-5 w-px bg-line/70 sm:inline-block" aria-hidden="true" />
