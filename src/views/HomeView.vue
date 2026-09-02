@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { useAppRefresh } from '../composables/useAppRefresh'
 import { useAuth } from '../composables/useAuth'
 import { useInstallPrompt } from '../composables/useInstallPrompt'
 
 const auth = useAuth()
+const { refreshing, error: refreshError, refresh } = useAppRefresh()
 const {
   visible: showInstall,
   canNativeInstall,
@@ -83,7 +85,18 @@ function onInstallClick() {
         >
           添加到主屏幕
         </button>
+        <button
+          type="button"
+          class="btn-secondary btn-block sm:w-auto"
+          :disabled="refreshing"
+          @click="refresh()"
+        >
+          {{ refreshing ? '正在刷新…' : '刷新最新版' }}
+        </button>
       </div>
+      <p v-if="refreshError" class="mt-2 text-sm text-bad" role="alert">
+        {{ refreshError }}
+      </p>
     </section>
 
     <aside
