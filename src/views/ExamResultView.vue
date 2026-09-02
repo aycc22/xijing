@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
 import { formatExamDuration, summarizeByType, type GradedExamItem } from '../lib/examSession'
 import {
   computePracticeSummary,
@@ -141,13 +142,11 @@ onMounted(load)
             </span>
           </summary>
           <div class="flex flex-col gap-3 border-t border-line/60 px-4 py-3.5 text-sm">
-            <section
-              v-if="row.snapshot.case_material"
-              class="rounded-xl border border-line bg-raise/60 px-3 py-3 leading-relaxed"
-            >
-              <p class="m-0 mb-1 text-xs font-semibold text-muted uppercase">案例材料</p>
-              <p class="m-0 whitespace-pre-wrap">{{ row.snapshot.case_material }}</p>
-            </section>
+            <CaseMaterialPanel
+              v-if="row.snapshot.case_material || row.snapshot.attachments?.length"
+              :material="row.snapshot.case_material"
+              :attachments="row.snapshot.attachments"
+            />
             <p class="m-0">
               <span class="font-medium text-muted">你的答案：</span>
               {{

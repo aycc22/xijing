@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { resolveCaseMaterial } from '../lib/case'
+import { resolveCaseAttachments, resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
 import { useScoring } from '../composables/useScoring'
 import { supabase } from '../lib/supabase'
 import type { Question, QuestionBank, QuestionOption } from '../lib/types'
@@ -70,13 +71,11 @@ onMounted(load)
         :key="q.id"
         class="surface flex flex-col gap-3 px-4 py-4"
       >
-        <section
-          v-if="resolveCaseMaterial(questions, idx)"
-          class="rounded-xl border border-line bg-raise/60 px-3 py-3 text-sm leading-relaxed"
-        >
-          <p class="m-0 mb-1 text-xs font-semibold text-muted uppercase">案例材料</p>
-          <p class="m-0 whitespace-pre-wrap">{{ resolveCaseMaterial(questions, idx) }}</p>
-        </section>
+        <CaseMaterialPanel
+          v-if="shouldShowCaseMaterial(questions, idx)"
+          :material="resolveCaseMaterial(questions, idx)"
+          :attachments="resolveCaseAttachments(questions, idx)"
+        />
         <p class="m-0 text-xs text-muted">{{ idx + 1 }}. {{ questionTypeLabel(q.qtype) }}</p>
         <h2 class="m-0 text-base font-semibold text-ink">{{ q.stem }}</h2>
         <ul class="m-0 flex list-none flex-col gap-2 p-0">

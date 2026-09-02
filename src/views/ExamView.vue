@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import { resolveCaseAttachments, resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
+import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
 import {
   countUnanswered,
   createExamState,
@@ -281,13 +282,11 @@ onMounted(load)
       </div>
 
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
-        <section
-          v-if="shouldShowCaseMaterial(caseRows, index) && resolveCaseMaterial(caseRows, index)"
-          class="rounded-xl border border-line bg-raise/60 px-3.5 py-3 text-sm leading-relaxed"
-        >
-          <p class="m-0 mb-1 text-xs font-semibold text-muted uppercase">案例材料</p>
-          <p class="m-0 whitespace-pre-wrap">{{ resolveCaseMaterial(caseRows, index) }}</p>
-        </section>
+        <CaseMaterialPanel
+          v-if="shouldShowCaseMaterial(caseRows, index)"
+          :material="resolveCaseMaterial(caseRows, index)"
+          :attachments="resolveCaseAttachments(caseRows, index)"
+        />
 
         <h1 class="m-0 text-[1.125rem] leading-snug font-semibold text-ink md:text-xl">
           {{ current.snapshot.stem }}

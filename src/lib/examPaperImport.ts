@@ -1,3 +1,4 @@
+import { normalizeAttachments, type CaseAttachment } from './attachments'
 import type { ParsedQuestionRow } from './csv'
 import {
   normalizeExamQuestionType,
@@ -7,6 +8,8 @@ import {
   validateChoiceAnswers,
 } from './questionParse'
 import type { QuestionOption } from './types'
+
+export const EXAM_ASSETS_BASE = '/data/exams/2022-isec/images'
 
 export interface ExamMeta {
   title: string
@@ -87,19 +90,10 @@ export interface ParsedExamQuestionRow extends ParsedQuestionRow {
   reference_answer: string
 }
 
-function buildCaseMaterial(
-  material: string,
+function normalizeExamAttachments(
   attachments?: ExamCaseBlock['attachments'],
-): string {
-  const parts = [material.trim()]
-  if (attachments?.length) {
-    const desc = attachments
-      .map((a) => (a.description ? `【配图 ${a.id ?? ''}】${a.description}` : ''))
-      .filter(Boolean)
-      .join('\n')
-    if (desc) parts.push(desc)
-  }
-  return parts.filter(Boolean).join('\n\n')
+): CaseAttachment[] {
+  return normalizeAttachments(attachments, EXAM_ASSETS_BASE)
 }
 
 function parseChoiceQuestion(
@@ -169,6 +163,7 @@ function parseSubQuestion(
   section: string,
   caseId: string,
   caseMaterial: string,
+  caseAttachments: CaseAttachment[],
   line: number,
 ): ParsedExamQuestionRow {
   const qtype = normalizeExamQuestionType(sq.type)
@@ -190,7 +185,7 @@ function parseSubQuestion(
       case_material: caseMaterial,
       score: sq.score,
       section,
-      attachments: null,
+      attachments: caseAttachments,
       reference_answer: reference,
     }
   }
@@ -216,7 +211,7 @@ function parseSubQuestion(
     case_material: caseMaterial,
     score: sq.score,
     section,
-    attachments: null,
+    attachments: caseAttachments,
     reference_answer: '',
   }
 }
@@ -237,9 +232,12 @@ export function flattenExamPaperBundle(bundle: ExamPaperBundle): ParsedExamQuest
     }
 
     for (const block of paper.cases ?? []) {
-      const caseMaterial = buildCaseMaterial(block.material, block.attachments)
+      const caseMaterial = block.material.trim()
+      const caseAttachments = normalizeExamAttachments(block.attachments)
       for (const sq of block.sub_questions) {
-        rows.push(parseSubQuestion(sq, section, block.external_id, caseMaterial, line))
+        rows.push(
+          parseSubQuestion(sq, section, block.external_id, caseMaterial, caseAttachments, line),
+        )
         line += 1
       }
     }
@@ -268,7 +266,10 @@ export function examBankDescription(bundle: ExamPaperBundle): string {
 export function examMetaPayload(bundle: ExamPaperBundle) {
   return {
     schema_version: bundle.schema_version,
-    exam: bundle.exam,
+    exam: {
+      ...bundle.exam,
+      assets_base: EXAM_ASSETS_BASE,
+    },
     papers: bundle.papers.map((p) => ({
       id: p.id,
       title: p.title,

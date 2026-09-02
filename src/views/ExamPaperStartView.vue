@@ -120,6 +120,7 @@ async function startExam() {
           explanation: q.explanation ?? '',
           case_id: q.case_id,
           case_material: q.case_material,
+          attachments: q.attachments ?? null,
           reference_answer: q.reference_answer ?? '',
         },
       ]),

@@ -67,7 +67,7 @@ async function load() {
 
   const { data: questions, error: qErr } = await supabase
     .from('questions')
-    .select('id, qtype, stem, options, answer_keys, explanation, case_id, case_material, is_active')
+    .select('id, qtype, stem, options, answer_keys, explanation, case_id, case_material, attachments, is_active')
     .eq('bank_id', bankId.value)
     .eq('is_active', true)
   if (qErr) {
@@ -89,6 +89,7 @@ async function load() {
       explanation: q.explanation ?? '',
       case_id: q.case_id,
       case_material: q.case_material,
+      attachments: q.attachments ?? null,
     })
     nextPool.push({
       id: q.id,

@@ -1,3 +1,5 @@
+import { normalizeAttachments, type CaseAttachment } from './attachments'
+
 export interface CsvRowIssue {
   line: number
   message: string
@@ -6,6 +8,7 @@ export interface CsvRowIssue {
 export interface CaseRow {
   case_id: string | null
   case_material: string | null
+  attachments?: unknown[] | null
   stem: string
 }
 
@@ -14,6 +17,19 @@ export function resolveCaseMaterial<T extends CaseRow>(questions: T[], index: nu
   if (!q?.case_id) return null
   if (q.case_material) return q.case_material
   return questions.find((x) => x.case_id === q.case_id && x.case_material)?.case_material ?? null
+}
+
+export function resolveCaseAttachments<T extends CaseRow>(
+  questions: T[],
+  index: number,
+): CaseAttachment[] {
+  const q = questions[index]
+  if (!q?.case_id) return []
+  const source =
+    q.attachments ??
+    questions.find((x) => x.case_id === q.case_id && x.attachments)?.attachments ??
+    null
+  return normalizeAttachments(source)
 }
 
 export function shouldShowCaseMaterial<T extends CaseRow>(questions: T[], index: number): boolean {
@@ -29,14 +45,20 @@ export function finalizeCaseGroups<T extends CaseRow>(rows: T[]): T[] {
     throw new Error(issues[0].message)
   }
   const materialByCase = new Map<string, string>()
+  const attachmentsByCase = new Map<string, unknown[]>()
   for (const row of rows) {
     if (!row.case_id) continue
     const material = (row.case_material ?? '').trim()
     if (material) materialByCase.set(row.case_id, material)
+    if (row.attachments) attachmentsByCase.set(row.case_id, row.attachments)
   }
   return rows.map((row) => {
     if (!row.case_id) return row
-    return { ...row, case_material: materialByCase.get(row.case_id) ?? row.case_material }
+    return {
+      ...row,
+      case_material: materialByCase.get(row.case_id) ?? row.case_material,
+      attachments: attachmentsByCase.get(row.case_id) ?? row.attachments ?? null,
+    }
   })
 }
 
