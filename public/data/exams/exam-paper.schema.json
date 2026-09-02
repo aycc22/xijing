@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xijing.app/schemas/exam-paper.schema.json",
+  "title": "习径试卷数据格式",
+  "description": "用于保存软考等完整试卷（含上午选择题与下午案例题），后续可据此开发导入功能。",
+  "type": "object",
+  "required": ["schema_version", "format", "exam", "papers"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "format": { "type": "string", "const": "xijing-exam-paper" },
+    "exam": {
+      "type": "object",
+      "required": ["title", "year", "session", "qualification", "level"],
+      "properties": {
+        "title": { "type": "string" },
+        "year": { "type": "integer" },
+        "session": { "type": "string", "enum": ["上半年", "下半年"] },
+        "exam_date": { "type": "string", "format": "date" },
+        "qualification": { "type": "string" },
+        "level": { "type": "string" },
+        "sources": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      }
+    },
+    "papers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/paper" },
+      "minItems": 1
+    },
+    "import_compatible": {
+      "type": "object",
+      "description": "与现有题库 JSON 导入格式兼容的扁平化数据（可选）",
+      "properties": {
+        "description": { "type": "string" },
+        "title": { "type": "string" },
+        "questions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/importQuestion" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "paper": {
+      "type": "object",
+      "required": ["id", "title", "paper_type", "duration_minutes", "total_score", "pass_score"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "subject": { "type": "string" },
+        "paper_type": { "type": "string", "enum": ["choice", "case"] },
+        "duration_minutes": { "type": "integer" },
+        "total_score": { "type": "number" },
+        "pass_score": { "type": "number" },
+        "question_count": { "type": "integer" },
+        "case_count": { "type": "integer" },
+        "questions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/choiceQuestion" }
+        },
+        "cases": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/caseBlock" }
+        }
+      }
+    },
+    "choiceQuestion": {
+      "type": "object",
+      "required": ["external_id", "number", "type", "stem", "answer"],
+      "properties": {
+        "external_id": { "type": "string" },
+        "number": { "type": "integer" },
+        "type": {
+          "type": "string",
+          "enum": ["single", "multiple", "judgement", "cloze"]
+        },
+        "score": { "type": "number" },
+        "stem": { "type": "string" },
+        "passage": { "type": "string", "description": "cloze 题型英文阅读材料" },
+        "options": {
+          "oneOf": [
+            { "type": "object", "additionalProperties": { "type": "string" } },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "blanks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/clozeBlank" }
+        },
+        "answer": { "type": "string" },
+        "explanation": { "type": "string" }
+      }
+    },
+    "clozeBlank": {
+      "type": "object",
+      "required": ["external_id", "number", "stem", "options", "answer"],
+      "properties": {
+        "external_id": { "type": "string" },
+        "number": { "type": "integer" },
+        "stem": { "type": "string" },
+        "options": { "type": "object", "additionalProperties": { "type": "string" } },
+        "answer": { "type": "string" }
+      }
+    },
+    "caseBlock": {
+      "type": "object",
+      "required": ["external_id", "number", "title", "score", "material", "sub_questions"],
+      "properties": {
+        "external_id": { "type": "string" },
+        "number": { "type": "integer" },
+        "title": { "type": "string" },
+        "score": { "type": "number" },
+        "material": { "type": "string" },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "sub_questions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/subQuestion" }
+        }
+      }
+    },
+    "subQuestion": {
+      "type": "object",
+      "required": ["external_id", "number", "type", "score", "stem"],
+      "properties": {
+        "external_id": { "type": "string" },
+        "number": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["short_answer", "single", "multiple", "judgement"]
+        },
+        "score": { "type": "number" },
+        "stem": { "type": "string" },
+        "options": { "type": "object", "additionalProperties": { "type": "string" } },
+        "answer": { "type": "string" },
+        "explanation": { "type": "string" }
+      }
+    },
+    "importQuestion": {
+      "type": "object",
+      "description": "与 public/samples/questions.sample.json 相同结构，可直接导入题库",
+      "required": ["type", "stem", "answer"],
+      "properties": {
+        "external_id": { "type": "string" },
+        "type": { "type": "string", "enum": ["single", "multiple", "judgement"] },
+        "stem": { "type": "string" },
+        "options": { "type": "object", "additionalProperties": { "type": "string" } },
+        "answer": { "type": "string" },
+        "explanation": { "type": "string" },
+        "case_id": { "type": "string" },
+        "case_material": { "type": "string" }
+      }
+    }
+  }
+}
