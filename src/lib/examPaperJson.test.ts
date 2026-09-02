@@ -20,7 +20,7 @@ describe('examPaperJson', () => {
     expect(result.bundle).toBeTruthy()
     const caseRow = result.rows.find((r) => r.case_id === '2022-11-pm-case1')
     expect(caseRow?.attachments?.length).toBe(2)
-    expect((caseRow?.attachments?.[0] as { url?: string })?.url).toContain('fig1-1')
+    expect((caseRow?.attachments?.[0] as { url?: string })?.url).toContain('fig1-1.png')
     if (result.bundle) {
       expect(examBankTitle(result.bundle)).toContain('2022')
       expect(examBankDescription(result.bundle)).toContain('信息安全工程师')

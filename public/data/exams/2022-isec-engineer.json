@@ -12,7 +12,7 @@
       "信管网（cnitpm.com）公开真题整理",
       "编程学习网（jsqmd.com）案例分析参考答案整理"
     ],
-    "notes": "2022年信息安全工程师仅在11月举行一次考试（下半年）。下午卷共4道大题（试题一至试题四），总分75分。部分题目依赖原卷配图（拓扑图、ls -l 输出、事件日志、流量抓包等），JSON 中以 attachments 字段记录配图说明，配图已收录至 public/data/exams/2022-isec/images。",
+    "notes": "2022年信息安全工程师仅在11月举行一次考试（下半年）。下午卷共4道大题（试题一至试题四），总分75分。部分题目依赖原卷配图（拓扑图、ls -l 输出、事件日志、流量抓包等），JSON 中以 attachments 字段记录配图说明；配图文件位于 public/data/exams/2022-isec/images（fig1-1/fig2-1/fig3-1/fig3-2 来自信管网公开真题整理，fig1-2 原卷为文字规则示意）。",
     "assets_base": "/data/exams/2022-isec/images"
   },
   "papers": [
@@ -1102,7 +1102,7 @@
               "type": "image",
               "id": "fig1-1",
               "description": "网络拓扑结构图（DMZ区、内网办公区、生产区）",
-              "url": "/data/exams/2022-isec/images/fig1-1.svg"
+              "url": "/data/exams/2022-isec/images/fig1-1.png"
             },
             {
               "type": "image",
@@ -1208,7 +1208,7 @@
               "type": "image",
               "id": "fig2-1",
               "description": "ls -l 命令输出结果",
-              "url": "/data/exams/2022-isec/images/fig2-1.svg"
+              "url": "/data/exams/2022-isec/images/fig2-1.png"
             }
           ],
           "sub_questions": [
@@ -1321,13 +1321,13 @@
               "type": "image",
               "id": "fig3-1",
               "description": "Windows 事件日志（事件ID 4625）",
-              "url": "/data/exams/2022-isec/images/fig3-1.svg"
+              "url": "/data/exams/2022-isec/images/fig3-1.png"
             },
             {
               "type": "image",
               "id": "fig3-2",
               "description": "NTA 全流量分析可疑网络分组",
-              "url": "/data/exams/2022-isec/images/fig3-2.svg"
+              "url": "/data/exams/2022-isec/images/fig3-2.png"
             }
           ],
           "sub_questions": [
