@@ -9,6 +9,10 @@ export function isSingleChoice(qtype: QuestionType): boolean {
   return qtype === 'single' || qtype === 'judgement'
 }
 
+export function isTextAnswer(qtype: QuestionType): boolean {
+  return qtype === 'short_answer'
+}
+
 export function isAnswerCorrect(selected: string[], answerKeys: string[]): boolean {
   return sameAnswerSet(selected, answerKeys)
 }
@@ -23,6 +27,8 @@ export function questionTypeLabel(qtype: QuestionType): string {
       return '判断'
     case 'case_analysis':
       return '案例'
+    case 'short_answer':
+      return '简答'
   }
 }
 

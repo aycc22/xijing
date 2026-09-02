@@ -1,4 +1,4 @@
-import { sameAnswerSet } from './types'
+import { sameAnswerSet, type QuestionType } from './types'
 import type { PaperItem } from './paperSnapshot'
 
 export interface ExamAnswer {
@@ -62,8 +62,40 @@ export function toggleFlag(answers: ExamAnswerMap, questionId: string): ExamAnsw
   }
 }
 
-export function countUnanswered(answers: ExamAnswerMap, questionIds: string[]): number {
-  return questionIds.filter((id) => !(answers[id]?.selected.length)).length
+export function countUnanswered(
+  answers: ExamAnswerMap,
+  questionIds: string[],
+  qtypes?: Record<string, QuestionType>,
+): number {
+  return questionIds.filter((id) => {
+    const selected = answers[id]?.selected ?? []
+    if (qtypes?.[id] === 'short_answer') return !selected[0]?.trim()
+    return !selected.length
+  }).length
+}
+
+export function updateExamTextAnswer(
+  answers: ExamAnswerMap,
+  questionId: string,
+  text: string,
+): ExamAnswerMap {
+  const current = answers[questionId] ?? { selected: [], flagged: false }
+  const trimmed = text.trim()
+  return {
+    ...answers,
+    [questionId]: { ...current, selected: trimmed ? [trimmed] : [] },
+  }
+}
+
+function normalizeText(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+function gradeShortAnswer(selected: string[], reference: string): boolean {
+  const user = normalizeText(selected[0] ?? '')
+  const ref = normalizeText(reference)
+  if (!user || !ref) return false
+  return user === ref || ref.includes(user) || user.includes(ref)
 }
 
 export function toPublicPaperItems(items: PaperItem[]): PaperItem[] {
@@ -82,9 +114,15 @@ export function gradeExam(items: PaperItem[], answers: ExamAnswerMap): GradedExa
   let score = 0
   let correctCount = 0
   const graded: GradedExamItem[] = items.map((item) => {
-    const selected = (answers[item.question_id]?.selected ?? []).map((k) => k.toUpperCase())
+    const selected = answers[item.question_id]?.selected ?? []
+    const normalized = selected.map((k) => k.toUpperCase())
     const keys = item.snapshot.answer_keys.map((k) => k.toUpperCase())
-    const ok = keys.length > 0 && sameAnswerSet(selected, keys)
+    let ok = false
+    if (item.snapshot.qtype === 'short_answer') {
+      ok = gradeShortAnswer(selected, item.snapshot.reference_answer ?? '')
+    } else {
+      ok = keys.length > 0 && sameAnswerSet(normalized, keys)
+    }
     const earned = ok ? Number(item.score) : 0
     if (ok) {
       correctCount += 1
@@ -94,7 +132,7 @@ export function gradeExam(items: PaperItem[], answers: ExamAnswerMap): GradedExa
       question_id: item.question_id,
       score: Number(item.score),
       earned,
-      selected_keys: selected,
+      selected_keys: item.snapshot.qtype === 'short_answer' ? selected : normalized,
       is_correct: ok,
       flagged: Boolean(answers[item.question_id]?.flagged),
       snapshot: item.snapshot,
@@ -110,13 +148,14 @@ export function gradeExam(items: PaperItem[], answers: ExamAnswerMap): GradedExa
 
 export function splitPaperForStorage(items: PaperItem[]): {
   publicItems: PaperItem[]
-  grading: Record<string, { answer_keys: string[]; explanation: string }>
+  grading: Record<string, { answer_keys: string[]; explanation: string; reference_answer?: string }>
 } {
-  const grading: Record<string, { answer_keys: string[]; explanation: string }> = {}
+  const grading: Record<string, { answer_keys: string[]; explanation: string; reference_answer?: string }> = {}
   const publicItems = items.map((item) => {
     grading[item.question_id] = {
       answer_keys: [...item.snapshot.answer_keys],
       explanation: item.snapshot.explanation,
+      reference_answer: item.snapshot.reference_answer ?? '',
     }
     return {
       question_id: item.question_id,
@@ -125,6 +164,7 @@ export function splitPaperForStorage(items: PaperItem[]): {
         ...item.snapshot,
         answer_keys: [],
         explanation: '',
+        reference_answer: '',
       },
     }
   })
@@ -133,7 +173,7 @@ export function splitPaperForStorage(items: PaperItem[]): {
 
 export function mergeGradingIntoItems(
   publicItems: PaperItem[],
-  grading: Record<string, { answer_keys: string[]; explanation: string }>,
+  grading: Record<string, { answer_keys: string[]; explanation: string; reference_answer?: string }>,
 ): PaperItem[] {
   return publicItems.map((item) => ({
     ...item,
@@ -141,6 +181,7 @@ export function mergeGradingIntoItems(
       ...item.snapshot,
       answer_keys: grading[item.question_id]?.answer_keys ?? [],
       explanation: grading[item.question_id]?.explanation ?? '',
+      reference_answer: grading[item.question_id]?.reference_answer ?? '',
     },
   }))
 }
@@ -163,7 +204,7 @@ export interface TypePerformance {
 }
 
 export function summarizeByType(items: GradedExamItem[]): TypePerformance[] {
-  const order = ['single', 'multiple', 'judgement'] as const
+  const order = ['single', 'multiple', 'judgement', 'short_answer'] as const
   const map = new Map<string, { total: number; correct: number }>()
   for (const item of items) {
     const key = item.snapshot.qtype

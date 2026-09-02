@@ -10,6 +10,7 @@ export interface SnapshotSourceQuestion {
   explanation: string
   case_id: string | null
   case_material: string | null
+  reference_answer?: string
 }
 
 export interface PaperItemSnapshot {
@@ -20,6 +21,7 @@ export interface PaperItemSnapshot {
   explanation: string
   case_id: string | null
   case_material: string | null
+  reference_answer?: string
 }
 
 export interface PaperItem {
@@ -69,6 +71,7 @@ export function buildPaperItems(input: {
         explanation: q.explanation,
         case_id: q.case_id,
         case_material: q.case_material,
+        reference_answer: q.reference_answer ?? '',
       },
     })
   }
@@ -93,6 +96,7 @@ export function parsePaperItems(raw: unknown): PaperItem[] {
           explanation: item.snapshot.explanation ?? '',
           case_id: item.snapshot.case_id ?? null,
           case_material: item.snapshot.case_material ?? null,
+          reference_answer: item.snapshot.reference_answer ?? '',
         },
       }
     })

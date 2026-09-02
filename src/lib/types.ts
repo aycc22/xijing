@@ -1,5 +1,7 @@
 export type AppRole = 'learner' | 'uploader' | 'admin'
-export type QuestionType = 'single' | 'multiple' | 'judgement' | 'case_analysis'
+export type QuestionType = 'single' | 'multiple' | 'judgement' | 'case_analysis' | 'short_answer'
+export type BankKind = 'pool' | 'exam'
+export type PaperComposeMode = 'random' | 'fixed'
 
 export interface Profile {
   id: string
@@ -20,6 +22,8 @@ export interface QuestionBank {
   owner_id: string
   is_published: boolean
   question_count: number
+  bank_kind: BankKind
+  exam_meta: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }
@@ -37,6 +41,10 @@ export interface Question {
   case_material: string | null
   is_active: boolean
   sort_order: number
+  score: number | null
+  section: string | null
+  attachments: unknown[] | null
+  reference_answer: string
 }
 
 export type SessionMode = 'practice' | 'exam'
@@ -66,6 +74,8 @@ export interface PaperInstance {
   total_score: number
   counts: Record<string, number>
   items: unknown
+  compose_mode: PaperComposeMode
+  section_labels: Record<string, string> | null
   created_at: string
 }
 

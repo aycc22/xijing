@@ -15,6 +15,16 @@ export function normalizeQuestionType(raw: string): QuestionType {
   throw new Error(`未知题型: ${raw}`)
 }
 
+export function normalizeExamQuestionType(raw: string): QuestionType {
+  const t = raw.trim().toLowerCase()
+  if (t === 'single' || t === '单选') return 'single'
+  if (t === 'multiple' || t === '多选') return 'multiple'
+  if (t === 'judgement' || t === '判断') return 'judgement'
+  if (t === 'short_answer' || t === '简答' || t === '问答') return 'short_answer'
+  if (t === 'cloze') return 'single'
+  throw new Error(`未知题型: ${raw}`)
+}
+
 export function parseAnswerKeysFromString(raw: string): string[] {
   return raw
     .split(/[;；,，|/\s]+/)
