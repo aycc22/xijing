@@ -20,6 +20,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
 import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
+import FloatingAnswerInput from '../components/FloatingAnswerInput.vue'
 import type { QuestionType } from '../lib/types'
 
 const route = useRoute()
@@ -39,6 +40,7 @@ const loading = ref(true)
 const busy = ref(false)
 const error = ref('')
 const saveTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+const answerInputFocused = ref(false)
 
 const questionIds = computed(() => items.value.map((i) => i.question_id))
 const qtypeById = computed(() =>
@@ -335,17 +337,15 @@ onMounted(load)
           {{ current.snapshot.stem }}
         </h1>
 
-        <div v-if="current.snapshot.qtype === 'short_answer'" class="flex flex-col gap-2">
-          <label class="text-sm font-medium text-muted" :for="`answer-${current.question_id}`">你的作答</label>
-          <textarea
-            :id="`answer-${current.question_id}`"
-            v-model="textAnswer"
-            class="min-h-36 font-mono text-sm"
-            placeholder="请输入答案（支持多行）"
-            spellcheck="false"
-          />
-        </div>
-        <div v-else class="flex flex-col gap-2.5">
+        <!-- 简答题作答区在底部浮动输入卡片，此处仅预留滚动空间 -->
+        <div
+          v-if="current.snapshot.qtype === 'short_answer'"
+          class="shrink-0"
+          :class="answerInputFocused ? 'h-4' : 'h-44'"
+          aria-hidden="true"
+        />
+
+        <div v-if="current.snapshot.qtype !== 'short_answer'" class="flex flex-col gap-2.5">
           <button
             v-for="opt in current.snapshot.options"
             :key="opt.key"
@@ -361,7 +361,20 @@ onMounted(load)
         <p v-if="error" class="alert-error m-0">{{ error }}</p>
       </article>
 
-      <AnswerActionBar @open-sheet="sheetOpen = true">
+      <FloatingAnswerInput
+        v-if="current.snapshot.qtype === 'short_answer'"
+        :key="current.question_id"
+        v-model="textAnswer"
+        :input-id="`answer-${current.question_id}`"
+        :action-bar-height="answerInputFocused ? 0 : 56"
+        @focus="answerInputFocused = true"
+        @blur="answerInputFocused = false"
+      />
+
+      <AnswerActionBar
+        :hidden="current.snapshot.qtype === 'short_answer' && answerInputFocused"
+        @open-sheet="sheetOpen = true"
+      >
         <button
           type="button"
           class="icon-btn !size-11 shrink-0"

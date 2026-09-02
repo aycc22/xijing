@@ -1,4 +1,9 @@
 <script setup lang="ts">
+defineProps<{
+  /** 键盘弹出或浮动输入激活时隐藏，避免与输入区重叠 */
+  hidden?: boolean
+}>()
+
 defineEmits<{
   'open-sheet': []
 }>()
@@ -8,7 +13,8 @@ defineEmits<{
   <!-- Teleport 到 body，避免被 .page-enter 的 transform 动画做成 fixed 包含块 -->
   <Teleport to="body">
     <nav
-      class="fixed inset-x-0 bottom-0 z-30 border-t border-line/70 bg-surface/95 backdrop-blur-md"
+      v-show="!hidden"
+      class="fixed inset-x-0 bottom-0 z-30 border-t border-line/70 bg-surface/95 backdrop-blur-md transition-opacity duration-200"
       style="padding-bottom: env(safe-area-inset-bottom)"
       aria-label="答题操作"
     >
