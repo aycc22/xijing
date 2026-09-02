@@ -143,10 +143,15 @@ async function ensureUserAndToken(opts: {
     await admin.auth.admin.updateUserById(userId, { user_metadata: metadata })
   }
 
-  await admin
-    .from('profiles')
-    .update({ display_name: displayName, updated_at: new Date().toISOString() })
-    .eq('id', userId)
+  const { error: profileError } = await admin.from('profiles').upsert(
+    {
+      id: userId,
+      display_name: displayName,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'id' },
+  )
+  if (profileError) throw profileError
 
   return { token_hash: tokenHash, is_new: isNew }
 }

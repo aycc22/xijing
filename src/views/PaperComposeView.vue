@@ -14,6 +14,7 @@ import {
 import { splitPaperForStorage } from '../lib/examSession'
 import { buildPaperItems, type SnapshotSourceQuestion } from '../lib/paperSnapshot'
 import { ensureQuestionOptions } from '../lib/scoring'
+import { formatErrorMessage } from '../lib/errors'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import type { QuestionBank, QuestionOption } from '../lib/types'
@@ -170,7 +171,7 @@ async function generate() {
     }
     await router.push(`/papers/${paper.id}`)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '组卷失败'
+    error.value = formatErrorMessage(err, '组卷失败')
   } finally {
     busy.value = false
   }
