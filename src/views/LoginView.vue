@@ -21,10 +21,10 @@ const route = useRoute()
 const mode = ref<'signin' | 'signup'>('signin')
 const email = ref('')
 const password = ref('')
+const passwordConfirm = ref('')
 const displayName = ref('')
 const error = ref('')
 const busy = ref(false)
-const notice = ref('')
 const wechatBusy = ref(false)
 
 const openConfigured = isWechatOpenLoginConfigured()
@@ -56,14 +56,16 @@ onMounted(async () => {
 
 async function submit() {
   error.value = ''
-  notice.value = ''
   busy.value = true
   try {
     if (mode.value === 'signin') {
       await auth.signInWithEmail(email.value.trim(), password.value)
     } else {
+      if (password.value !== passwordConfirm.value) {
+        error.value = '两次输入的密码不一致'
+        return
+      }
       await auth.signUpWithEmail(email.value.trim(), password.value, displayName.value.trim())
-      notice.value = '注册成功。若邮箱需确认，请先到邮箱点开链接；确认后即可登录。'
     }
     await auth.refreshProfile()
     if (auth.user.value) {
@@ -106,7 +108,7 @@ function startWechatRedirect(channel: 'open' | 'mp') {
     <section class="py-4 md:py-6">
       <p class="page-kicker">账号</p>
       <h1 class="page-title">{{ mode === 'signin' ? '登录' : '注册' }}</h1>
-      <p class="page-lede">个人备考与共享刷题，同一套账号。微信登录无需验证邮箱。</p>
+      <p class="page-lede">个人备考与共享刷题，同一套账号。注册后可直接登录，无需邮箱验证。</p>
     </section>
 
     <div v-if="wechatAvailable" class="surface mb-5 flex flex-col gap-4 md:p-6">
@@ -199,11 +201,21 @@ function startWechatRedirect(channel: 'open' | 'mp') {
           type="password"
           required
           minlength="6"
-          autocomplete="current-password"
+          :autocomplete="mode === 'signup' ? 'new-password' : 'current-password'"
+        />
+      </div>
+      <div v-if="mode === 'signup'" class="field">
+        <label for="password-confirm">确认密码</label>
+        <input
+          id="password-confirm"
+          v-model="passwordConfirm"
+          type="password"
+          required
+          minlength="6"
+          autocomplete="new-password"
         />
       </div>
       <p v-if="error" class="alert-error">{{ error }}</p>
-      <p v-if="notice" class="alert-info">{{ notice }}</p>
       <button class="btn btn-block" type="submit" :disabled="busy">
         {{ busy ? '处理中…' : mode === 'signin' ? '登录' : '注册' }}
       </button>

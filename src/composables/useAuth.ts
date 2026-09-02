@@ -9,12 +9,6 @@ const profile = ref<Profile | null>(null)
 const loading = ref(true)
 let initialized = false
 
-function authRedirectUrl(): string {
-  const base = import.meta.env.BASE_URL || '/'
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  return `${origin}${base}`.replace(/\/+$/, '') + '/'
-}
-
 async function fetchProfile(userId: string) {
   const { data, error } = await supabase
     .from('profiles')
@@ -61,15 +55,24 @@ export function useAuth() {
   }
 
   async function signUpWithEmail(email: string, password: string, displayName?: string) {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: authRedirectUrl(),
-        data: { display_name: displayName || undefined },
+    const { data, error } = await supabase.functions.invoke('email-auth', {
+      body: {
+        action: 'register',
+        email,
+        password,
+        display_name: displayName || undefined,
       },
     })
-    if (error) throw error
+
+    const payload = data as { error?: string; ok?: boolean } | null
+    if (payload?.error) {
+      throw new Error(payload.error)
+    }
+    if (error) {
+      throw new Error(error.message || '注册服务不可用')
+    }
+
+    await signInWithEmail(email, password)
   }
 
   /**
