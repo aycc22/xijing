@@ -10,12 +10,17 @@ const loading = ref(true)
 let initialized = false
 
 async function fetchProfile(userId: string) {
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('profiles')
     .select('id, display_name, role, created_at')
     .eq('id', userId)
     .maybeSingle()
   if (error) throw error
+  if (!data) {
+    const { data: ensured, error: ensureError } = await supabase.rpc('ensure_my_profile')
+    if (ensureError) throw ensureError
+    data = ensured as Profile
+  }
   profile.value = data as Profile | null
 }
 

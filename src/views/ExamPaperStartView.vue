@@ -10,6 +10,7 @@ import {
 import type { ExamPaperBundle } from '../lib/examPaperImport'
 import { splitPaperForStorage } from '../lib/examSession'
 import { ensureQuestionOptions } from '../lib/scoring'
+import { formatErrorMessage } from '../lib/errors'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import type { Question, QuestionBank, QuestionOption } from '../lib/types'
@@ -161,7 +162,7 @@ async function startExam() {
 
     await router.push(`/exam/${paper.id}`)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '无法生成试卷'
+    error.value = formatErrorMessage(err, '无法生成试卷')
   } finally {
     busy.value = false
   }

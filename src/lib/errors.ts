@@ -6,15 +6,33 @@ const EXAM_SUBMIT_ERROR_MAP: Record<string, string> = {
   'Could not find the function public.finish_exam_session': '服务器尚未更新交卷功能，请稍后再试',
 }
 
+const PAPER_CREATE_ERROR_MAP: Record<string, string> = {
+  'paper_instances_user_id_fkey':
+    '账号资料未就绪，请退出后重新登录；若仍失败请联系管理员',
+  'violates foreign key constraint':
+    '账号资料未就绪，请退出后重新登录；若仍失败请联系管理员',
+  'row-level security policy': '无权限生成试卷，请确认已登录',
+  'ensure_my_profile': '账号资料未就绪，请退出后重新登录',
+  'not authenticated': '请先登录后再生成试卷',
+}
+
 function normalizeErrorText(message: string): string {
   return message.trim().toLowerCase()
 }
 
-function mapKnownExamSubmitError(message: string): string | null {
+function mapKnownError(message: string, map: Record<string, string>): string | null {
   const normalized = normalizeErrorText(message)
-  for (const [key, value] of Object.entries(EXAM_SUBMIT_ERROR_MAP)) {
+  for (const [key, value] of Object.entries(map)) {
     if (normalized.includes(key.toLowerCase())) return value
   }
+  return null
+}
+
+function mapKnownExamSubmitError(message: string): string | null {
+  const mapped =
+    mapKnownError(message, EXAM_SUBMIT_ERROR_MAP) ?? mapKnownError(message, PAPER_CREATE_ERROR_MAP)
+  if (mapped) return mapped
+  const normalized = normalizeErrorText(message)
   if (normalized.includes('jwt expired') || normalized.includes('invalid jwt')) {
     return '登录已过期，请重新登录后再交卷'
   }
