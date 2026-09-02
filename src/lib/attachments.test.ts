@@ -3,6 +3,7 @@ import {
   normalizeAttachments,
   resolveAttachmentUrl,
   stripAttachmentPlaceholders,
+  withBaseUrl,
 } from './attachments'
 
 describe('attachments', () => {
@@ -16,6 +17,10 @@ describe('attachments', () => {
     expect(
       resolveAttachmentUrl({ type: 'image', id: 'fig1-1', url: '/custom/fig1-1.png' }),
     ).toBe('/custom/fig1-1.png')
+  })
+
+  it('leaves absolute http urls unchanged', () => {
+    expect(withBaseUrl('https://cdn.example.com/fig.png')).toBe('https://cdn.example.com/fig.png')
   })
 
   it('normalizes raw attachment array', () => {
