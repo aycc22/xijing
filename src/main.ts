@@ -3,9 +3,10 @@ import { registerSW } from 'virtual:pwa-register'
 import './style.css'
 import App from './App.vue'
 import router from './router'
+import { initAppRefresh } from './lib/appRefresh'
 import { WECHAT_OAUTH_STATE_KEY } from './lib/wechat'
 
-registerSW({ immediate: true })
+initAppRefresh(registerSW({ immediate: true }))
 
 /**
  * 微信 OAuth 回调落在「无 hash 的站点根路径 + ?code=&state=」。
