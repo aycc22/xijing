@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { lintQuestionCsv, type CsvLintResult } from '../lib/csv'
 import { lintQuestionJson } from '../lib/questionJson'
+import { QUESTION_JSON_SAMPLE } from '../lib/questionJsonSample'
 import { questionPayloadFromRow, toImportStats, type ImportStats } from '../lib/importPlan'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
@@ -24,6 +25,7 @@ const importStats = ref<ImportStats | null>(null)
 const error = ref('')
 const busy = ref(false)
 const confirmed = ref(false)
+const sampleCopied = ref(false)
 
 function resetLint() {
   lintResult.value = null
@@ -70,6 +72,23 @@ function lintJson() {
   if (result.meta?.title && !title.value) title.value = result.meta.title
   if (result.meta?.description && !description.value) description.value = result.meta.description
   if (!result.valid) error.value = `预检发现 ${result.issues.length} 处错误`
+}
+
+async function copySampleJson() {
+  try {
+    await navigator.clipboard.writeText(QUESTION_JSON_SAMPLE)
+    sampleCopied.value = true
+    window.setTimeout(() => {
+      sampleCopied.value = false
+    }, 2000)
+  } catch {
+    error.value = '复制失败，请手动选中下方样例文本'
+  }
+}
+
+function fillSampleJson() {
+  jsonText.value = QUESTION_JSON_SAMPLE
+  resetLint()
 }
 
 async function ensureLinted() {
@@ -204,8 +223,16 @@ async function submit() {
         />
         <div class="mt-2 flex flex-wrap items-center gap-2">
           <button class="btn-secondary !min-h-9 text-sm" type="button" @click="lintJson">预检 JSON</button>
+          <button class="btn-ghost !min-h-9 text-sm" type="button" @click="fillSampleJson">填入样例</button>
+          <button class="btn-ghost !min-h-9 text-sm" type="button" @click="copySampleJson">
+            {{ sampleCopied ? '已复制' : '复制样例' }}
+          </button>
           <span v-if="lintResult?.valid" class="chip-lit">预检通过 {{ lintResult.rows.length }} 题</span>
         </div>
+        <details class="rounded-xl border border-line bg-raise/40 px-3.5 py-3 text-sm" open>
+          <summary class="cursor-pointer font-medium text-ink">样例 JSON（可直接选中复制）</summary>
+          <pre class="mt-3 max-h-64 overflow-auto rounded-lg border border-line bg-card p-3 font-mono text-xs leading-relaxed text-ink whitespace-pre-wrap break-words">{{ QUESTION_JSON_SAMPLE }}</pre>
+        </details>
       </div>
 
       <ul v-if="lintResult && lintResult.issues.length" class="m-0 max-h-48 list-none space-y-1 overflow-y-auto rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm">
@@ -243,20 +270,13 @@ async function submit() {
         </span>
       </label>
 
-      <p class="m-0 text-sm text-muted">
-        <template v-if="importMode === 'csv'">
-          <a class="mr-3 font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.template.csv" download>
-            下载 CSV 模板
-          </a>
-          <a class="font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.sample.csv" download>
-            样例 CSV
-          </a>
-        </template>
-        <template v-else>
-          <a class="font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.sample.json" download>
-            下载样例 JSON
-          </a>
-        </template>
+      <p v-if="importMode === 'csv'" class="m-0 text-sm text-muted">
+        <a class="mr-3 font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.template.csv" download>
+          下载 CSV 模板
+        </a>
+        <a class="font-medium text-spark underline-offset-2 hover:underline" href="./samples/questions.sample.csv" download>
+          样例 CSV
+        </a>
       </p>
 
       <p v-if="confirmed && lintResult?.valid" class="alert-warn m-0">
