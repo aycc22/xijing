@@ -105,7 +105,7 @@ onMounted(load)
           type="button"
           @click="router.push('/upload')"
         >
-          上传 CSV
+          上传题库
         </button>
         <button class="btn-secondary" type="button" :disabled="loading" @click="load">刷新</button>
       </div>
@@ -127,7 +127,7 @@ onMounted(load)
         />
       </svg>
       <p class="m-0 mt-3 font-medium text-ink">还没有题库</p>
-      <p class="mt-1.5 text-sm text-muted">有上传权限的用户可以先导入 CSV。</p>
+      <p class="mt-1.5 text-sm text-muted">有上传权限的用户可以先导入题目。</p>
       <button
         v-if="auth.hasUpload.value"
         class="btn mt-6"
