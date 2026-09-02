@@ -107,3 +107,36 @@ export function parseOptionsFromJson(raw: unknown): QuestionOption[] {
 export function judgementOptions(): QuestionOption[] {
   return [...JUDGEMENT_OPTIONS]
 }
+
+/** 解析导入序号：「序号」为 1 起算的用户题号，sort_order 为 0 起算的数据库排序值 */
+export function parseImportSortOrder(raw: unknown, mode: '序号' | 'sort_order'): number {
+  if (raw === undefined || raw === null || raw === '') {
+    throw new Error(mode === '序号' ? '序号不能为空' : 'sort_order 不能为空')
+  }
+  const n = typeof raw === 'number' ? raw : Number.parseInt(String(raw).trim(), 10)
+  if (!Number.isFinite(n) || !Number.isInteger(n)) {
+    throw new Error(mode === '序号' ? '序号须为正整数' : 'sort_order 须为非负整数')
+  }
+  if (mode === '序号') {
+    if (n < 1) throw new Error('序号须从 1 开始')
+    return n - 1
+  }
+  if (n < 0) throw new Error('sort_order 须为非负整数')
+  return n
+}
+
+export function readImportSortOrder(
+  record: Record<string, unknown>,
+): number | null {
+  const seq = record['序号']
+  if (seq !== undefined && seq !== null && String(seq).trim() !== '') {
+    return parseImportSortOrder(seq, '序号')
+  }
+  for (const key of ['sort_order', '排序', 'order', 'no']) {
+    const raw = record[key]
+    if (raw !== undefined && raw !== null && String(raw).trim() !== '') {
+      return parseImportSortOrder(raw, 'sort_order')
+    }
+  }
+  return null
+}

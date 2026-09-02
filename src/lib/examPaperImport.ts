@@ -243,7 +243,11 @@ export function flattenExamPaperBundle(bundle: ExamPaperBundle): ParsedExamQuest
     }
   }
 
-  return rows
+  return rows.map((row, index) => ({
+    ...row,
+    sort_order: index,
+    sort_order_explicit: true,
+  }))
 }
 
 export function examBankTitle(bundle: ExamPaperBundle): string {

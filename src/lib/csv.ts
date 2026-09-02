@@ -3,6 +3,7 @@ import { validateCaseGroups, type CsvRowIssue } from './case'
 import {
   normalizeQuestionType,
   parseAnswerKeys,
+  parseImportSortOrder,
   parseJudgementAnswer,
   validateChoiceAnswers,
 } from './questionParse'
@@ -11,6 +12,10 @@ import type { QuestionOption, QuestionType } from './types'
 
 export interface ParsedQuestionRow {
   line: number
+  /** 导入解析阶段可为 null；预检通过后会解析为具体排序值 */
+  sort_order: number | null
+  /** 是否在导入文件中显式填写了序号 */
+  sort_order_explicit: boolean
   external_id: string | null
   qtype: QuestionType
   stem: string
@@ -51,6 +56,14 @@ function readCaseMaterial(row: Record<string, string>): string {
   return (row.case_material ?? row['案例材料'] ?? '').trim()
 }
 
+function readSortOrder(row: Record<string, string>): number | null {
+  const seq = (row['序号'] ?? '').trim()
+  if (seq) return parseImportSortOrder(seq, '序号')
+  const sortOrder = (row.sort_order ?? row['排序'] ?? row.order ?? row.no ?? '').trim()
+  if (sortOrder) return parseImportSortOrder(sortOrder, 'sort_order')
+  return null
+}
+
 export function parseQuestionRow(row: Record<string, string>, line: number): ParsedQuestionRow {
   const stem = (row.stem ?? row['题干'] ?? '').trim()
   if (!stem) throw new Error('缺少 stem（题干）')
@@ -75,8 +88,11 @@ export function parseQuestionRow(row: Record<string, string>, line: number): Par
     validateChoiceAnswers(qtype, options, answer_keys)
   }
 
+  const sort_order = readSortOrder(row)
   return {
     line,
+    sort_order,
+    sort_order_explicit: sort_order !== null,
     external_id: readExternalId(row),
     qtype,
     stem,
@@ -99,6 +115,38 @@ function finalizeRows(rows: ParsedQuestionRow[]): ParsedQuestionRow[] {
     if (!row.case_id) return row
     return { ...row, case_material: materialByCase.get(row.case_id) ?? row.case_material }
   })
+}
+
+function resolveImportSortOrders(rows: ParsedQuestionRow[], unit: '行' | '题' = '行'): CsvRowIssue[] {
+  const issues: CsvRowIssue[] = []
+  const used = new Map<number, number>()
+  let nextAuto = 0
+
+  const resolved = rows.map((row) => {
+    if (row.sort_order_explicit) {
+      const sort_order = row.sort_order!
+      const prevLine = used.get(sort_order)
+      if (prevLine !== undefined) {
+        issues.push({
+          line: row.line,
+          message: `序号 ${sort_order + 1} 与第 ${prevLine} ${unit}重复`,
+        })
+      } else {
+        used.set(sort_order, row.line)
+      }
+      return row
+    }
+
+    while (used.has(nextAuto)) nextAuto++
+    used.set(nextAuto, row.line)
+    const sort_order = nextAuto
+    nextAuto++
+    return { ...row, sort_order }
+  })
+
+  resolved.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+  rows.splice(0, rows.length, ...resolved)
+  return issues
 }
 
 function lintDuplicateExternalIds(
@@ -134,6 +182,7 @@ export function lintParsedQuestionRows(
     issues.push({ line: 0, message: emptyMessage })
   } else {
     issues.push(...validateCaseGroups(rows))
+    issues.push(...resolveImportSortOrders(rows, duplicateUnit))
     issues.push(...lintDuplicateExternalIds(rows, duplicateUnit))
   }
 

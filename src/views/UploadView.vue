@@ -178,7 +178,7 @@ async function submit() {
     for (let i = 0; i < rows.length; i++) {
       const { error: qErr } = await supabase
         .from('questions')
-        .insert(questionPayloadFromRow(rows[i], bank.id, i))
+        .insert(questionPayloadFromRow(rows[i], bank.id))
       if (qErr) {
         await supabase.from('question_banks').delete().eq('id', bank.id)
         throw qErr
@@ -339,6 +339,7 @@ async function submit() {
           <ul class="mt-2 space-y-1 pl-4">
             <li>type：single / multiple / judgement</li>
             <li>stem、option_a…f、answer、explanation</li>
+            <li>序号（可选，从 1 开始；不填则按文件行序）</li>
             <li>case_id、case_material（案例小题）</li>
             <li>external_id（可选，用于重复导入更新）</li>
           </ul>
@@ -354,6 +355,7 @@ async function submit() {
           <ul class="mt-2 space-y-1 pl-4">
             <li>根节点：题目数组，或 <code class="text-ink">{ "questions": [...] }</code></li>
             <li>type、stem、answer 必填；options 支持对象、字符串数组或 key/text 数组</li>
+            <li>序号 或 sort_order（可选，序号从 1 开始；不填则按数组顺序）</li>
             <li>判断题可省略 options；案例题填写 case_id、case_material</li>
             <li>external_id（可选，用于重复导入更新）</li>
           </ul>

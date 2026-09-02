@@ -129,4 +129,27 @@ describe('lintQuestionJson', () => {
     expect(result.valid).toBe(false)
     expect(result.issues[0]?.message).toMatch(/TRUE|FALSE/)
   })
+
+  it('parses explicit 序号 and sorts rows by it', () => {
+    const text = `[
+      { "序号": 3, "type": "single", "stem": "第三题", "options": { "A": "a", "B": "b" }, "answer": "A" },
+      { "序号": 1, "type": "single", "stem": "第一题", "options": { "A": "a", "B": "b" }, "answer": "A" }
+    ]`
+    const result = lintQuestionJson(text)
+    expect(result.valid).toBe(true)
+    expect(result.rows[0].stem).toBe('第一题')
+    expect(result.rows[0].sort_order).toBe(0)
+    expect(result.rows[1].sort_order).toBe(2)
+    expect(result.rows[0].sort_order_explicit).toBe(true)
+  })
+
+  it('rejects duplicate 序号', () => {
+    const text = `[
+      { "序号": 1, "type": "single", "stem": "Q1", "options": { "A": "a", "B": "b" }, "answer": "A" },
+      { "序号": 1, "type": "single", "stem": "Q2", "options": { "A": "a", "B": "b" }, "answer": "A" }
+    ]`
+    const result = lintQuestionJson(text)
+    expect(result.valid).toBe(false)
+    expect(result.issues[0]?.message).toMatch(/序号 1/)
+  })
 })
