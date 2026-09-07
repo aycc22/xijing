@@ -279,7 +279,7 @@ async function submit() {
         <textarea
           v-model="jsonText"
           class="min-h-48 font-mono text-sm"
-          placeholder='粘贴 xijing-exam-paper 格式 JSON，例如 public/data/exams/2022-isec-engineer.json'
+          placeholder='粘贴 xijing-exam-paper 格式 JSON，例如 public/data/exams/2021-isec-engineer.json'
           spellcheck="false"
         />
         <div class="mt-2 flex flex-wrap items-center gap-2">
@@ -291,6 +291,10 @@ async function submit() {
         </div>
         <p class="m-0 mt-2 text-xs text-muted">
           样例文件：
+          <a class="text-spark underline-offset-2 hover:underline" href="./data/exams/2021-isec-engineer.json" download>
+            2021-isec-engineer.json
+          </a>
+          <span class="text-muted">·</span>
           <a class="text-spark underline-offset-2 hover:underline" href="./data/exams/2022-isec-engineer.json" download>
             2022-isec-engineer.json
           </a>

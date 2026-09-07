@@ -19,7 +19,11 @@
         "qualification": { "type": "string" },
         "level": { "type": "string" },
         "sources": { "type": "array", "items": { "type": "string" } },
-        "notes": { "type": "string" }
+        "notes": { "type": "string" },
+        "assets_base": {
+          "type": "string",
+          "description": "试卷配图资源根路径，如 /data/exams/2021-isec/images"
+        }
       }
     },
     "papers": {

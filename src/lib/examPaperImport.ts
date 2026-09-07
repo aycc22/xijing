@@ -20,6 +20,8 @@ export interface ExamMeta {
   level?: string
   sources?: string[]
   notes?: string
+  /** 试卷配图根路径，如 /data/exams/2021-isec/images */
+  assets_base?: string
 }
 
 export interface ExamPaperBundle {
@@ -92,8 +94,15 @@ export interface ParsedExamQuestionRow extends ParsedQuestionRow {
 
 function normalizeExamAttachments(
   attachments?: ExamCaseBlock['attachments'],
+  assetsBase = EXAM_ASSETS_BASE,
 ): CaseAttachment[] {
-  return normalizeAttachments(attachments, EXAM_ASSETS_BASE)
+  return normalizeAttachments(attachments, assetsBase)
+}
+
+function resolveExamAssetsBase(bundle: ExamPaperBundle): string {
+  const fromExam = bundle.exam.assets_base?.trim()
+  if (fromExam) return fromExam.replace(/\/$/, '')
+  return EXAM_ASSETS_BASE
 }
 
 function parseChoiceQuestion(
@@ -219,6 +228,7 @@ function parseSubQuestion(
 export function flattenExamPaperBundle(bundle: ExamPaperBundle): ParsedExamQuestionRow[] {
   const rows: ParsedExamQuestionRow[] = []
   let line = 1
+  const assetsBase = resolveExamAssetsBase(bundle)
 
   for (const paper of bundle.papers) {
     const section = paper.id
@@ -233,7 +243,7 @@ export function flattenExamPaperBundle(bundle: ExamPaperBundle): ParsedExamQuest
 
     for (const block of paper.cases ?? []) {
       const caseMaterial = block.material.trim()
-      const caseAttachments = normalizeExamAttachments(block.attachments)
+      const caseAttachments = normalizeExamAttachments(block.attachments, assetsBase)
       for (const sq of block.sub_questions) {
         rows.push(
           parseSubQuestion(sq, section, block.external_id, caseMaterial, caseAttachments, line),
@@ -272,7 +282,7 @@ export function examMetaPayload(bundle: ExamPaperBundle) {
     schema_version: bundle.schema_version,
     exam: {
       ...bundle.exam,
-      assets_base: EXAM_ASSETS_BASE,
+      assets_base: resolveExamAssetsBase(bundle),
     },
     papers: bundle.papers.map((p) => ({
       id: p.id,

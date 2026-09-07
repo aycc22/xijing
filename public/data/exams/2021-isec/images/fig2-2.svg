@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 200" font-family="ui-monospace, Menlo, Consolas, monospace">
+  <rect width="860" height="200" fill="#0f172a"/>
+  <text x="20" y="32" font-size="15" fill="#94a3b8">图2-2 authorized_keys 文件详细信息</text>
+  <text x="20" y="80" font-size="16" fill="#e2e8f0">$ ls -l ~/.ssh/authorized_keys</text>
+  <text x="20" y="118" font-size="16" fill="#86efac">-rw------- 1 xiaoming xiaoming  402 Nov  6 10:20 authorized_keys</text>
+  <text x="20" y="160" font-size="14" fill="#fbbf24">权限 -rw------- 的数字表示为 600</text>
+</svg>

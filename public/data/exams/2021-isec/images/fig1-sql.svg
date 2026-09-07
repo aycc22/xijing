@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 240" font-family="ui-monospace, Menlo, Consolas, monospace">
+  <rect width="820" height="240" fill="#0f172a"/>
+  <text x="20" y="32" font-size="15" fill="#94a3b8">网站后台数据库查询代码（节选）</text>
+  <text x="20" y="72" font-size="15" fill="#e2e8f0">$id = $_GET["id"];</text>
+  <text x="20" y="104" font-size="15" fill="#fca5a5">$sql = "SELECT * FROM users WHERE id='" . $id . "'";</text>
+  <text x="20" y="136" font-size="15" fill="#e2e8f0">$result = mysql_query($sql);</text>
+  <text x="20" y="180" font-size="13" fill="#fbbf24">直接拼接用户输入构造 SQL，未参数化 → SQL 注入；注释符 # 指向 MySQL。</text>
+</svg>
