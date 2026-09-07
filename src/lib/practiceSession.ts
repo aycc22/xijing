@@ -23,7 +23,7 @@ export function sheetStatus(attempt: QuestionAttempt | undefined): QuestionSheet
 
 export function canSubmitAnswer(attempt: QuestionAttempt | undefined): boolean {
   if (!attempt || attempt.revealed) return false
-  return attempt.selected.length > 0
+  return attempt.selected.some((k) => k.trim().length > 0)
 }
 
 export function markAnswered(attempt: QuestionAttempt, isCorrect: boolean): QuestionAttempt {

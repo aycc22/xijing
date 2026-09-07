@@ -13,7 +13,25 @@ export function isTextAnswer(qtype: QuestionType): boolean {
   return qtype === 'short_answer'
 }
 
-export function isAnswerCorrect(selected: string[], answerKeys: string[]): boolean {
+function normalizeTextAnswer(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+/** 简答题判分：忽略大小写与多余空白，允许参考答案与作答互相包含。 */
+export function gradeShortAnswer(selected: string[], reference: string): boolean {
+  const user = normalizeTextAnswer(selected[0] ?? '')
+  const ref = normalizeTextAnswer(reference)
+  if (!user || !ref) return false
+  return user === ref || ref.includes(user) || user.includes(ref)
+}
+
+export function isAnswerCorrect(
+  selected: string[],
+  answerKeys: string[],
+  qtype?: QuestionType,
+  referenceAnswer = '',
+): boolean {
+  if (qtype === 'short_answer') return gradeShortAnswer(selected, referenceAnswer)
   return sameAnswerSet(selected, answerKeys)
 }
 

@@ -5,6 +5,13 @@ import json
 from pathlib import Path
 
 OUTPUT = Path(__file__).resolve().parent.parent / "public/data/exams/2022-isec-engineer.json"
+EXPL_DIR = Path(__file__).resolve().parent / "data"
+MORNING_EXPLANATIONS = json.loads(
+    (EXPL_DIR / "2022-isec-morning-explanations.json").read_text(encoding="utf-8")
+)
+AFTERNOON_EXPLANATIONS = json.loads(
+    (EXPL_DIR / "2022-isec-afternoon-explanations.json").read_text(encoding="utf-8")
+)
 IMG_BASE = "/data/exams/2022-isec/images"
 
 # 上午综合知识 1-70 题（来源：信管网公开真题整理）
@@ -1011,7 +1018,11 @@ def build_morning_questions():
                 "stem": q["stem"],
                 "options": q["options"],
                 "answer": q["answer"],
-                **({"explanation": q["explanation"]} if "explanation" in q else {}),
+                **(
+                    {"explanation": q["explanation"]} if q.get("explanation")
+                    else {"explanation": MORNING_EXPLANATIONS[str(q["number"])]}
+                    if str(q["number"]) in MORNING_EXPLANATIONS else {}
+                ),
             }
         )
 
@@ -1059,6 +1070,10 @@ def build_afternoon_cases():
                 item["answer"] = sq["answer"]
             if "explanation" in sq:
                 item["explanation"] = sq["explanation"]
+            else:
+                key = f"case{case['number']}-{sq['number']}"
+                if key in AFTERNOON_EXPLANATIONS:
+                    item["explanation"] = AFTERNOON_EXPLANATIONS[key]
             sub_questions.append(item)
 
         cases.append(
@@ -1086,7 +1101,11 @@ def build_import_compatible_questions():
                 "stem": q["stem"],
                 "options": q["options"],
                 "answer": q["answer"],
-                **({"explanation": q["explanation"]} if "explanation" in q else {}),
+                **(
+                    {"explanation": q["explanation"]} if q.get("explanation")
+                    else {"explanation": MORNING_EXPLANATIONS[str(q["number"])]}
+                    if str(q["number"]) in MORNING_EXPLANATIONS else {}
+                ),
             }
         )
     for b in CLOZE_BLANKS:

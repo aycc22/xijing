@@ -23,7 +23,8 @@ import {
   type QuestionAttempt,
 } from '../lib/practiceSession'
 import { useScoring } from '../composables/useScoring'
-import { ensureQuestionOptions } from '../lib/scoring'
+import { ensureQuestionOptions, isTextAnswer } from '../lib/scoring'
+import { formatAnswerLabel } from '../lib/practiceResult'
 import { supabase } from '../lib/supabase'
 import { recordWrongQuestion, loadWrongQuestionIds, resolveQuestionStartIndex } from '../lib/wrongBook'
 import { buildQuestionSnapshot } from '../lib/questionSnapshot'
@@ -78,6 +79,20 @@ const progress = computed(() =>
 )
 const submitEnabled = computed(() => canSubmitAnswer(currentAttempt.value))
 const wrongOnly = computed(() => route.query.wrong === '1')
+
+const textAnswer = computed({
+  get: () => selected.value[0] ?? '',
+  set: (value: string) => {
+    selected.value = value ? [value] : []
+  },
+})
+
+const correctAnswerLabel = computed(() => {
+  const q = current.value
+  if (!q) return ''
+  if (isTextAnswer(q.qtype)) return q.reference_answer?.trim() || '（无参考答案）'
+  return formatAnswerLabel(q.answer_keys, q.qtype, normalizeOptions(q.options))
+})
 
 const sheetStatuses = computed<SheetCellState[]>(() =>
   attempts.value.map((attempt) => {
@@ -153,11 +168,12 @@ function next() {
 
 async function persistAnswer(question: Question, keys: string[], ok: boolean, skipped = false) {
   if (!sessionId.value) return
+  const selectedKeys = isTextAnswer(question.qtype) ? keys : keys.map((k) => k.toUpperCase())
   const { error: aErr } = await supabase.from('attempt_answers').upsert(
     {
       session_id: sessionId.value,
       question_id: question.id,
-      selected_keys: keys.map((k) => k.toUpperCase()),
+      selected_keys: selectedKeys,
       is_correct: ok,
       is_skipped: skipped,
       question_snapshot: buildQuestionSnapshot(question),
@@ -175,11 +191,16 @@ async function handleWrong(questionId: string, keys: string[]) {
 async function submitAnswer() {
   if (!current.value || !sessionId.value || revealed.value) return
   if (!submitEnabled.value) {
-    error.value = '请先选择答案'
+    error.value = isTextAnswer(current.value.qtype) ? '请先填写答案' : '请先选择答案'
     return
   }
   error.value = ''
-  const ok = isAnswerCorrect(selected.value, current.value.answer_keys)
+  const ok = isAnswerCorrect(
+    selected.value,
+    current.value.answer_keys,
+    current.value.qtype,
+    current.value.reference_answer ?? '',
+  )
   if (ok) correctCount.value += 1
   const attempt = markAnswered(attempts.value[index.value], ok)
   persistAttemptAt(index.value, attempt)
@@ -403,7 +424,18 @@ onMounted(start)
           {{ current.stem }}
         </h1>
 
-        <div class="flex flex-col gap-2.5">
+        <div v-if="isTextAnswer(current.qtype)" class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-muted" :for="`practice-answer-${current.id}`">你的作答</label>
+          <textarea
+            :id="`practice-answer-${current.id}`"
+            v-model="textAnswer"
+            class="min-h-36 font-mono text-sm"
+            placeholder="请输入答案（支持多行）"
+            spellcheck="false"
+            :disabled="revealed"
+          />
+        </div>
+        <div v-else class="flex flex-col gap-2.5">
           <button
             v-for="opt in current.options"
             :key="opt.key"
@@ -421,9 +453,14 @@ onMounted(start)
         <p v-if="revealed && currentAttempt?.status === 'skipped'" class="alert-warn m-0">
           已标记为暂不会，不计入正确。
         </p>
-        <p v-if="revealed && current.explanation" class="alert-info">
-          <span class="font-semibold">解析</span> · {{ current.explanation }}
-        </p>
+        <div v-if="revealed" class="flex flex-col gap-2">
+          <p class="alert-info m-0">
+            <span class="font-semibold">标准答案</span> · {{ correctAnswerLabel }}
+          </p>
+          <p v-if="current.explanation" class="alert-info m-0">
+            <span class="font-semibold">解析</span> · {{ current.explanation }}
+          </p>
+        </div>
 
         <div v-if="revealed" class="flex flex-col gap-3 border-t border-line/60 pt-3">
           <div class="flex flex-wrap gap-2">
