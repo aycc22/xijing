@@ -7,12 +7,8 @@ defineEmits<{
 <template>
   <!-- Teleport 到 body，避免被 .page-enter 的 transform 动画做成 fixed 包含块 -->
   <Teleport to="body">
-    <nav
-      class="fixed inset-x-0 bottom-0 z-30 border-t border-line/70 bg-surface/95 backdrop-blur-md"
-      style="padding-bottom: env(safe-area-inset-bottom)"
-      aria-label="答题操作"
-    >
-      <div class="mx-auto flex max-w-lg items-center gap-2 px-3 py-1.5 md:max-w-3xl md:px-6">
+    <nav class="bottom-bar" aria-label="答题操作">
+      <div class="bottom-bar-inner items-center gap-2 px-3 py-1.5 md:px-6">
         <button
           type="button"
           class="tab-link !flex-none w-16 shrink-0 cursor-pointer border-0 bg-transparent"

@@ -354,8 +354,17 @@
     @apply font-semibold text-spark;
   }
 
+  .bottom-bar {
+    @apply fixed inset-x-0 bottom-0 z-30 border-t border-line/70 bg-surface/95 backdrop-blur-md;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .bottom-bar-inner {
+    @apply mx-auto flex w-full max-w-lg md:max-w-3xl;
+  }
+
   .tab-link {
-    @apply relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[0.7rem] font-medium text-muted transition hover:text-ink;
+    @apply relative flex flex-1 flex-col items-center gap-0.5 pt-1.5 pb-0 text-[0.7rem] font-medium text-muted transition hover:text-ink;
   }
 
   .tab-link.router-link-active,
