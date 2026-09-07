@@ -120,6 +120,10 @@ function normalizeExamBundle(parsed: Record<string, unknown>): ExamPaperBundle {
         ? examObj.sources.filter((s): s is string => typeof s === 'string')
         : undefined,
       notes: typeof examObj.notes === 'string' ? examObj.notes : undefined,
+      assets_base:
+        typeof examObj.assets_base === 'string' && examObj.assets_base.trim()
+          ? examObj.assets_base.trim().replace(/\/$/, '')
+          : undefined,
     },
     papers: papers as ExamPaperBundle['papers'],
   }

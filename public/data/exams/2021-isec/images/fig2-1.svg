@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 320" font-family="ui-monospace, Menlo, Consolas, monospace">
+  <rect width="920" height="320" fill="#0f172a"/>
+  <text x="20" y="32" font-size="15" fill="#94a3b8">图2-1 /var/log/auth.log 可疑记录（节选）</text>
+  <text x="20" y="70" font-size="13" fill="#fca5a5">Nov  6 09:12:01 webssh sshd[2144]: Failed password for root from 203.0.113.88 port 53122 ssh2</text>
+  <text x="20" y="98" font-size="13" fill="#fca5a5">Nov  6 09:12:03 webssh sshd[2146]: Failed password for root from 203.0.113.88 port 53124 ssh2</text>
+  <text x="20" y="126" font-size="13" fill="#fca5a5">Nov  6 09:12:05 webssh sshd[2148]: Failed password for invalid user admin from 203.0.113.88 port 53126 ssh2</text>
+  <text x="20" y="154" font-size="13" fill="#fca5a5">Nov  6 09:12:08 webssh sshd[2150]: Failed password for root from 203.0.113.88 port 53128 ssh2</text>
+  <text x="20" y="190" font-size="13" fill="#86efac">Nov  6 09:13:41 webssh sshd[2201]: Accepted password for xiaoming from 203.0.113.88 port 54001 ssh2</text>
+  <text x="20" y="218" font-size="13" fill="#86efac">Nov  6 09:13:41 webssh sshd[2201]: pam_unix(sshd:session): session opened for user xiaoming</text>
+  <text x="20" y="260" font-size="13" fill="#fbbf24">判断攻击是否成功：查找 Accepted password / Accepted publickey；持续 Failed password 为暴力破解尝试。</text>
+  <text x="20" y="290" font-size="13" fill="#94a3b8">Ubuntu 18.04 SSH 认证日志默认路径：/var/log/auth.log</text>
+</svg>

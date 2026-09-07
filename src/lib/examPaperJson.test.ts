@@ -7,11 +7,12 @@ import { buildFixedPaperPlan, sectionLabelsFromBundle } from './examPaperCompose
 import { gradeExam } from './examSession'
 import { buildPaperItems } from './paperSnapshot'
 
-const samplePath = resolve('public/data/exams/2022-isec-engineer.json')
+const samplePath2022 = resolve('public/data/exams/2022-isec-engineer.json')
+const samplePath2021 = resolve('public/data/exams/2021-isec-engineer.json')
 
 describe('examPaperJson', () => {
   it('parses 2022 exam sample', () => {
-    const text = readFileSync(samplePath, 'utf8')
+    const text = readFileSync(samplePath2022, 'utf8')
     const result = lintExamPaperJson(text)
     expect(result.valid).toBe(true)
     expect(result.rows.length).toBeGreaterThan(100)
@@ -27,8 +28,26 @@ describe('examPaperJson', () => {
     }
   })
 
+  it('parses 2021 exam sample', () => {
+    const text = readFileSync(samplePath2021, 'utf8')
+    const result = lintExamPaperJson(text)
+    expect(result.valid).toBe(true)
+    expect(result.stats?.morning).toBe(75)
+    expect(result.stats?.afternoon).toBe(40)
+    expect(result.bundle).toBeTruthy()
+    const caseRow = result.rows.find((r) => r.case_id === '2021-11-pm-case1')
+    expect(caseRow?.attachments?.length).toBe(3)
+    expect((caseRow?.attachments?.[0] as { url?: string })?.url).toContain(
+      '/data/exams/2021-isec/images/fig1-1.png',
+    )
+    if (result.bundle) {
+      expect(examBankTitle(result.bundle)).toContain('2021')
+      expect(result.bundle.exam.assets_base).toBe('/data/exams/2021-isec/images')
+    }
+  })
+
   it('builds fixed paper plan with scores', () => {
-    const text = readFileSync(samplePath, 'utf8')
+    const text = readFileSync(samplePath2022, 'utf8')
     const result = lintExamPaperJson(text)
     expect(result.bundle).toBeTruthy()
     const flat = result.rows

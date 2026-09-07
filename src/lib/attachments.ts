@@ -7,13 +7,16 @@ export interface CaseAttachment {
 
 export const DEFAULT_EXAM_ASSETS_BASE = '/data/exams/2022-isec/images'
 
-/** 已知真题配图的文件后缀（fig1-2 为文字规则示意，仍为 svg） */
+/** 已知真题配图的文件后缀（缺省 url 时按 id 推断） */
 const KNOWN_ATTACHMENT_EXTENSIONS: Record<string, string> = {
   'fig1-1': 'png',
   'fig1-2': 'svg',
+  'fig1-sql': 'svg',
   'fig2-1': 'png',
+  'fig2-2': 'svg',
   'fig3-1': 'png',
   'fig3-2': 'png',
+  'fig4-1': 'png',
 }
 
 export function appBasePath(): string {
