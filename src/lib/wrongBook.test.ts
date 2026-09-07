@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { bankFilterOptions, filterEntriesByBank, type WrongBookEntry } from './wrongBook'
+import {
+  bankFilterOptions,
+  filterEntriesByBank,
+  resolveQuestionStartIndex,
+  type WrongBookEntry,
+} from './wrongBook'
 
 const entries: WrongBookEntry[] = [
   {
@@ -44,5 +49,17 @@ describe('bankFilterOptions', () => {
       { id: 'b1', title: '内科', count: 1 },
       { id: 'b2', title: '外科', count: 1 },
     ])
+  })
+})
+
+describe('resolveQuestionStartIndex', () => {
+  it('returns matching index when qid exists', () => {
+    expect(resolveQuestionStartIndex(['a', 'b', 'c'], 'b')).toBe(1)
+  })
+
+  it('falls back to 0 when qid missing or unknown', () => {
+    expect(resolveQuestionStartIndex(['a', 'b'], null)).toBe(0)
+    expect(resolveQuestionStartIndex(['a', 'b'], undefined)).toBe(0)
+    expect(resolveQuestionStartIndex(['a', 'b'], 'z')).toBe(0)
   })
 })

@@ -25,7 +25,7 @@ import {
 import { useScoring } from '../composables/useScoring'
 import { ensureQuestionOptions } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
-import { recordWrongQuestion, loadWrongQuestionIds } from '../lib/wrongBook'
+import { recordWrongQuestion, loadWrongQuestionIds, resolveQuestionStartIndex } from '../lib/wrongBook'
 import { buildQuestionSnapshot } from '../lib/questionSnapshot'
 import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/userLearning'
 import { useAuth } from '../composables/useAuth'
@@ -286,8 +286,12 @@ async function start() {
   }
 
   attempts.value = createPracticeState(questions.value.length)
-  index.value = 0
-  applyAttemptState(attempts.value[0])
+  const startQid = typeof route.query.qid === 'string' ? route.query.qid : null
+  index.value = resolveQuestionStartIndex(
+    questions.value.map((q) => q.id),
+    startQid,
+  )
+  applyAttemptState(attempts.value[index.value])
 
   await expireStaleSessions(auth.user.value.id)
 

@@ -30,6 +30,10 @@ function startWrongPractice(bankId: string) {
   router.push(`/quiz/${bankId}?wrong=1&new=1`)
 }
 
+function redoEntry(entry: WrongBookEntry) {
+  router.push(`/quiz/${entry.bank_id}?wrong=1&new=1&qid=${entry.question_id}`)
+}
+
 function loadErrorMessage(err: unknown): string {
   const msg = err instanceof Error ? err.message : ''
   if (msg.includes('wrong_question_items') || msg.includes('schema cache')) {
@@ -64,7 +68,7 @@ onMounted(load)
       <div>
         <p class="page-kicker">复习</p>
         <h1 class="page-title">错题本</h1>
-        <p class="page-lede">答错或「暂不会」的题目会自动收录；答对不会自动移除。</p>
+        <p class="page-lede">答错或「暂不会」的题目会自动收录；点击题目可重做。答对不会自动移除。</p>
       </div>
       <button class="btn-secondary" type="button" :disabled="loading" @click="load">刷新</button>
     </section>
@@ -99,19 +103,26 @@ onMounted(load)
 
       <ul class="m-0 flex list-none flex-col gap-3 p-0">
         <li v-for="entry in visibleEntries" :key="entry.id">
-          <article class="surface flex flex-col gap-2 px-4 py-3.5">
+          <button
+            type="button"
+            class="surface card-link flex w-full flex-col gap-2 px-4 py-3.5 text-left"
+            @click="redoEntry(entry)"
+          >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
                 <p class="m-0 text-xs text-muted">{{ entry.bank_title }}</p>
                 <p class="m-0 mt-1 line-clamp-2 text-sm font-medium text-ink">{{ entry.stem }}</p>
               </div>
-              <span class="chip shrink-0 tabular-nums">×{{ entry.wrong_count }}</span>
+              <div class="flex shrink-0 flex-col items-end gap-1">
+                <span class="chip tabular-nums">×{{ entry.wrong_count }}</span>
+                <span class="text-xs font-medium text-path">重做</span>
+              </div>
             </div>
             <p class="m-0 text-xs text-muted">
               最近答错 {{ fmtDate(entry.last_wrong_at) }} ·
               上次答案 {{ formatAnswerLabel(entry.last_wrong_keys, entry.qtype, []) || '未作答' }}
             </p>
-          </article>
+          </button>
         </li>
       </ul>
     </template>

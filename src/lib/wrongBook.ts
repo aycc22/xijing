@@ -18,6 +18,13 @@ export function filterEntriesByBank(entries: WrongBookEntry[], bankId: string): 
   return entries.filter((entry) => entry.bank_id === bankId)
 }
 
+/** 在题目列表中定位指定题目的起始下标；找不到则从 0 开始 */
+export function resolveQuestionStartIndex(questionIds: string[], questionId: string | null | undefined): number {
+  if (!questionId) return 0
+  const index = questionIds.indexOf(questionId)
+  return index >= 0 ? index : 0
+}
+
 export function bankFilterOptions(entries: WrongBookEntry[]): { id: string; title: string; count: number }[] {
   const map = new Map<string, { title: string; count: number }>()
   for (const entry of entries) {
