@@ -123,6 +123,8 @@ function parseChoiceQuestion(
       return {
         line: line + index,
         external_id: blank.external_id,
+        sort_order: null,
+        sort_order_explicit: false,
         qtype: 'single',
         stem: `${q.stem}\n\n${blank.stem}`,
         options,
@@ -152,6 +154,8 @@ function parseChoiceQuestion(
     {
       line,
       external_id: q.external_id,
+      sort_order: null,
+      sort_order_explicit: false,
       qtype,
       stem: q.stem,
       options,
@@ -185,6 +189,8 @@ function parseSubQuestion(
     return {
       line,
       external_id: sq.external_id,
+      sort_order: null,
+      sort_order_explicit: false,
       qtype: 'short_answer',
       stem,
       options: [],
@@ -211,6 +217,8 @@ function parseSubQuestion(
   return {
     line,
     external_id: sq.external_id,
+    sort_order: null,
+    sort_order_explicit: false,
     qtype,
     stem,
     options,
