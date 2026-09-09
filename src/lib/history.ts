@@ -1,6 +1,7 @@
 import { computePracticeSummary } from './practiceResult'
 
 export type SessionMode = 'practice' | 'exam'
+export type HistoryKind = 'practice' | 'exam'
 export type HistoryStatus = 'in_progress' | 'finished' | 'expired'
 
 export interface HistorySession {
@@ -8,6 +9,8 @@ export interface HistorySession {
   bank_id: string
   bank_title: string
   mode: SessionMode
+  kind: HistoryKind
+  paper_id?: string | null
   total_count: number
   correct_count: number
   current_index: number
@@ -65,7 +68,28 @@ export function historyResultText(session: HistorySession): string {
 
 export function detailPathForSession(session: HistorySession): string {
   const status = sessionHistoryStatus(session)
-  if (status === 'finished') return `/result/${session.id}`
+  const isExam = session.kind === 'exam' || session.mode === 'exam'
+  if (isExam) {
+    if (status === 'in_progress' && session.paper_id) return `/exam/${session.paper_id}`
+    return `/exam-result/${session.id}`
+  }
   if (status === 'in_progress') return `/quiz/${session.bank_id}`
   return `/result/${session.id}`
+}
+
+export function mergeHistorySessions(rows: HistorySession[]): HistorySession[] {
+  return [...rows].sort((a, b) => (a.started_at < b.started_at ? 1 : -1))
+}
+
+export function computeHistoryStats(sessions: HistorySession[]) {
+  const finished = sessions.filter((s) => sessionHistoryStatus(s) === 'finished')
+  const total = finished.reduce((sum, s) => sum + s.total_count, 0)
+  const correct = finished.reduce((sum, s) => sum + s.correct_count, 0)
+  const rate = total ? Math.round((correct / total) * 100) : 0
+  return {
+    sessionCount: finished.length,
+    total,
+    correct,
+    rate,
+  }
 }

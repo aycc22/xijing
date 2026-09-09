@@ -81,3 +81,16 @@ describe('parseQuestionCsv sort order', () => {
     await expect(parseQuestionCsv(bad)).rejects.toThrow(/序号 1/)
   })
 })
+
+const EXTENDED_CSV = `type,stem,option_a,option_b,option_g,option_h,answer,difficulty,tags
+single,八道选项题,A文,B文,G文,H文,H,hard,标签一;标签二`
+
+describe('parseQuestionCsv extended columns', () => {
+  it('parses option_g/h and optional difficulty/tags', async () => {
+    const rows = await parseQuestionCsv(EXTENDED_CSV)
+    expect(rows[0].options.map((o) => o.key)).toEqual(['A', 'B', 'G', 'H'])
+    expect(rows[0].answer_keys).toEqual(['H'])
+    expect(rows[0].difficulty).toBe('hard')
+    expect(rows[0].tags).toEqual(['标签一', '标签二'])
+  })
+})

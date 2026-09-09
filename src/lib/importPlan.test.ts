@@ -17,6 +17,8 @@ const row = (external_id: string | null): ParsedQuestionRow => ({
   explanation: '',
   case_id: null,
   case_material: '',
+  difficulty: null,
+  tags: [],
 })
 
 describe('planQuestionImport', () => {

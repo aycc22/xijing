@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   bankFilterOptions,
   filterEntriesByBank,
+  filterEntriesByMastery,
+  masteryLabel,
+  nextMasteryState,
   resolveQuestionStartIndex,
   type WrongBookEntry,
 } from './wrongBook'
@@ -14,6 +17,8 @@ const entries: WrongBookEntry[] = [
     last_wrong_keys: ['A'],
     first_wrong_at: '2026-08-01',
     last_wrong_at: '2026-08-02',
+    consecutive_correct: 0,
+    mastery: 'pending',
     stem: '题一',
     qtype: 'single',
     bank_id: 'b1',
@@ -26,6 +31,8 @@ const entries: WrongBookEntry[] = [
     last_wrong_keys: ['B'],
     first_wrong_at: '2026-08-03',
     last_wrong_at: '2026-08-03',
+    consecutive_correct: 1,
+    mastery: 'reviewing',
     stem: '题二',
     qtype: 'multiple',
     bank_id: 'b2',
@@ -49,6 +56,29 @@ describe('bankFilterOptions', () => {
       { id: 'b1', title: '内科', count: 1 },
       { id: 'b2', title: '外科', count: 1 },
     ])
+  })
+})
+
+describe('mastery', () => {
+  it('resets on wrong and masters after two consecutive corrects', () => {
+    expect(nextMasteryState({ consecutive_correct: 1, mastery: 'reviewing' }, false)).toEqual({
+      consecutive_correct: 0,
+      mastery: 'pending',
+    })
+    expect(nextMasteryState({ consecutive_correct: 0 }, true)).toEqual({
+      consecutive_correct: 1,
+      mastery: 'reviewing',
+    })
+    expect(nextMasteryState({ consecutive_correct: 1 }, true)).toEqual({
+      consecutive_correct: 2,
+      mastery: 'mastered',
+    })
+    expect(masteryLabel('mastered')).toBe('已掌握')
+  })
+
+  it('filters by mastery', () => {
+    expect(filterEntriesByMastery(entries, 'reviewing')).toEqual([entries[1]])
+    expect(filterEntriesByMastery(entries, 'all')).toHaveLength(2)
   })
 })
 

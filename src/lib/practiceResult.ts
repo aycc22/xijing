@@ -1,3 +1,4 @@
+import { parseQuestionSnapshot, type QuestionSnapshot } from './questionSnapshot'
 import type { QuestionOption, QuestionType } from './types'
 
 export interface PracticeSummary {
@@ -49,4 +50,35 @@ export function verdictForRate(rate: number): string {
 export function resultStatusLabel(input: { is_correct: boolean; is_skipped: boolean }): string {
   if (input.is_skipped) return '暂不会'
   return input.is_correct ? '正确' : '错误'
+}
+
+export function resultStatusSymbol(input: { is_correct: boolean; is_skipped: boolean }): string {
+  if (input.is_skipped) return '○'
+  return input.is_correct ? '✓' : '✗'
+}
+
+export interface PracticeReviewItem {
+  question_id: string
+  selected_keys: string[]
+  is_correct: boolean
+  is_skipped: boolean
+  snapshot: QuestionSnapshot | null
+}
+
+export function toPracticeReviewItems(
+  rows: {
+    question_id: string
+    selected_keys?: string[] | null
+    is_correct?: boolean | null
+    is_skipped?: boolean | null
+    question_snapshot?: unknown
+  }[],
+): PracticeReviewItem[] {
+  return rows.map((row) => ({
+    question_id: row.question_id,
+    selected_keys: row.selected_keys ?? [],
+    is_correct: Boolean(row.is_correct),
+    is_skipped: Boolean(row.is_skipped),
+    snapshot: parseQuestionSnapshot(row.question_snapshot),
+  }))
 }

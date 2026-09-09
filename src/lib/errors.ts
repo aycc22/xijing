@@ -6,6 +6,20 @@ const EXAM_SUBMIT_ERROR_MAP: Record<string, string> = {
   'Could not find the function public.finish_exam_session': '服务器尚未更新交卷功能，请稍后再试',
 }
 
+const APP_ERROR_MAP: Record<string, string> = {
+  'empty bank cannot be published': '空题库不能发布，请先导入或新增有效题目',
+  'cannot demote the last admin': '不能撤销或冻结平台最后一名有效管理员',
+  'bank has learning records': '该题库已有练习、错题或收藏等学习记录，不能删除，请改为下架',
+  'Account frozen': '账号已冻结，请联系管理员',
+  'account frozen': '账号已冻结，请联系管理员',
+  'Invalid login credentials': '邮箱或密码不正确',
+  'Email not confirmed': '邮箱尚未确认，请先查收确认邮件',
+  'User already registered': '该邮箱已注册，请直接登录',
+  'Password should be at least': '密码至少 6 位',
+  'For security purposes, you can only request this after': '请稍后再试，发送重置邮件过于频繁',
+  'Unable to validate email address': '邮箱格式不正确',
+}
+
 const PAPER_CREATE_ERROR_MAP: Record<string, string> = {
   'paper_instances_user_id_fkey':
     '账号资料未就绪，请退出后重新登录；若仍失败请联系管理员',
@@ -30,7 +44,9 @@ function mapKnownError(message: string, map: Record<string, string>): string | n
 
 function mapKnownExamSubmitError(message: string): string | null {
   const mapped =
-    mapKnownError(message, EXAM_SUBMIT_ERROR_MAP) ?? mapKnownError(message, PAPER_CREATE_ERROR_MAP)
+    mapKnownError(message, EXAM_SUBMIT_ERROR_MAP) ??
+    mapKnownError(message, PAPER_CREATE_ERROR_MAP) ??
+    mapKnownError(message, APP_ERROR_MAP)
   if (mapped) return mapped
   const normalized = normalizeErrorText(message)
   if (normalized.includes('jwt expired') || normalized.includes('invalid jwt')) {

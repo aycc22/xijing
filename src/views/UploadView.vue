@@ -342,7 +342,8 @@ async function submit() {
         <template v-if="importMode === 'csv'">
           <ul class="mt-2 space-y-1 pl-4">
             <li>type：single / multiple / judgement</li>
-            <li>stem、option_a…f、answer、explanation</li>
+            <li>stem、option_a…h、answer、explanation</li>
+            <li>difficulty、tags（可选）</li>
             <li>序号（可选，从 1 开始；不填则按文件行序）</li>
             <li>case_id、case_material（案例小题）</li>
             <li>external_id（可选，用于重复导入更新）</li>

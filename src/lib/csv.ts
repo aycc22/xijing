@@ -24,6 +24,8 @@ export interface ParsedQuestionRow {
   explanation: string
   case_id: string | null
   case_material: string
+  difficulty: string | null
+  tags: string[]
 }
 
 export interface CsvLintResult {
@@ -39,8 +41,17 @@ export interface LintParsedOptions {
   duplicateUnit?: '行' | '题'
 }
 
-const OPTION_COLS = ['option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'option_f'] as const
-const KEYS = ['A', 'B', 'C', 'D', 'E', 'F'] as const
+const OPTION_COLS = [
+  'option_a',
+  'option_b',
+  'option_c',
+  'option_d',
+  'option_e',
+  'option_f',
+  'option_g',
+  'option_h',
+] as const
+const KEYS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const
 
 function readExternalId(row: Record<string, string>): string | null {
   const raw = (row.external_id ?? row['外部标识'] ?? '').trim()
@@ -54,6 +65,20 @@ function readCaseId(row: Record<string, string>): string | null {
 
 function readCaseMaterial(row: Record<string, string>): string {
   return (row.case_material ?? row['案例材料'] ?? '').trim()
+}
+
+function readDifficulty(row: Record<string, string>): string | null {
+  const raw = (row.difficulty ?? row['难度'] ?? '').trim()
+  return raw || null
+}
+
+function readTags(row: Record<string, string>): string[] {
+  const raw = (row.tags ?? row['标签'] ?? '').trim()
+  if (!raw) return []
+  return raw
+    .split(/[;；,，]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
 }
 
 function readSortOrder(row: Record<string, string>): number | null {
@@ -101,6 +126,8 @@ export function parseQuestionRow(row: Record<string, string>, line: number): Par
     explanation: (row.explanation ?? row['解析'] ?? '').trim(),
     case_id: readCaseId(row),
     case_material: readCaseMaterial(row),
+    difficulty: readDifficulty(row),
+    tags: readTags(row),
   }
 }
 

@@ -49,6 +49,8 @@ export function questionContentFromRow(row: ParsedQuestionRow) {
     explanation: row.explanation,
     case_id: row.case_id,
     case_material: row.case_material || null,
+    difficulty: row.difficulty,
+    tags: row.tags ?? [],
   }
 }
 

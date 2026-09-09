@@ -24,12 +24,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Test
+        run: npm test
       - name: Build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_BASE: ${{ vars.VITE_BASE }}
-          VITE_WECHAT_OPEN_APP_ID: ${{ vars.VITE_WECHAT_OPEN_APP_ID }}
         run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

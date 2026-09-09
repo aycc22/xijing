@@ -1,4 +1,5 @@
 export type AppRole = 'learner' | 'uploader' | 'admin'
+export type AccountStatus = 'active' | 'frozen'
 export type QuestionType = 'single' | 'multiple' | 'judgement' | 'case_analysis' | 'short_answer'
 export type BankKind = 'pool' | 'exam'
 export type PaperComposeMode = 'random' | 'fixed'
@@ -7,6 +8,8 @@ export interface Profile {
   id: string
   display_name: string | null
   role: AppRole
+  status: AccountStatus
+  avatar_url: string | null
   created_at: string
 }
 
@@ -45,6 +48,8 @@ export interface Question {
   section: string | null
   attachments: unknown[] | null
   reference_answer: string
+  difficulty: string | null
+  tags: string[]
 }
 
 export type SessionMode = 'practice' | 'exam'

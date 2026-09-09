@@ -138,7 +138,7 @@ onMounted(load)
               class="chip shrink-0"
               :class="row.is_correct ? 'border-ok/40 bg-ok/10 text-ok' : 'border-bad/40 bg-bad/10 text-bad'"
             >
-              {{ row.is_correct ? '正确' : '错误' }}
+              {{ row.is_correct ? '✓ 正确' : '✗ 错误' }}
             </span>
           </summary>
           <div class="flex flex-col gap-3 border-t border-line/60 px-4 py-3.5 text-sm">

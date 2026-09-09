@@ -2,9 +2,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
+  computeHistoryStats,
   detailPathForSession,
   historyResultText,
   historyStatusLabel,
+  mergeHistorySessions,
   modeLabel,
   partitionHistory,
   sessionHistoryStatus,
@@ -13,6 +15,7 @@ import {
   type SessionMode,
 } from '../lib/history'
 import { expireStaleSessions } from '../composables/usePracticeProgress'
+import { formatErrorMessage } from '../lib/errors'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 
@@ -27,6 +30,7 @@ const loading = ref(true)
 const error = ref('')
 
 const parts = computed(() => partitionHistory(sessions.value))
+const stats = computed(() => computeHistoryStats(sessions.value))
 const visible = computed(() => {
   if (tab.value === 'finished') return parts.value.finished
   if (tab.value === 'expired') return parts.value.expired
@@ -52,6 +56,69 @@ function openSession(session: HistorySession) {
   router.push(detailPathForSession(session))
 }
 
+function bankTitleFromJoin(raw: unknown): string {
+  const bank = (Array.isArray(raw) ? raw[0] : raw) as { title?: string } | null
+  return bank?.title ?? '未命名题库'
+}
+
+async function loadPractice(): Promise<HistorySession[]> {
+  if (!auth.user.value) return []
+  const { data, error: err } = await supabase
+    .from('attempt_sessions')
+    .select(
+      'id, bank_id, mode, total_count, correct_count, current_index, started_at, finished_at, expired_at, question_banks!inner(title)',
+    )
+    .eq('user_id', auth.user.value.id)
+    .order('started_at', { ascending: false })
+  if (err) throw err
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    bank_id: row.bank_id,
+    bank_title: bankTitleFromJoin(row.question_banks),
+    mode: ((row.mode as SessionMode) || 'practice') as SessionMode,
+    kind: 'practice' as const,
+    paper_id: null,
+    total_count: row.total_count,
+    correct_count: row.correct_count,
+    current_index: row.current_index ?? 0,
+    started_at: row.started_at,
+    finished_at: row.finished_at,
+    expired_at: row.expired_at,
+  }))
+}
+
+async function loadExams(): Promise<HistorySession[]> {
+  if (!auth.user.value) return []
+  const { data, error: err } = await supabase
+    .from('exam_sessions')
+    .select(
+      'id, paper_id, total_count, correct_count, current_index, started_at, finished_at, paper_instances!inner(bank_id, question_banks!inner(title))',
+    )
+    .eq('user_id', auth.user.value.id)
+    .order('started_at', { ascending: false })
+  if (err) throw err
+  return (data ?? []).map((row) => {
+    const paper = (Array.isArray(row.paper_instances) ? row.paper_instances[0] : row.paper_instances) as {
+      bank_id: string
+      question_banks: unknown
+    } | null
+    return {
+      id: row.id,
+      bank_id: paper?.bank_id ?? '',
+      bank_title: bankTitleFromJoin(paper?.question_banks),
+      mode: 'exam' as const,
+      kind: 'exam' as const,
+      paper_id: row.paper_id,
+      total_count: row.total_count,
+      correct_count: row.correct_count,
+      current_index: row.current_index ?? 0,
+      started_at: row.started_at,
+      finished_at: row.finished_at,
+      expired_at: null,
+    }
+  })
+}
+
 async function load() {
   loading.value = true
   error.value = ''
@@ -60,34 +127,14 @@ async function load() {
     loading.value = false
     return
   }
-  await expireStaleSessions(auth.user.value.id)
-  const { data, error: err } = await supabase
-    .from('attempt_sessions')
-    .select('id, bank_id, mode, total_count, correct_count, current_index, started_at, finished_at, expired_at, question_banks!inner(title)')
-    .eq('user_id', auth.user.value.id)
-    .order('started_at', { ascending: false })
-  if (err) {
-    error.value = err.message
-    loading.value = false
-    return
+  try {
+    await expireStaleSessions(auth.user.value.id)
+    const [practice, exams] = await Promise.all([loadPractice(), loadExams()])
+    sessions.value = mergeHistorySessions([...practice, ...exams])
+    if (!parts.value.inProgress.length && parts.value.finished.length) tab.value = 'finished'
+  } catch (err) {
+    error.value = formatErrorMessage(err, '加载历史失败')
   }
-  sessions.value = (data ?? []).map((row) => {
-    const bank = row.question_banks as unknown
-    const bankObj = (Array.isArray(bank) ? bank[0] : bank) as { title: string } | null
-    return {
-      id: row.id,
-      bank_id: row.bank_id,
-      bank_title: bankObj?.title ?? '未命名题库',
-      mode: (row.mode as SessionMode) || 'practice',
-      total_count: row.total_count,
-      correct_count: row.correct_count,
-      current_index: row.current_index ?? 0,
-      started_at: row.started_at,
-      finished_at: row.finished_at,
-      expired_at: row.expired_at,
-    }
-  })
-  if (!parts.value.inProgress.length && parts.value.finished.length) tab.value = 'finished'
   loading.value = false
 }
 
@@ -100,7 +147,7 @@ onMounted(load)
       <div>
         <p class="page-kicker">回顾</p>
         <h1 class="page-title">历史记录</h1>
-        <p class="page-lede">区分未完成与已完成；点击可继续练习或查看结果。</p>
+        <p class="page-lede">刷题与答题都在这里。点击可继续练习或查看当时结果。</p>
       </div>
       <button class="btn-secondary" type="button" :disabled="loading" @click="load">刷新</button>
     </section>
@@ -109,6 +156,21 @@ onMounted(load)
     <p v-else-if="error" class="alert-error">{{ error }}</p>
 
     <template v-else>
+      <div class="mb-4 grid grid-cols-3 gap-2">
+        <div class="surface px-3 py-3 text-center">
+          <p class="m-0 text-lg font-semibold tabular-nums text-ink">{{ stats.sessionCount }}</p>
+          <p class="m-0 mt-0.5 text-xs text-muted">已完成次数</p>
+        </div>
+        <div class="surface px-3 py-3 text-center">
+          <p class="m-0 text-lg font-semibold tabular-nums text-ink">{{ stats.total }}</p>
+          <p class="m-0 mt-0.5 text-xs text-muted">累计题数</p>
+        </div>
+        <div class="surface px-3 py-3 text-center">
+          <p class="m-0 text-lg font-semibold tabular-nums text-ink">{{ stats.rate }}%</p>
+          <p class="m-0 mt-0.5 text-xs text-muted">正确率</p>
+        </div>
+      </div>
+
       <div class="seg mb-4" role="tablist" aria-label="历史分栏">
         <button
           type="button"
@@ -144,12 +206,12 @@ onMounted(load)
 
       <div v-if="!visible.length" class="surface py-14 text-center">
         <p class="m-0 font-medium text-ink">这一栏还没有记录</p>
-        <p class="mt-1.5 text-sm text-muted">去题库开始一次刷题吧。</p>
+        <p class="mt-1.5 text-sm text-muted">去题库开始一次刷题或答题吧。</p>
         <button class="btn mt-6" type="button" @click="router.push('/banks')">去题库</button>
       </div>
 
       <ul v-else class="m-0 flex list-none flex-col gap-3 p-0">
-        <li v-for="session in visible" :key="session.id">
+        <li v-for="session in visible" :key="`${session.kind}-${session.id}`">
           <button
             type="button"
             class="surface card-link flex w-full flex-col gap-2 px-4 py-3.5 text-left"

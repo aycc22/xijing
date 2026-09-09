@@ -7,11 +7,13 @@ const router = createRouter({
     { path: '/', name: 'home', component: () => import('../views/HomeView.vue') },
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { guest: true } },
     {
-      path: '/auth/wechat/callback',
-      name: 'wechat-callback',
-      component: () => import('../views/WechatCallbackView.vue'),
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('../views/ResetPasswordView.vue'),
     },
     { path: '/banks', name: 'banks', component: () => import('../views/BanksView.vue'), meta: { auth: true } },
+    { path: '/favorites', name: 'favorites', component: () => import('../views/FavoritesView.vue'), meta: { auth: true } },
+    { path: '/notes', name: 'notes', component: () => import('../views/NotesView.vue'), meta: { auth: true } },
     { path: '/wrong-book', name: 'wrong-book', component: () => import('../views/WrongBookView.vue'), meta: { auth: true } },
     { path: '/history', name: 'history', component: () => import('../views/HistoryView.vue'), meta: { auth: true } },
     {
@@ -37,6 +39,12 @@ const router = createRouter({
       path: '/banks/:bankId/exam',
       name: 'exam-paper-start',
       component: () => import('../views/ExamPaperStartView.vue'),
+      meta: { auth: true },
+    },
+    {
+      path: '/banks/:bankId',
+      name: 'bank-detail',
+      component: () => import('../views/BankDetailView.vue'),
       meta: { auth: true },
     },
     {
