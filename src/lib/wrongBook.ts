@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+export type MasteryStatus = 'pending' | 'reviewing' | 'mastered'
+
 export interface WrongBookEntry {
   id: string
   question_id: string
@@ -7,15 +9,53 @@ export interface WrongBookEntry {
   last_wrong_keys: string[]
   first_wrong_at: string
   last_wrong_at: string
+  consecutive_correct: number
+  mastery: MasteryStatus
   stem: string
   qtype: 'single' | 'multiple' | 'judgement' | 'case_analysis'
   bank_id: string
   bank_title: string
 }
 
+export function normalizeMastery(raw: string | null | undefined): MasteryStatus {
+  if (raw === 'reviewing' || raw === 'mastered') return raw
+  return 'pending'
+}
+
+export function masteryLabel(status: MasteryStatus): string {
+  switch (status) {
+    case 'pending':
+      return '待复习'
+    case 'reviewing':
+      return '复习中'
+    case 'mastered':
+      return '已掌握'
+  }
+}
+
+export function nextMasteryState(
+  current: { consecutive_correct: number; mastery?: MasteryStatus },
+  isCorrect: boolean,
+): { consecutive_correct: number; mastery: MasteryStatus } {
+  if (!isCorrect) return { consecutive_correct: 0, mastery: 'pending' }
+  const consecutive = (current.consecutive_correct || 0) + 1
+  return {
+    consecutive_correct: consecutive,
+    mastery: consecutive >= 2 ? 'mastered' : 'reviewing',
+  }
+}
+
 export function filterEntriesByBank(entries: WrongBookEntry[], bankId: string): WrongBookEntry[] {
   if (bankId === 'all') return entries
   return entries.filter((entry) => entry.bank_id === bankId)
+}
+
+export function filterEntriesByMastery(
+  entries: WrongBookEntry[],
+  mastery: MasteryStatus | 'all',
+): WrongBookEntry[] {
+  if (mastery === 'all') return entries
+  return entries.filter((entry) => entry.mastery === mastery)
 }
 
 /** 在题目列表中定位指定题目的起始下标；找不到则从 0 开始 */
@@ -51,6 +91,7 @@ export async function recordWrongQuestion(
 
   const keys = selectedKeys.map((k) => k.toUpperCase())
   const now = new Date().toISOString()
+  const reset = nextMasteryState({ consecutive_correct: 0 }, false)
 
   if (existing) {
     const { error } = await supabase
@@ -59,6 +100,8 @@ export async function recordWrongQuestion(
         wrong_count: existing.wrong_count + 1,
         last_wrong_keys: keys,
         last_wrong_at: now,
+        consecutive_correct: reset.consecutive_correct,
+        mastery: reset.mastery,
       })
       .eq('id', existing.id)
     if (error) throw error
@@ -72,7 +115,40 @@ export async function recordWrongQuestion(
     last_wrong_keys: keys,
     first_wrong_at: now,
     last_wrong_at: now,
+    consecutive_correct: reset.consecutive_correct,
+    mastery: reset.mastery,
   })
+  if (error) throw error
+}
+
+export async function recordIndependentCorrect(
+  supabase: SupabaseClient,
+  userId: string,
+  questionId: string,
+): Promise<void> {
+  const { data: existing, error: lookupError } = await supabase
+    .from('wrong_question_items')
+    .select('id, consecutive_correct, mastery')
+    .eq('user_id', userId)
+    .eq('question_id', questionId)
+    .maybeSingle()
+  if (lookupError) throw lookupError
+  if (!existing) return
+
+  const next = nextMasteryState(
+    {
+      consecutive_correct: existing.consecutive_correct ?? 0,
+      mastery: normalizeMastery(existing.mastery),
+    },
+    true,
+  )
+  const { error } = await supabase
+    .from('wrong_question_items')
+    .update({
+      consecutive_correct: next.consecutive_correct,
+      mastery: next.mastery,
+    })
+    .eq('id', existing.id)
   if (error) throw error
 }
 
@@ -96,7 +172,7 @@ export async function loadWrongBookEntries(
   const { data, error } = await supabase
     .from('wrong_question_items')
     .select(
-      'id, question_id, wrong_count, last_wrong_keys, first_wrong_at, last_wrong_at, questions!inner(stem, qtype, bank_id, question_banks!inner(title))',
+      'id, question_id, wrong_count, last_wrong_keys, first_wrong_at, last_wrong_at, consecutive_correct, mastery, questions!inner(stem, qtype, bank_id, question_banks!inner(title))',
     )
     .eq('user_id', userId)
     .order('last_wrong_at', { ascending: false })
@@ -119,6 +195,8 @@ export async function loadWrongBookEntries(
       last_wrong_keys: row.last_wrong_keys ?? [],
       first_wrong_at: row.first_wrong_at,
       last_wrong_at: row.last_wrong_at,
+      consecutive_correct: row.consecutive_correct ?? 0,
+      mastery: normalizeMastery(row.mastery),
       stem: question.stem,
       qtype: question.qtype,
       bank_id: question.bank_id,

@@ -13,6 +13,8 @@ import {
   toImportStats,
   type ImportStats,
 } from '../lib/importPlan'
+import { formatErrorMessage } from '../lib/errors'
+import { pageRange, totalPages } from '../lib/pagination'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import type { CsvLintResult } from '../lib/csv'
@@ -26,9 +28,13 @@ const { questionTypeLabel } = useScoring()
 const bankId = computed(() => String(route.params.bankId))
 const bank = ref<QuestionBank | null>(null)
 const questions = ref<Question[]>([])
+const questionTotal = ref(0)
+const questionPage = ref(1)
 const loading = ref(true)
 const error = ref('')
 const busy = ref(false)
+const PAGE_SIZE = 20
+const pages = computed(() => totalPages(questionTotal.value, PAGE_SIZE))
 
 const editingId = ref<string | null>(null)
 const showForm = ref(false)
@@ -111,18 +117,22 @@ async function load() {
     loading.value = false
     return
   }
-  const { data, error: qErr } = await supabase
+  const { from, to, page } = pageRange(questionPage.value, PAGE_SIZE)
+  questionPage.value = page
+  const { data, error: qErr, count } = await supabase
     .from('questions')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('bank_id', bankId.value)
     .order('sort_order', { ascending: true })
-  if (qErr) error.value = qErr.message
+    .range(from, to)
+  if (qErr) error.value = formatErrorMessage(qErr, '加载题目失败')
   else {
     questions.value = (data ?? []).map((q) => ({
       ...q,
       options: normalizeOptions(q.options),
       is_active: q.is_active ?? true,
     })) as Question[]
+    questionTotal.value = count ?? 0
   }
   loading.value = false
 }
@@ -178,9 +188,7 @@ async function saveQuestion() {
     const { error: err } = await supabase.from('questions').update(payload).eq('id', editingId.value)
     if (err) error.value = err.message
   } else {
-    const sort_order = questions.value.length
-      ? Math.max(...questions.value.map((q) => q.sort_order)) + 1
-      : 0
+    const sort_order = questionTotal.value
     const { error: err } = await supabase.from('questions').insert({
       bank_id: bankId.value,
       sort_order,
@@ -273,13 +281,23 @@ async function confirmImport() {
   error.value = ''
   try {
     const existing = new Map<string, string>()
-    for (const q of questions.value) {
+    const { data: existingRows } = await supabase
+      .from('questions')
+      .select('id, external_id')
+      .eq('bank_id', bankId.value)
+      .not('external_id', 'is', null)
+    for (const q of existingRows ?? []) {
       if (q.external_id) existing.set(q.external_id, q.id)
     }
     const plan = planQuestionImport(lintResult.value.rows, existing)
-    const sortBase = questions.value.length
-      ? Math.max(...questions.value.map((q) => q.sort_order)) + 1
-      : 0
+    const { data: sortRow } = await supabase
+      .from('questions')
+      .select('sort_order')
+      .eq('bank_id', bankId.value)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const sortBase = (sortRow?.sort_order ?? -1) + 1
     let autoSort = sortBase
     for (const row of plan.inserts) {
       const sort_order = row.sort_order_explicit ? row.sort_order! : autoSort++
@@ -422,7 +440,26 @@ onMounted(load)
           </div>
         </li>
       </ul>
-      <p v-else class="surface py-10 text-center text-sm text-muted">还没有题目，可新增或导入题目。</p>
+      <div v-if="pages > 1" class="mt-3 flex items-center justify-center gap-3">
+        <button
+          class="btn-secondary"
+          type="button"
+          :disabled="questionPage <= 1"
+          @click="questionPage -= 1; load()"
+        >
+          上一页
+        </button>
+        <span class="text-sm text-muted tabular-nums">{{ questionPage }} / {{ pages }} · 共 {{ questionTotal }} 题</span>
+        <button
+          class="btn-secondary"
+          type="button"
+          :disabled="questionPage >= pages"
+          @click="questionPage += 1; load()"
+        >
+          下一页
+        </button>
+      </div>
+      <p v-else-if="!questions.length" class="surface py-10 text-center text-sm text-muted">还没有题目，可新增或导入题目。</p>
 
       <section class="surface mt-6 flex flex-col gap-4 md:p-6">
         <div>

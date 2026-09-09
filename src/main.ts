@@ -4,31 +4,28 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 import { initAppRefresh } from './lib/appRefresh'
-import { WECHAT_OAUTH_STATE_KEY } from './lib/wechat'
+import { authRedirectPath, hashLooksLikeSupabaseAuth } from './lib/authRecovery'
+import { supabase } from './lib/supabase'
 
 initAppRefresh(registerSW({ immediate: true }))
 
-/**
- * 微信 OAuth 回调落在「无 hash 的站点根路径 + ?code=&state=」。
- * 若本地有发起登录时写入的 state，则转入 hash 回调页继续建会话。
- */
-function redirectWechatOAuthIfNeeded(): boolean {
-  const pendingState = sessionStorage.getItem(WECHAT_OAUTH_STATE_KEY)
-  if (!pendingState) return false
+async function bootstrap() {
+  const search = window.location.search
+  const hash = window.location.hash
+  const recoveryPath = authRedirectPath(search, hash)
+  if (hashLooksLikeSupabaseAuth(hash) || new URLSearchParams(search).has('code')) {
+    await supabase.auth.getSession()
+    const base = import.meta.env.BASE_URL || '/'
+    window.history.replaceState({}, '', `${window.location.origin}${base}`)
+  }
 
-  const params = new URLSearchParams(window.location.search)
-  const code = params.get('code')
-  const state = params.get('state')
-  if (!code || !state) return false
+  const app = createApp(App)
+  app.use(router)
+  app.mount('#app')
 
-  const base = import.meta.env.BASE_URL || '/'
-  const target = `${window.location.origin}${base}#/auth/wechat/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`
-  const cleanPath = `${window.location.origin}${base}`
-  window.history.replaceState({}, '', cleanPath)
-  window.location.replace(target)
-  return true
+  if (recoveryPath) {
+    await router.replace(recoveryPath)
+  }
 }
 
-if (!redirectWechatOAuthIfNeeded()) {
-  createApp(App).use(router).mount('#app')
-}
+void bootstrap()

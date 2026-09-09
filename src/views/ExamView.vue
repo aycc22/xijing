@@ -16,6 +16,13 @@ import {
 import { paperItemsAsCaseRows, parsePaperItems, type PaperItem } from '../lib/paperSnapshot'
 import { questionTypeLabel, toggleSelection } from '../lib/scoring'
 import { formatErrorMessage } from '../lib/errors'
+import {
+  deadlineFromMinutes,
+  EXAM_DURATION_OPTIONS,
+  formatCountdown,
+  isExamTimedOut,
+  remainingMs,
+} from '../lib/examTimer'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
@@ -39,6 +46,11 @@ const loading = ref(true)
 const busy = ref(false)
 const error = ref('')
 const saveTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+const durationMinutes = ref(0)
+const deadlineAt = ref<string | null>(null)
+const remainingLabel = ref('')
+const autoSubmitting = ref(false)
+let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 const questionIds = computed(() => items.value.map((i) => i.question_id))
 const qtypeById = computed(() =>
@@ -157,13 +169,16 @@ async function begin() {
         answers: next,
         total_count: items.value.length,
         started_at: new Date().toISOString(),
+        deadline_at: deadlineFromMinutes(durationMinutes.value),
       })
       .select('id')
       .single()
     if (cErr) throw cErr
     sessionId.value = created.id
     answers.value = next
+    deadlineAt.value = deadlineFromMinutes(durationMinutes.value)
     started.value = true
+    startCountdown()
   } catch (err) {
     error.value = formatErrorMessage(err, '无法开始答题')
   } finally {
@@ -171,12 +186,12 @@ async function begin() {
   }
 }
 
-async function submitExam() {
+async function submitExam(auto = false) {
   if (!sessionId.value) {
     error.value = '答题尚未开始，请返回重新开始'
     return
   }
-  if (unanswered.value > 0) {
+  if (!auto && unanswered.value > 0) {
     const ok = confirm(`还有 ${unanswered.value} 道未答题，确定交卷吗？`)
     if (!ok) return
   }
@@ -252,7 +267,9 @@ async function load() {
     answers.value =
       (existing.answers as ExamAnswerMap) || createExamState(items.value.map((i) => i.question_id))
     index.value = existing.current_index ?? 0
+    deadlineAt.value = existing.deadline_at ?? null
     started.value = true
+    startCountdown()
   } else {
     answers.value = createExamState(items.value.map((i) => i.question_id))
   }
@@ -263,9 +280,30 @@ async function load() {
 watch(index, () => scheduleSave())
 onBeforeUnmount(() => {
   if (saveTimer.value) clearTimeout(saveTimer.value)
+  if (countdownTimer) clearInterval(countdownTimer)
   void saveProgress()
 })
 onMounted(load)
+
+function tickCountdown() {
+  const left = remainingMs(deadlineAt.value)
+  if (left == null) {
+    remainingLabel.value = ''
+    return
+  }
+  remainingLabel.value = formatCountdown(left)
+  if (isExamTimedOut(deadlineAt.value) && !autoSubmitting.value && !busy.value) {
+    autoSubmitting.value = true
+    void submitExam(true)
+  }
+}
+
+function startCountdown() {
+  if (countdownTimer) clearInterval(countdownTimer)
+  tickCountdown()
+  if (!deadlineAt.value) return
+  countdownTimer = setInterval(tickCountdown, 1000)
+}
 </script>
 
 <template>
@@ -278,8 +316,16 @@ onMounted(load)
       <h1 class="page-title">{{ bankTitle }}</h1>
       <div class="surface mt-4 flex flex-col gap-3 md:p-6">
         <p class="m-0 text-sm text-ink">题量 {{ items.length }} 道 · 总分 {{ totalScore }}</p>
-        <p class="m-0 text-sm text-muted">首期无限时。作答过程中不显示答案、解析与单题正误；交卷后统一判分。</p>
-        <p class="m-0 text-sm text-muted">支持答题卡跳转与「标记待检查」。有未答题时交卷需二次确认。</p>
+        <p class="m-0 text-sm text-muted">作答过程中不显示答案、解析与单题正误；交卷后统一判分。</p>
+        <div class="field">
+          <label for="exam-duration">答题时限</label>
+          <select id="exam-duration" v-model.number="durationMinutes">
+            <option v-for="opt in EXAM_DURATION_OPTIONS" :key="opt.minutes" :value="opt.minutes">
+              {{ opt.label }}
+            </option>
+          </select>
+        </div>
+        <p class="m-0 text-sm text-muted">到时将自动交卷。时限仅作练习约束，以交卷当时已保存的答案为准。</p>
         <p v-if="error" class="alert-error m-0">{{ error }}</p>
         <button class="btn btn-block" type="button" :disabled="busy" @click="begin">
           {{ busy ? '准备中…' : '开始答题' }}
@@ -318,11 +364,14 @@ onMounted(load)
             {{ questionTypeLabel(current.snapshot.qtype) }} · {{ current.score }} 分
           </span>
         </div>
-        <span class="font-display text-lg font-semibold text-ink tabular-nums leading-none">
-          {{ index + 1 }}
-          <span class="text-sm font-normal text-muted"> / {{ items.length }}</span>
-        </span>
-      </div>
+          <span class="font-display text-lg font-semibold text-ink tabular-nums leading-none">
+            {{ index + 1 }}
+            <span class="text-sm font-normal text-muted"> / {{ items.length }}</span>
+          </span>
+        </div>
+        <p v-if="remainingLabel" class="relative z-10 m-0 text-sm font-medium tabular-nums" :class="remainingLabel === '0:00' ? 'text-bad' : 'text-spark'">
+          剩余 {{ remainingLabel }}
+        </p>
 
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
         <CaseMaterialPanel
@@ -402,7 +451,7 @@ onMounted(load)
           class="btn min-h-11 flex-1"
           type="button"
           :disabled="busy"
-          @click="submitExam"
+          @click="submitExam()"
         >
           {{ busy ? '交卷中…' : '交卷' }}
         </button>
@@ -418,7 +467,7 @@ onMounted(load)
         :submit-busy="busy"
         @close="sheetOpen = false"
         @go-to="goTo"
-        @submit="submitExam"
+        @submit="submitExam()"
       />
     </div>
   </div>

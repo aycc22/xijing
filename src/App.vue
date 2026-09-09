@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useAuth } from './composables/useAuth'
 
 const auth = useAuth()
 const route = useRoute()
+const router = useRouter()
 
-onMounted(() => auth.init())
+onMounted(() => {
+  auth.init()
+  auth.onPasswordRecovery(() => {
+    void router.replace('/reset-password')
+  })
+})
 
 onUnmounted(() => {
   document.documentElement.classList.remove('home-lock')
@@ -19,11 +25,12 @@ const focusMode = computed(() => {
 })
 
 const isHome = computed(() => route.name === 'home')
+const isHomeLanding = computed(() => isHome.value && !auth.user.value)
 
 const showBottomNav = computed(() => Boolean(auth.user.value) && !focusMode.value)
 
 watch(
-  isHome,
+  isHomeLanding,
   (home) => {
     document.documentElement.classList.toggle('home-lock', home)
     document.body.classList.toggle('home-lock', home)
@@ -56,17 +63,15 @@ function toggleTheme() {
   <div
     class="app-shell"
     :class="[
-      isHome ? 'h-dvh max-h-dvh overflow-hidden' : '',
+      isHomeLanding ? 'h-dvh max-h-dvh overflow-hidden' : '',
       showBottomNav
         ? 'pb-[calc(3rem+env(safe-area-inset-bottom,0px))] md:pb-10'
-        : isHome
-          ? 'pb-0'
           : 'pb-10',
     ]"
   >
     <header
       class="app-header z-30 -mx-4 flex shrink-0 items-center justify-between gap-3 border-b border-line/60 bg-night/85 px-4 pb-3 backdrop-blur-md md:-mx-6 md:px-6"
-      :class="isHome ? 'static' : 'sticky top-0'"
+      :class="isHomeLanding ? 'static' : 'sticky top-0'"
     >
       <RouterLink
         class="flex items-center gap-2.5 font-display text-[1.35rem] tracking-wide text-ink transition hover:text-spark"
@@ -84,6 +89,8 @@ function toggleTheme() {
         >
           <RouterLink class="nav-link" to="/banks">题库</RouterLink>
           <RouterLink class="nav-link" to="/wrong-book">错题</RouterLink>
+          <RouterLink class="nav-link" to="/favorites">收藏</RouterLink>
+          <RouterLink class="nav-link" to="/notes">笔记</RouterLink>
           <RouterLink class="nav-link" to="/history">历史</RouterLink>
           <RouterLink v-if="auth.hasUpload.value" class="nav-link" to="/upload">上传</RouterLink>
           <RouterLink v-if="auth.admin.value" class="nav-link" to="/admin">权限</RouterLink>
@@ -139,12 +146,12 @@ function toggleTheme() {
       </div>
     </header>
 
-    <main class="flex min-h-0 flex-1 flex-col" :class="isHome ? 'overflow-hidden pt-2' : 'pt-3 md:pt-5'">
+    <main class="flex min-h-0 flex-1 flex-col" :class="isHomeLanding ? 'overflow-hidden pt-2' : 'pt-3 md:pt-5'">
       <RouterView v-slot="{ Component, route: viewRoute }">
         <div
           :key="viewRoute.fullPath"
           class="page-enter"
-          :class="isHome ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
+          :class="isHomeLanding ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
         >
           <component :is="Component" />
         </div>

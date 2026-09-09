@@ -5,7 +5,10 @@ import { formatAnswerLabel } from '../lib/practiceResult'
 import {
   bankFilterOptions,
   filterEntriesByBank,
+  filterEntriesByMastery,
   loadWrongBookEntries,
+  masteryLabel,
+  type MasteryStatus,
   type WrongBookEntry,
 } from '../lib/wrongBook'
 import { supabase } from '../lib/supabase'
@@ -16,11 +19,14 @@ const router = useRouter()
 
 const entries = ref<WrongBookEntry[]>([])
 const bankFilter = ref('all')
+const masteryFilter = ref<MasteryStatus | 'all'>('all')
 const loading = ref(true)
 const error = ref('')
 
 const bankOptions = computed(() => bankFilterOptions(entries.value))
-const visibleEntries = computed(() => filterEntriesByBank(entries.value, bankFilter.value))
+const visibleEntries = computed(() =>
+  filterEntriesByMastery(filterEntriesByBank(entries.value, bankFilter.value), masteryFilter.value),
+)
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })
@@ -91,6 +97,12 @@ onMounted(load)
             {{ bank.title }}（{{ bank.count }}）
           </option>
         </select>
+        <select v-model="masteryFilter" class="field min-h-11 rounded-xl border border-line bg-raise/60 px-3 py-2 text-sm">
+          <option value="all">全部掌握状态</option>
+          <option value="pending">待复习</option>
+          <option value="reviewing">复习中</option>
+          <option value="mastered">已掌握</option>
+        </select>
         <button
           v-if="bankFilter !== 'all'"
           class="btn min-h-11"
@@ -115,6 +127,9 @@ onMounted(load)
               </div>
               <div class="flex shrink-0 flex-col items-end gap-1">
                 <span class="chip tabular-nums">×{{ entry.wrong_count }}</span>
+                <span class="chip text-xs" :class="entry.mastery === 'mastered' ? 'border-ok/40 bg-ok/10 text-ok' : ''">
+                  {{ masteryLabel(entry.mastery) }}
+                </span>
                 <span class="text-xs font-medium text-path">重做</span>
               </div>
             </div>

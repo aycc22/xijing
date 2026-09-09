@@ -78,6 +78,11 @@ export function parseQuestionJsonItem(item: unknown, index: number): ParsedQuest
     explanation: readStringField(row, 'explanation', '解析'),
     case_id: readNullableStringField(row, 'case_id', '案例标识'),
     case_material: readStringField(row, 'case_material', '案例材料'),
+    difficulty: readNullableStringField(row, 'difficulty', '难度'),
+    tags: readStringField(row, 'tags', '标签')
+      .split(/[;；,，]/)
+      .map((s) => s.trim())
+      .filter(Boolean),
   }
 }
 

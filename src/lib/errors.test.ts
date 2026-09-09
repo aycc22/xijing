@@ -26,6 +26,15 @@ describe('formatErrorMessage', () => {
     ).toBe('账号资料未就绪，请退出后重新登录；若仍失败请联系管理员')
   })
 
+  it('maps bank governance errors to Chinese', () => {
+    expect(
+      formatErrorMessage(new Error('empty bank cannot be published'), '发布失败'),
+    ).toBe('空题库不能发布，请先导入或新增有效题目')
+    expect(
+      formatErrorMessage(new Error('bank has learning records'), '删除失败'),
+    ).toBe('该题库已有练习、错题或收藏等学习记录，不能删除，请改为下架')
+  })
+
   it('falls back when message is missing', () => {
     expect(formatErrorMessage({ code: 'PGRST301' }, '交卷失败，请重试')).toBe('交卷失败，请重试')
     expect(formatErrorMessage(null, '交卷失败，请重试')).toBe('交卷失败，请重试')

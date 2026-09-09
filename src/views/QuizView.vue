@@ -25,7 +25,9 @@ import {
 import { useScoring } from '../composables/useScoring'
 import { ensureQuestionOptions } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
-import { recordWrongQuestion, loadWrongQuestionIds, resolveQuestionStartIndex } from '../lib/wrongBook'
+import { recordWrongQuestion, loadWrongQuestionIds, resolveQuestionStartIndex, recordIndependentCorrect } from '../lib/wrongBook'
+import { shuffleKeepingCases, filterUnanswered } from '../lib/practiceOrder'
+import { formatErrorMessage } from '../lib/errors'
 import { buildQuestionSnapshot } from '../lib/questionSnapshot'
 import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/userLearning'
 import { useAuth } from '../composables/useAuth'
@@ -78,6 +80,8 @@ const progress = computed(() =>
 )
 const submitEnabled = computed(() => canSubmitAnswer(currentAttempt.value))
 const wrongOnly = computed(() => route.query.wrong === '1')
+const unansweredOnly = computed(() => route.query.unanswered === '1')
+const randomOrder = computed(() => route.query.order === 'random')
 
 const sheetStatuses = computed<SheetCellState[]>(() =>
   attempts.value.map((attempt) => {
@@ -186,6 +190,7 @@ async function submitAnswer() {
   revealed.value = true
   await persistAnswer(current.value, selected.value, ok)
   if (!ok) await handleWrong(current.value.id, selected.value)
+  else if (auth.user.value) await recordIndependentCorrect(supabase, auth.user.value.id, current.value.id)
   await loadNoteDraft()
   await saveProgress()
 }
@@ -247,6 +252,23 @@ async function start() {
   loading.value = true
   error.value = ''
   const bankId = String(route.params.bankId)
+  const { data: bankRow, error: bankErr } = await supabase
+    .from('question_banks')
+    .select('id, is_published, owner_id, question_count')
+    .eq('id', bankId)
+    .maybeSingle()
+  if (bankErr || !bankRow) {
+    error.value = formatErrorMessage(bankErr, '题库不存在或未发布')
+    loading.value = false
+    return
+  }
+  const isOwner = bankRow.owner_id === auth.user.value?.id || auth.admin.value
+  if (!bankRow.is_published && !isOwner) {
+    error.value = '未发布题库不能开始新练习'
+    loading.value = false
+    return
+  }
+
   const { data, error: err } = await supabase
     .from('questions')
     .select('*')
@@ -277,6 +299,23 @@ async function start() {
       loading.value = false
       return
     }
+  } else if (unansweredOnly.value) {
+    const { data: answered } = await supabase
+      .from('attempt_answers')
+      .select('question_id, attempt_sessions!inner(user_id, bank_id)')
+      .eq('attempt_sessions.user_id', auth.user.value.id)
+      .eq('attempt_sessions.bank_id', bankId)
+    const answeredIds = new Set((answered ?? []).map((row) => row.question_id))
+    questions.value = filterUnanswered(questions.value, answeredIds)
+    if (!questions.value.length) {
+      error.value = '该题库没有未做题目'
+      loading.value = false
+      return
+    }
+  }
+
+  if (randomOrder.value) {
+    questions.value = shuffleKeepingCases(questions.value)
   }
 
   if (!questions.value.length) {
@@ -295,7 +334,8 @@ async function start() {
 
   await expireStaleSessions(auth.user.value.id)
 
-  const forceNew = shouldForceNewSession(route)
+  const forceNew =
+    shouldForceNewSession(route) || wrongOnly.value || unansweredOnly.value || randomOrder.value
   if (forceNew) {
     await supabase
       .from('attempt_sessions')
@@ -373,6 +413,8 @@ onMounted(start)
               {{ questionTypeLabel(current.qtype) }}
             </span>
             <span v-if="wrongOnly" class="chip-lit">错题练习</span>
+            <span v-if="unansweredOnly" class="chip-lit">仅未做</span>
+            <span v-if="randomOrder" class="chip-lit">随机</span>
             <span v-if="resuming" class="chip-lit">续做中</span>
           </div>
           <span class="font-display text-lg font-semibold text-ink tabular-nums leading-none">
