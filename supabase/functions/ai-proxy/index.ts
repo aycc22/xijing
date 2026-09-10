@@ -1,6 +1,6 @@
--- P0 DeepSeek AI 代理：会后薄弱点分析（analyze_session）
--- Secrets: DEEPSEEK_API_KEY（必填）；DEEPSEEK_BASE_URL / DEEPSEEK_MODEL / AI_DAILY_LIMIT_ANALYZE 可选
--- 平台注入：SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY
+// P0 DeepSeek AI 代理：会后薄弱点分析（analyze_session）
+// Secrets: DEEPSEEK_API_KEY（必填）；DEEPSEEK_BASE_URL / DEEPSEEK_MODEL / AI_DAILY_LIMIT_ANALYZE 可选
+// 平台注入：SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
 
 const corsHeaders: Record<string, string> = {
