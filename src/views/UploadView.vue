@@ -186,7 +186,7 @@ async function submit() {
     }
 
     importStats.value = toImportStats({ inserts: rows, updates: [] })
-    await router.push(isExam ? `/banks/${bank.id}/exam` : '/banks')
+    await router.push(isExam ? `/banks/${bank.id}/exam` : `/banks/${bank.id}/manage`)
   } catch (err) {
     error.value = err instanceof Error ? err.message : '上传失败'
     confirmed.value = false
@@ -202,7 +202,7 @@ async function submit() {
       <p class="page-kicker">导入</p>
       <h1 class="page-title">上传题库</h1>
       <p class="page-lede">
-        支持 CSV、题库 JSON 或完整试卷 JSON（xijing-exam-paper）；导入前预检，通过后确认导入。
+        支持 CSV、题库 JSON 或完整试卷 JSON（xijing-exam-paper）；导入前预检，通过后确认导入。导入后可到题库管理用 AI 补全考点。
       </p>
     </section>
 

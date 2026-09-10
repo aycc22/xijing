@@ -7,7 +7,7 @@
 > 关联需求：[REQUIREMENTS-AI.md](./REQUIREMENTS-AI.md)  
 > 现有参考实现：[supabase/functions/email-auth/index.ts](../../supabase/functions/email-auth/index.ts)
 
-本文档供后续「按文档实现」直接执行。需求优先级与验收见需求报告；此处只定义架构、接口、数据、Prompt 与任务拆解。**本修订只锁设计，不在本文档对应 PR 中实现功能代码。**
+本文档供后续「按文档实现」直接执行。需求优先级与验收见需求报告；此处只定义架构、接口、数据、Prompt 与任务拆解。
 
 ## 1. 架构总览
 
@@ -584,25 +584,25 @@ RPC 内**禁止**外网调用。P0/P1a/P1b 不修改该 RPC。
 
 ### P1a（学习者点评；建议紧接 P0 实现）
 
-1. 迁移：`question_ai_explains` + RLS（无客户端直读策略）。
-2. `ai-proxy` 增加 `explain_question`：可见性、会话揭晓校验、`content_hash` 缓存、analyze 配额、禁止写 tags/得分。
-3. `src/lib/aiProxy.ts` 增加请求/响应类型；可选 `useAiQuestionExplain.ts`、`AiQuestionExplainPanel.vue`。
-4. `QuizView` 揭晓后按钮；`SessionReviewPlayer` + `ResultView` / `ExamResultView` 复盘入口；**不改** `ExamView` 交卷前 UI。
-5. Prompt §7.3；按需求 §11.2 验收。
+1. [x] 迁移：`question_ai_explains` + RLS（无客户端直读策略）。
+2. [x] `ai-proxy` 增加 `explain_question`：可见性、会话揭晓校验、`content_hash` 缓存、analyze 配额、禁止写 tags/得分。
+3. [x] `src/lib/aiProxy.ts` 增加请求/响应类型；可选 `useAiQuestionExplain.ts`、`AiQuestionExplainPanel.vue`。
+4. [x] `QuizView` 揭晓后按钮；`SessionReviewPlayer` + `ResultView` / `ExamResultView` 复盘入口；**不改** `ExamView` 交卷前 UI。
+5. [x] Prompt §7.3；按需求 §11.2 验收。
 
 ### P1b（原 P1 打标）
 
-1. `ai-proxy` 增加 `analyze_question`（`apply=true` 时更新 `tags_edited_at`）。
-2. `BankManageView` 单题 AI 预览确认 + 批量（≤50）；默认跳过 `tags_edited_at IS NOT NULL`。
-3. 导入成功提示文案。
-4. 按需求 §11.3 验收。
+1. [x] `ai-proxy` 增加 `analyze_question`（`apply=true` 时更新 `tags_edited_at`）。
+2. [x] `BankManageView` 单题 AI 预览确认 + 批量（≤50）；默认跳过 `tags_edited_at IS NOT NULL`。
+3. [x] 导入成功提示文案。
+4. [x] 按需求 §11.3 验收。
 
 ### P2
 
-1. 调整 `finish_exam_session`：简答 `grading_status=pending`，正式 `earned` 仍为模糊匹配。
-2. `grade_short_answer` + 回写 `ai_*` / `grading_status=done`（不改 `score`）。
-3. `ExamResultView` 双轨展示与「仅供参考」；交卷后触发评分。
-4. 按需求 §11.4 验收。
+1. [x] 调整 `finish_exam_session`：简答 `grading_status=pending`，正式 `earned` 仍为模糊匹配。
+2. [x] `grade_short_answer` + 回写 `ai_*` / `grading_status=done`（不改 `score`）。
+3. [x] `ExamResultView` 双轨展示与「仅供参考」；交卷后触发评分。
+4. [x] 按需求 §11.4 验收。
 
 ## 11. 回滚与降级
 
@@ -670,4 +670,4 @@ sequenceDiagram
 
 ---
 
-**实现入口**：P0 已落地。下一切片从 §10 **P1a** 第 1 条迁移开始；产品行为以 [REQUIREMENTS-AI.md](./REQUIREMENTS-AI.md) 为准。本文件对应的文档 PR **不实现** P1a 代码。
+**实现入口**：P0 已落地。P1a / P1b / P2 按 §10 任务清单实现；产品行为以 [REQUIREMENTS-AI.md](./REQUIREMENTS-AI.md) 为准。

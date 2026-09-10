@@ -108,7 +108,7 @@ supabase functions deploy ai-proxy
 
 未配置密钥时，结果页仍显示本地考点统计，智能解读提示暂不可用。
 
-学习者揭晓后单题「AI 点评」（`explain_question`，P1a）见 [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md) §6.2，尚未实现。
+学习者揭晓后单题「AI 点评」、题库 AI 考点打标、考试简答 AI 建议分见 [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md)；部署需同步迁移并 `supabase functions deploy ai-proxy`。
 
 ## 领域说明
 

@@ -33,6 +33,7 @@ import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/use
 import { useAuth } from '../composables/useAuth'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
 import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
+import AiQuestionExplainPanel from '../components/AiQuestionExplainPanel.vue'
 import type { Question, QuestionOption, QuestionType } from '../lib/types'
 
 const route = useRoute()
@@ -466,6 +467,15 @@ onMounted(start)
         <p v-if="revealed && current.explanation" class="alert-info">
           <span class="font-semibold">解析</span> · {{ current.explanation }}
         </p>
+
+        <AiQuestionExplainPanel
+          v-if="revealed && sessionId && current"
+          :question-id="current.id"
+          :session-id="sessionId"
+          session-type="practice"
+          :is-correct="currentAttempt?.isCorrect ?? null"
+          :is-skipped="currentAttempt?.status === 'skipped'"
+        />
 
         <div v-if="revealed" class="flex flex-col gap-3 border-t border-line/60 pt-3">
           <div class="flex flex-wrap gap-2">

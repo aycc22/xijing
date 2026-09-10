@@ -17,6 +17,12 @@ import { formatErrorMessage } from '../lib/errors'
 import { pageRange, totalPages } from '../lib/pagination'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
+import { invokeAiProxy, aiErrorUserMessage } from '../lib/aiProxy'
+import {
+  AI_TAG_BATCH_LIMIT,
+  selectQuestionsForAiTag,
+  type AnalyzeQuestionSuggestion,
+} from '../lib/aiTag'
 import type { CsvLintResult } from '../lib/csv'
 import type { Question, QuestionBank, QuestionOption, QuestionType } from '../lib/types'
 
@@ -50,6 +56,15 @@ const issueUnit = ref<'行' | '题'>('行')
 const importStats = ref<ImportStats | null>(null)
 const importBusy = ref(false)
 const sampleCopied = ref(false)
+const selectedIds = ref<Set<string>>(new Set())
+const forceOverwrite = ref(false)
+const aiBusy = ref(false)
+const aiProgress = ref('')
+const aiFailures = ref<{ id: string; stem: string; message: string }[]>([])
+const preview = ref<{
+  question: Question
+  suggestion: AnalyzeQuestionSuggestion
+} | null>(null)
 
 function emptyDraft() {
   return {
@@ -342,6 +357,99 @@ async function confirmImport() {
   }
 }
 
+function toggleSelected(id: string) {
+  const next = new Set(selectedIds.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  selectedIds.value = next
+}
+
+function toggleSelectPage() {
+  const ids = questions.value.map((q) => q.id)
+  const allSelected = ids.every((id) => selectedIds.value.has(id))
+  selectedIds.value = allSelected ? new Set() : new Set(ids)
+}
+
+async function analyzeQuestionPreview(question: Question) {
+  error.value = ''
+  aiBusy.value = true
+  const result = await invokeAiProxy({
+    action: 'analyze_question',
+    question_id: question.id,
+    apply: false,
+  })
+  aiBusy.value = false
+  if (!result.ok) {
+    error.value = aiErrorUserMessage(result.error)
+    return
+  }
+  preview.value = { question, suggestion: result.data.suggestion }
+}
+
+async function confirmPreviewApply() {
+  if (!preview.value) return
+  aiBusy.value = true
+  error.value = ''
+  const suggestion = preview.value.suggestion
+  const payload: Record<string, unknown> = {
+    tags: suggestion.tags,
+    tags_edited_at: new Date().toISOString(),
+  }
+  if (suggestion.difficulty) payload.difficulty = suggestion.difficulty
+  const { error: err } = await supabase
+    .from('questions')
+    .update(payload)
+    .eq('id', preview.value.question.id)
+  aiBusy.value = false
+  if (err) {
+    error.value = err.message
+    return
+  }
+  preview.value = null
+  await load()
+}
+
+async function batchAnalyzeTags() {
+  error.value = ''
+  aiFailures.value = []
+  const selected = questions.value.filter((q) => selectedIds.value.has(q.id))
+  if (!selected.length) {
+    error.value = '请先勾选要分析的题目'
+    return
+  }
+  const plan = selectQuestionsForAiTag(selected, { force: forceOverwrite.value })
+  if (!plan.toAnalyze.length) {
+    error.value = plan.skippedEdited.length
+      ? '所选题目均已确认考点，勾选「强制覆盖」后再试'
+      : '没有可分析的题目'
+    return
+  }
+  aiBusy.value = true
+  let done = 0
+  for (const question of plan.toAnalyze) {
+    aiProgress.value = `AI 考点 ${done + 1}/${plan.toAnalyze.length}`
+    const applyResult = await invokeAiProxy({
+      action: 'analyze_question',
+      question_id: question.id,
+      apply: true,
+    })
+    if (!applyResult.ok) {
+      aiFailures.value.push({
+        id: question.id,
+        stem: question.stem,
+        message: aiErrorUserMessage(applyResult.error),
+      })
+    }
+    done += 1
+  }
+  aiProgress.value = plan.truncated
+    ? `已处理前 ${AI_TAG_BATCH_LIMIT} 题（单次最多 ${AI_TAG_BATCH_LIMIT}）`
+    : ''
+  aiBusy.value = false
+  selectedIds.value = new Set()
+  await load()
+}
+
 onMounted(load)
 </script>
 
@@ -367,8 +475,26 @@ onMounted(load)
     <template v-else-if="bank">
       <p v-if="error" class="alert-error mb-4">{{ error }}</p>
 
-      <div class="mb-4 flex flex-wrap gap-2">
-        <button class="btn" type="button" @click="openCreate">新增题目</button>
+      <div class="mb-4 flex flex-col gap-2">
+        <div class="flex flex-wrap gap-2">
+          <button class="btn" type="button" @click="openCreate">新增题目</button>
+          <button class="btn-secondary" type="button" @click="toggleSelectPage">
+            {{ questions.every((q) => selectedIds.has(q.id)) && questions.length ? '取消本页' : '全选本页' }}
+          </button>
+          <button class="btn-secondary" type="button" :disabled="aiBusy" @click="batchAnalyzeTags">
+            {{ aiBusy ? aiProgress || 'AI 分析中…' : '批量 AI 考点' }}
+          </button>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-muted">
+          <input v-model="forceOverwrite" type="checkbox" class="size-4" />
+          强制覆盖已确认标签
+        </label>
+        <p v-if="aiProgress && !aiBusy" class="m-0 text-xs text-muted">{{ aiProgress }}</p>
+        <ul v-if="aiFailures.length" class="m-0 list-none space-y-1 rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm">
+          <li v-for="fail in aiFailures" :key="fail.id" class="text-bad">
+            {{ fail.stem.slice(0, 24) }}… · {{ fail.message }}
+          </li>
+        </ul>
       </div>
 
       <form v-if="showForm" class="surface mb-6 flex flex-col gap-3 md:p-6" @submit.prevent="saveQuestion">
@@ -428,6 +554,30 @@ onMounted(load)
         </div>
       </form>
 
+      <div
+        v-if="preview"
+        class="surface mb-6 flex flex-col gap-3 border border-spark/40 md:p-6"
+      >
+        <h2 class="m-0 text-lg font-semibold text-ink">AI 考点预览</h2>
+        <p class="m-0 line-clamp-3 text-sm text-muted">{{ preview.question.stem }}</p>
+        <div class="flex flex-wrap gap-1">
+          <span v-for="tag in preview.suggestion.tags" :key="tag" class="chip">{{ tag }}</span>
+        </div>
+        <p v-if="preview.suggestion.difficulty" class="m-0 text-sm text-muted">
+          建议难度：{{ preview.suggestion.difficulty }}
+        </p>
+        <p v-if="preview.suggestion.exam_point_note" class="m-0 text-sm leading-relaxed text-ink">
+          {{ preview.suggestion.exam_point_note }}
+        </p>
+        <p class="m-0 text-xs text-muted">确认后写入考点标签。取消则不改题库。</p>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn" type="button" :disabled="aiBusy" @click="confirmPreviewApply">
+            {{ aiBusy ? '写入中…' : '确认写入' }}
+          </button>
+          <button class="btn-secondary" type="button" :disabled="aiBusy" @click="preview = null">取消</button>
+        </div>
+      </div>
+
       <ul v-if="questions.length" class="m-0 flex list-none flex-col gap-2 p-0">
         <li
           v-for="(q, idx) in questions"
@@ -436,6 +586,14 @@ onMounted(load)
           :class="!q.is_active ? 'opacity-60' : ''"
         >
           <div class="flex items-start justify-between gap-2">
+            <label class="mt-1 flex shrink-0 items-center">
+              <input
+                type="checkbox"
+                class="size-4"
+                :checked="selectedIds.has(q.id)"
+                @change="toggleSelected(q.id)"
+              />
+            </label>
             <div class="min-w-0 flex-1">
               <p class="m-0 text-xs text-muted">
                 #{{ idx + 1 }} · {{ questionTypeLabel(q.qtype) }}
@@ -458,6 +616,14 @@ onMounted(load)
           </div>
           <div class="flex flex-wrap gap-2">
             <button class="btn-secondary !min-h-9 text-sm" type="button" @click="openEdit(q)">编辑</button>
+            <button
+              class="btn-secondary !min-h-9 text-sm"
+              type="button"
+              :disabled="aiBusy"
+              @click="analyzeQuestionPreview(q)"
+            >
+              AI 考点
+            </button>
             <button class="btn-ghost !min-h-9 text-sm" type="button" @click="toggleActive(q)">
               {{ q.is_active ? '停用' : '启用' }}
             </button>
@@ -570,6 +736,7 @@ onMounted(load)
           <p class="m-0 mt-1 text-muted">
             新增 {{ importStats.created }} · 更新 {{ importStats.updated }} · 跳过 {{ importStats.skipped }} · 失败 {{ importStats.failed }}
           </p>
+          <p class="m-0 mt-2 text-sm text-ink">建议使用 AI 补全考点：勾选题目后点「批量 AI 考点」，或单题「AI 考点」预览确认。</p>
         </div>
       </section>
     </template>
