@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  gradeShortAnswer,
   isAnswerCorrect,
   isSingleChoice,
   optionRevealClass,
@@ -24,6 +25,17 @@ describe('isAnswerCorrect', () => {
   it('scores multiple-choice with order ignored', () => {
     expect(isAnswerCorrect(['A', 'C'], ['C', 'A'])).toBe(true)
     expect(isAnswerCorrect(['A'], ['A', 'C'])).toBe(false)
+  })
+
+  it('scores short answers via reference text', () => {
+    expect(isAnswerCorrect(['SQL注入'], [], 'short_answer', 'SQL注入漏洞')).toBe(true)
+    expect(isAnswerCorrect(['XSS'], [], 'short_answer', 'SQL注入漏洞')).toBe(false)
+  })
+})
+
+describe('gradeShortAnswer', () => {
+  it('ignores case and extra whitespace', () => {
+    expect(gradeShortAnswer(['  Sql注入  '], 'SQL注入')).toBe(true)
   })
 })
 

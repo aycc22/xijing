@@ -30,6 +30,9 @@ export function formatAnswerLabel(
   options: QuestionOption[],
 ): string {
   if (!keys.length) return '未作答'
+  if (qtype === 'short_answer') {
+    return keys[0]?.trim() || '未作答'
+  }
   if (qtype === 'judgement') {
     return keys.map((k) => JUDGEMENT_LABELS[k.toUpperCase()] ?? k).join('、')
   }

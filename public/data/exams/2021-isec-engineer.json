@@ -39,7 +39,8 @@
             "C": "可用性",
             "D": "可控性"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "可用性指合法用户能够及时获取所需信息或服务；题干描述正是可用性定义。"
         },
         {
           "external_id": "2021-11-am-q02",
@@ -53,7 +54,8 @@
             "C": "Google Android",
             "D": "SIMATIC WinCC"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "震网（Stuxnet）专门攻击工控/SCADA，目标为伊朗核设施所用西门子 SIMATIC WinCC 系统。"
         },
         {
           "external_id": "2021-11-am-q03",
@@ -67,7 +69,8 @@
             "C": "延缓、阻止、检测、限制",
             "D": "可靠、可用、可控、可信"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "实现信息安全目标，网络需具备防御、监测、应急、恢复等基本功能。"
         },
         {
           "external_id": "2021-11-am-q04",
@@ -81,7 +84,8 @@
             "C": "《中华人民共和国数据安全法》和《中华人民共和国网络安全法》",
             "D": "《中华人民共和国数据安全法》和《中华人民共和国国家安全法》"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "审查公告明确依据《国家安全法》《网络安全法》及《网络安全审查办法》启动审查。"
         },
         {
           "external_id": "2021-11-am-q05",
@@ -95,7 +99,8 @@
             "C": "2021年11月1日",
             "D": "2021年12月1日"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "《数据安全法》于2021年6月10日通过，自2021年9月1日起施行。"
         },
         {
           "external_id": "2021-11-am-q06",
@@ -109,7 +114,8 @@
             "C": "Web服务",
             "D": "网络访问"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "等保2.0“一个中心”即安全管理中心，含系统管理、审计管理、安全管理与集中管控；安全审计属该中心。"
         },
         {
           "external_id": "2021-11-am-q07",
@@ -123,7 +129,8 @@
             "C": "国际密码、国产密码和商用密码",
             "D": "普通密码，涉密密码和商用密码"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "《密码法》规定国家对密码分类管理：核心密码、普通密码和商用密码。"
         },
         {
           "external_id": "2021-11-am-q08",
@@ -137,7 +144,8 @@
             "C": "堆栈保护",
             "D": "地址空间随机化技术"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "Canary 在返回地址前插入校验值，溢出改写后可被检测，属于堆栈保护技术。"
         },
         {
           "external_id": "2021-11-am-q09",
@@ -151,7 +159,8 @@
             "C": "对于受到刑事处罚的人员，终身不得从事网络安全管理和网络安全运营关键岗位的工作",
             "D": "网信部门、公安机关、保护工作部门和其他有关部门及其工作人员未履行相关职责或者玩忽职守、滥用职权、徇私舞弊的，或者发生重大责任事故的，会对相关监管、保护和服务人员给予处分，严重者追究法律责任"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "B 错误：条例规定受治安管理处罚者5年内（非3年）不得从事网安关键岗位；刑事处罚则终身禁止。"
         },
         {
           "external_id": "2021-11-am-q10",
@@ -165,7 +174,8 @@
             "C": "拒绝服务攻击",
             "D": "窃听"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "被动攻击只窃听或流量分析、不篡改数据；窃听属被动，重放/假冒/DoS 均为主动攻击。"
         },
         {
           "external_id": "2021-11-am-q11",
@@ -179,7 +189,8 @@
             "C": "RST/ACK",
             "D": "ID头信息"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "TCP SYN 半开扫描：目标端口开放时回 SYN/ACK，关闭则回 RST/ACK。"
         },
         {
           "external_id": "2021-11-am-q12",
@@ -193,7 +204,8 @@
             "C": "SQL注入",
             "D": "泪滴攻击"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "SYN Flood、DNS 放大、泪滴均为拒绝服务；SQL 注入属注入类漏洞利用，不是 DoS。"
         },
         {
           "external_id": "2021-11-am-q13",
@@ -207,7 +219,8 @@
             "C": "Metasploit",
             "D": "WireShark"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "Wireshark 用于抓包与协议分析，属网络嗅探器；SuperScan 为扫描器，L0phtCrack 为口令破解，Metasploit 为渗透框架。"
         },
         {
           "external_id": "2021-11-am-q14",
@@ -221,7 +234,8 @@
             "C": "防篡改",
             "D": "防窃取"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "插入无关代码属代码混淆，增大反编译阅读难度，是防反编译手段。"
         },
         {
           "external_id": "2021-11-am-q15",
@@ -235,7 +249,8 @@
             "C": "对称密码",
             "D": "序列密码"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "加解密密钥不同且难以互推，即为非对称（公钥）密码。"
         },
         {
           "external_id": "2021-11-am-q16",
@@ -264,7 +279,8 @@
             "C": "SM4",
             "D": "SM9"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "SM4 为国产分组密码；SM2/SM9 为公钥，SM3 为杂凑算法。"
         },
         {
           "external_id": "2021-11-am-q18",
@@ -278,7 +294,8 @@
             "C": "256比特",
             "D": "512比特"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "MD5 以 512 比特分组处理消息，输出 128 比特摘要。"
         },
         {
           "external_id": "2021-11-am-q19",
@@ -292,7 +309,8 @@
             "C": "序列密码体制和哈希算法",
             "D": "公钥密码体制和对称密码体制"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "常见数字签名：对消息摘要用发送方私钥签名，接收方用公钥与哈希校验，即公钥体制加单向哈希。"
         },
         {
           "external_id": "2021-11-am-q20",
@@ -306,7 +324,8 @@
             "C": "椭圆离散对数问题",
             "D": "背包问题"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "Diffie-Hellman 密钥交换的安全性基于求解离散对数问题的困难性。"
         },
         {
           "external_id": "2021-11-am-q21",
@@ -320,7 +339,8 @@
             "C": "ARP协议可以实现MAC地址和IP地址之间的转换",
             "D": "域名地址和端口地址无法转换"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "A 错误：DHCP 动态分配 IP，不能做 IP 与端口地址转换；DNS/ARP 分别处理域名-IP、IP-MAC。"
         },
         {
           "external_id": "2021-11-am-q22",
@@ -334,7 +354,8 @@
             "C": "用户A能读文件E",
             "D": "用户B不能读文件E"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "BLP 简单安全：向下读需级别支配且范畴包含。用户 A 绝密但范畴仅{人事处}，不包含 F 的{人事处,财务处}，故不能读 F。"
         },
         {
           "external_id": "2021-11-am-q23",
@@ -348,7 +369,8 @@
             "C": "调用特性",
             "D": "＊特性"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "Biba 的＊特性规定主体不能向上写（不可修改更高完整级客体）。"
         },
         {
           "external_id": "2021-11-am-q24",
@@ -362,7 +384,8 @@
             "C": "恢复",
             "D": "响应"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "PDRR 中恢复（Recovery）包含数据备份与系统恢复等措施。"
         },
         {
           "external_id": "2021-11-am-q25",
@@ -376,7 +399,8 @@
             "C": "CMM3级",
             "D": "CMM4级"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "软件安全 CMM 充分定义级（3级）相关过程含漏洞评估、代码分析、安全编码标准等。"
         },
         {
           "external_id": "2021-11-am-q26",
@@ -390,7 +414,8 @@
             "C": "第三级",
             "D": "第四级"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "等保第四级要求对应用程序全部执行环节做动态可信验证并关联感知。"
         },
         {
           "external_id": "2021-11-am-q27",
@@ -404,7 +429,8 @@
             "C": "资料室",
             "D": "储藏室"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "按 GB/T 2887，监控室、配电/UPS 等属第一类辅助房间；终端室属主要工作房间，资料室/储藏室分属二、三类。"
         },
         {
           "external_id": "2021-11-am-q28",
@@ -418,7 +444,8 @@
             "C": "通讯运营商信息",
             "D": "用户名和口令"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "标识应为唯一可辨识身份标志（如 IP、MAC、运营商信息）；用户名加口令属于鉴别手段，不宜作标识。"
         },
         {
           "external_id": "2021-11-am-q29",
@@ -432,7 +459,8 @@
             "C": "票据发放服务器TGS",
             "D": "应用服务器"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "Kerberos 中应用服务器是最终为用户提供业务服务的设备或系统。"
         },
         {
           "external_id": "2021-11-am-q30",
@@ -446,7 +474,8 @@
             "C": "RA",
             "D": "客户端"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "CA 负责证书签发、废止、更新等生命周期管理，是 PKI 核心。"
         },
         {
           "external_id": "2021-11-am-q31",
@@ -460,7 +489,8 @@
             "C": "数据库／数据访问控制",
             "D": "应用系统访问控制"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "按对象分类，文件读写控制属于操作系统访问控制。"
         },
         {
           "external_id": "2021-11-am-q32",
@@ -474,7 +504,8 @@
             "C": "保护位",
             "D": "口令"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "基于列的自主访问控制包括访问控制表、保护位；能力表/前缀表等属基于行。"
         },
         {
           "external_id": "2021-11-am-q33",
@@ -488,7 +519,8 @@
             "C": "基于时间的访问控制规则",
             "D": "基于异常事件的访问控制规则"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "按完成任务所需权限授权，对应基于角色的访问控制（RBAC）。"
         },
         {
           "external_id": "2021-11-am-q34",
@@ -502,7 +534,8 @@
             "C": "IP地址限制",
             "D": "文件授权"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "对文件夹的 NTFS 许可属于文件授权控制。"
         },
         {
           "external_id": "2021-11-am-q35",
@@ -516,7 +549,8 @@
             "C": "网络访问审计",
             "D": "网络物理隔离"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "防火墙可做访问限制、带宽控制与审计等，但不能实现网络物理隔离。"
         },
         {
           "external_id": "2021-11-am-q36",
@@ -530,7 +564,8 @@
             "C": "destination表示目的IP地址",
             "D": "log表示记录符合规则条件的网络包"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "B 错误：deny 表示匹配后拒绝通过，permit 才是允许。"
         },
         {
           "external_id": "2021-11-am-q37",
@@ -544,7 +579,8 @@
             "C": "利用操作系统的文件调用事件来检测网页文件的完整性变化，可以发现网站被非授权修改",
             "D": "网络流量清洗可以过滤掉针对目标网络攻击的恶意网络流量"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "A 错误：WAF 防护 Web 应用层攻击，并不局限于仅针对 80、443 端口。"
         },
         {
           "external_id": "2021-11-am-q38",
@@ -558,7 +594,8 @@
             "C": "完整性服务",
             "D": "认证服务"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "VPN 可提供保密性、完整性与认证；网络隔离（物理/强隔离）不是 VPN 能力。"
         },
         {
           "external_id": "2021-11-am-q39",
@@ -572,7 +609,8 @@
             "C": "Frame Relay",
             "D": "隧道技术"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "网络层 VPN 典型实现为隧道技术（如 IPSec）；ATM、帧中继、MPLS 多归链路层 VPN。"
         },
         {
           "external_id": "2021-11-am-q40",
@@ -586,7 +624,8 @@
             "C": "IP ESP",
             "D": "ISAKMP"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "IPSec 的 AH（认证头）提供完整性校验与数据源认证；ESP 侧重加密与可选认证。"
         },
         {
           "external_id": "2021-11-am-q41",
@@ -600,7 +639,8 @@
             "C": "响应单元",
             "D": "事件数据库"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "CIDF 中事件产生器从环境采集事件并提供给系统其他部分。"
         },
         {
           "external_id": "2021-11-am-q42",
@@ -614,7 +654,8 @@
             "C": "DNS",
             "D": "ARP"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "蜜罐用 ARP 将同一 MAC 映射到多个 IP，实现一机绑定多地址。"
         },
         {
           "external_id": "2021-11-am-q43",
@@ -628,7 +669,8 @@
             "C": "注册表修改",
             "D": "协议攻击"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "注册表修改发生在主机本地，适合 HIDS；NIDS 主要看网络包与流量特征。"
         },
         {
           "external_id": "2021-11-am-q44",
@@ -642,7 +684,8 @@
             "C": "单硬盘内外分区技术将单台物理PC虚拟成逻辑上的两台PC",
             "D": "网闸通过具有控制功能开关来连接或切断两个独立主机系统的数据交换"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "A 错误：物理断开要求不同安全域不得以直接或间接方式相连。"
         },
         {
           "external_id": "2021-11-am-q45",
@@ -656,7 +699,8 @@
             "C": "最近登录日志",
             "D": "系统消息"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "Linux 的 lastlog 记录各用户最近一次登录信息。"
         },
         {
           "external_id": "2021-11-am-q46",
@@ -670,7 +714,8 @@
             "C": "审计员可以查看操作员、安全员的工作过程日志",
             "D": "操作员可以修改自己的操作记录"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "D 错误：三权分立下操作员不得篡改自身操作记录，以保证审计有效。"
         },
         {
           "external_id": "2021-11-am-q47",
@@ -684,7 +729,8 @@
             "C": "Telnet",
             "D": "HTTP"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "文件传输审计主要针对 FTP 流量提取审计信息。"
         },
         {
           "external_id": "2021-11-am-q48",
@@ -698,7 +744,8 @@
             "C": "网络安全特权控制不完备",
             "D": "配置错误"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "“网络安全特权控制不完备”属制度/管理类非技术漏洞；缓冲区溢出、输入验证、配置错误属技术性漏洞。"
         },
         {
           "external_id": "2021-11-am-q49",
@@ -712,7 +759,8 @@
             "C": "top.",
             "D": "pwck"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "lsof 可列出进程打开的文件及 TCP/UDP 端口、用户等信息。"
         },
         {
           "external_id": "2021-11-am-q50",
@@ -726,7 +774,8 @@
             "C": "多态病毒",
             "D": "隐蔽病毒"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "磁盘杀手通过感染磁盘引导扇区传播，属于引导型病毒。"
         },
         {
           "external_id": "2021-11-am-q51",
@@ -740,7 +789,8 @@
             "C": "扫描模块、传播模块、蠕虫引擎模块、破坏模块",
             "D": "探测模块、传播模块、负载模块、破坏模块"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "网络蠕虫四模块为：探测模块、传播模块、蠕虫引擎模块、负载模块。"
         },
         {
           "external_id": "2021-11-am-q52",
@@ -754,7 +804,8 @@
             "C": "网络物理隔离",
             "D": "屏蔽指定域名"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "IPS 可屏蔽 IP/端口/域名等有害流量，但不能实现网络物理隔离。"
         },
         {
           "external_id": "2021-11-am-q53",
@@ -768,7 +819,8 @@
             "C": "置换",
             "D": "扰动"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "扰动指发布数据时添加噪声（增删、变换等）；抑制置空、泛化降精度、置换改属主。"
         },
         {
           "external_id": "2021-11-am-q54",
@@ -782,7 +834,8 @@
             "C": "餐饮外卖、运动健身",
             "D": "问诊挂号、求职招聘"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "规范中餐饮外卖、运动健身等服务类型可具有位置权限以提供必要服务。"
         },
         {
           "external_id": "2021-11-am-q55",
@@ -796,7 +849,8 @@
             "C": "拒绝服务",
             "D": "暴力破解"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "邮件炸弹短时间灌入大量邮件致系统/网络不可用，威胁效果属拒绝服务。"
         },
         {
           "external_id": "2021-11-am-q56",
@@ -810,7 +864,8 @@
             "C": "网络攻击事件",
             "D": "有害程序事件"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "传播违法信息、炒作敏感问题危害国安与社会稳定，归类为信息内容安全事件。"
         },
         {
           "external_id": "2021-11-am-q57",
@@ -824,7 +879,8 @@
             "C": "arp",
             "D": "cmp"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "cmp 可逐字节比较二进制文件与原始介质对应文件，用于完整性核对。"
         },
         {
           "external_id": "2021-11-am-q58",
@@ -838,7 +894,8 @@
             "C": "取证现场保护-保存证据-证据识别-传输证据-分析证据-提交证据",
             "D": "取证现场保护-证据识别-提交证据-传输证据-保存证据-分析证据"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "取证步骤为：现场保护→证据识别→传输证据→保存证据→分析证据→提交证据。"
         },
         {
           "external_id": "2021-11-am-q59",
@@ -852,7 +909,8 @@
             "C": "ID头信息扫描",
             "D": "ACK扫描"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "ID 头信息扫描需借助第三方主机配合探测端口状态。"
         },
         {
           "external_id": "2021-11-am-q60",
@@ -866,7 +924,8 @@
             "C": "灰盒测试",
             "D": "盲盒测试"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "仅提供部分对象信息、模拟不同级别威胁者，属于灰盒渗透测试。"
         },
         {
           "external_id": "2021-11-am-q61",
@@ -880,7 +939,8 @@
             "C": "结构化保护级",
             "D": "访问验证保护级"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "GB 17859 第五级访问验证保护级要求提供系统恢复机制。"
         },
         {
           "external_id": "2021-11-am-q62",
@@ -894,7 +954,8 @@
             "C": "应用程序框架层",
             "D": "应用程序层"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "显示驱动属于硬件驱动，位于 Android 的 Linux 内核层。"
         },
         {
           "external_id": "2021-11-am-q63",
@@ -908,7 +969,8 @@
             "C": "减少风险",
             "D": "消除风险"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "打补丁降低漏洞被利用概率，属于减少风险，而非完全消除或转移风险。"
         },
         {
           "external_id": "2021-11-am-q64",
@@ -922,7 +984,8 @@
             "C": "SysEvent.evt",
             "D": "CybEvent.evt"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "Windows 安全日志文件名为 SecEvent.evt（应用 AppEvent.evt、系统 SysEvent.evt）。"
         },
         {
           "external_id": "2021-11-am-q65",
@@ -936,7 +999,8 @@
             "C": "inetd.conf的文件属主为root",
             "D": "关闭与系统业务运行有关的网络通信端口"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "服务最小化要求收紧服务相关配置文件权限；将 services 设为 600，限制普通用户读取服务端口映射。"
         },
         {
           "external_id": "2021-11-am-q66",
@@ -950,7 +1014,8 @@
             "C": "替换",
             "D": "访问控制"
           },
-          "answer": "D"
+          "answer": "D",
+          "explanation": "屏蔽、变形、替换等是脱敏变换手段；访问控制是权限机制，不属于数据脱敏技术本身。"
         },
         {
           "external_id": "2021-11-am-q67",
@@ -964,7 +1029,8 @@
             "C": "Oracle数据库有口令加密和复杂度验证等安全功能",
             "D": "Oracle数据库提供细粒度访问控制"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "B 错误：Oracle 支持网络/第三方等多种认证，并非不支持三方认证。"
         },
         {
           "external_id": "2021-11-am-q68",
@@ -978,7 +1044,8 @@
             "C": "网络层",
             "D": "应用层"
           },
-          "answer": "B"
+          "answer": "B",
+          "explanation": "第二代以太网交换机工作在 OSI 数据链路层，按 MAC 选端口转发。"
         },
         {
           "external_id": "2021-11-am-q69",
@@ -992,7 +1059,8 @@
             "C": "access.conf",
             "D": "mime.conf"
           },
-          "answer": "C"
+          "answer": "C",
+          "explanation": "传统 Apache 三分配置中，access.conf 负责基本文件读取与目录访问控制。"
         },
         {
           "external_id": "2021-11-am-q70",
@@ -1006,7 +1074,8 @@
             "C": "key-string",
             "D": "no ip finger"
           },
-          "answer": "A"
+          "answer": "A",
+          "explanation": "enable secret 以加密形式保存特权模式口令；enable password 多为明文或弱混淆。"
         },
         {
           "external_id": "2021-11-am-q71-75",
@@ -1134,7 +1203,8 @@
               "type": "short_answer",
               "score": 1.5,
               "stem": "请问上述代码存在哪种漏洞？",
-              "answer": "SQL注入漏洞"
+              "answer": "SQL注入漏洞",
+              "explanation": "用户输入直接拼入 SQL 语句且未参数化/转义，存在 SQL 注入漏洞。"
             },
             {
               "external_id": "2021-11-pm-case1-q2(2)",
@@ -1172,7 +1242,8 @@
                 "C": "哈希加盐",
                 "D": "加密存储"
               },
-              "answer": "C"
+              "answer": "C",
+              "explanation": "口令应哈希加盐存储，可抗彩虹表与批量撞库；Base64/明文 MD5/可逆加密均不够安全。"
             },
             {
               "external_id": "2021-11-pm-case1-q3",
@@ -1180,7 +1251,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "王工在命令行窗口运行了一条命令查询端口开放情况。请给出王工所运行命令的名字。",
-              "answer": "netstat（或 ss）"
+              "answer": "netstat（或 ss）",
+              "explanation": "用 netstat（或 ss）查看本机监听与连接端口，排查不必要开放服务。"
             },
             {
               "external_id": "2021-11-pm-case1-q4",
@@ -1188,7 +1260,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "图1-1拓扑图中的防火墙布局属于哪种体系结构类型？",
-              "answer": "基于屏蔽子网的防火墙（DMZ/屏蔽子网结构）"
+              "answer": "基于屏蔽子网的防火墙（DMZ/屏蔽子网结构）",
+              "explanation": "拓扑为外网—防火墙—DMZ（网站）与内网分区，属基于屏蔽子网的防火墙结构。"
             },
             {
               "external_id": "2021-11-pm-case1-q5(1)",
@@ -1211,7 +1284,8 @@
               "type": "short_answer",
               "score": 1,
               "stem": "为了部署 Snort，李工应该把入侵检测系统连接到图1-1网络拓扑中的哪台交换机？",
-              "answer": "核心交换机（DMZ/网站服务器区域交换机）"
+              "answer": "核心交换机（DMZ/网站服务器区域交换机）",
+              "explanation": "Snort 需旁路镜像网站所在区域流量，应接 DMZ/网站侧核心交换机。"
             },
             {
               "external_id": "2021-11-pm-case1-q5(3)",
@@ -1234,7 +1308,8 @@
               "type": "short_answer",
               "score": 1,
               "stem": "图1-2所示攻击分组中很多字符不像正常字母，该用哪种编码方式去解码？",
-              "answer": "URL编码（百分号编码）"
+              "answer": "URL编码（百分号编码）",
+              "explanation": "载荷中大量 %xx 形态字符，需用 URL（百分号）编码解码。"
             },
             {
               "external_id": "2021-11-pm-case1-q5(5)",
@@ -1242,7 +1317,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "请完善 Snort 规则，填充空（a）、（b）：\n(a) tcp any any -> any any (msg:\"XXX\";content:\"(b)\";nocase;sid:1106;)",
-              "answer": "(a) alert；(b) 攻击特征字符串（解码后的特征内容）"
+              "answer": "(a) alert；(b) 攻击特征字符串（解码后的特征内容）",
+              "explanation": "Snort 规则动作写 alert；content 填解码后的攻击特征串以便匹配。"
             }
           ]
         },
@@ -1273,7 +1349,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "SSH 协议默认工作的端口号是多少？",
-              "answer": "22"
+              "answer": "22",
+              "explanation": "SSH 默认监听 TCP 22 端口。"
             },
             {
               "external_id": "2021-11-pm-case2-q2",
@@ -1281,7 +1358,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "网络设备之间的远程运维可以采用两种安全通信方式：一种是 SSH，还有一种是什么？",
-              "answer": "HTTPS"
+              "answer": "HTTPS",
+              "explanation": "网络设备远程运维常用安全通道除 SSH 外还有 HTTPS（Web 管理）。"
             },
             {
               "external_id": "2021-11-pm-case2-q3(1)",
@@ -1289,7 +1367,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "请问李工打开的系统日志文件的路径和名称是什么？",
-              "answer": "/var/log/auth.log"
+              "answer": "/var/log/auth.log",
+              "explanation": "Ubuntu 上 SSH 认证相关记录一般在 /var/log/auth.log。"
             },
             {
               "external_id": "2021-11-pm-case2-q3(2)",
@@ -1297,7 +1376,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "李工怀疑有黑客在攻击该系统，请给出判断攻击成功与否的日志以便评估攻击影响。",
-              "answer": "查找 Accepted password / Accepted publickey（表示登录成功）；持续大量 Failed password 表示暴力破解尝试。"
+              "answer": "查找 Accepted password / Accepted publickey（表示登录成功）；持续大量 Failed password 表示暴力破解尝试。",
+              "explanation": "出现 Accepted password/publickey 表示登录成功；大量 Failed password 多为暴力破解。"
             },
             {
               "external_id": "2021-11-pm-case2-q4(1)",
@@ -1305,7 +1385,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "李工需要实现免密证书登录，应该修改哪个配置文件？请给出文件名（路径）。",
-              "answer": "/etc/ssh/sshd_config"
+              "answer": "/etc/ssh/sshd_config",
+              "explanation": "开启公钥登录等需改 SSH 服务端配置文件 /etc/ssh/sshd_config。"
             },
             {
               "external_id": "2021-11-pm-case2-q4(2)",
@@ -1313,7 +1394,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "命令：ssh xiaoming@server cat /home/xiaoming/.ssh/id_rsa.pub >> authorized_keys\n请说明命令中 “>>” 的含义。",
-              "answer": "追加重定向：将内容追加写入文件末尾，不覆盖原有内容"
+              "answer": "追加重定向：将内容追加写入文件末尾，不覆盖原有内容",
+              "explanation": ">> 为追加重定向，把内容写到文件末尾且不覆盖已有内容。"
             },
             {
               "external_id": "2021-11-pm-case2-q4(3)",
@@ -1321,7 +1403,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "服务器中的 authorized_keys 文件详细信息如图2-2，请给出文件权限的数字表示。",
-              "answer": "600"
+              "answer": "600",
+              "explanation": "rw------- 对应属主读写、组与其他无权限，数字权限为 600。"
             },
             {
               "external_id": "2021-11-pm-case2-q4(4)",
@@ -1329,7 +1412,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "请给出 systemctl 重启 SSH 服务的命令。",
-              "answer": "systemctl restart sshd（或 systemctl restart ssh）"
+              "answer": "systemctl restart sshd（或 systemctl restart ssh）",
+              "explanation": "用 systemctl restart sshd（或 ssh）使配置生效。"
             },
             {
               "external_id": "2021-11-pm-case2-q4(5)",
@@ -1337,7 +1421,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "请给出清除系统历史记录应执行的命令。",
-              "answer": "history -c（可配合 rm ~/.bash_history）"
+              "answer": "history -c（可配合 rm ~/.bash_history）",
+              "explanation": "history -c 清空当前会话历史；必要时再删 ~/.bash_history。"
             },
             {
               "external_id": "2021-11-pm-case2-q5",
@@ -1371,7 +1456,8 @@
               "type": "short_answer",
               "score": 1,
               "stem": "域名系统的服务端程序工作在网络的哪一层？",
-              "answer": "应用层"
+              "answer": "应用层",
+              "explanation": "DNS 是应用层协议，域名服务程序工作在应用层。"
             },
             {
               "external_id": "2021-11-pm-case3-q1(2)",
@@ -1379,7 +1465,8 @@
               "type": "short_answer",
               "score": 1,
               "stem": "图3-1中的第一个网络分组要解析的域名是什么？",
-              "answer": "www.humen.com"
+              "answer": "www.humen.com",
+              "explanation": "抓包首个查询名称为 www.humen.com。"
             },
             {
               "external_id": "2021-11-pm-case3-q1(3)",
@@ -1396,7 +1483,8 @@
               "type": "short_answer",
               "score": 1,
               "stem": "由图3-1可知李工所在单位的域名服务器的 IP 地址是什么？",
-              "answer": "192.168.229.133"
+              "answer": "192.168.229.133",
+              "explanation": "图中本单位 DNS 服务器地址为 192.168.229.133。"
             },
             {
               "external_id": "2021-11-pm-case3-q2",
@@ -1404,7 +1492,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "若想知道是哪个应用程序发送的上述网络分组，在 Windows 系统下李工应执行哪条命令以确定 DNS 流量来源？",
-              "answer": "netstat -ano（再结合任务管理器/按 PID 定位进程）"
+              "answer": "netstat -ano（再结合任务管理器/按 PID 定位进程）",
+              "explanation": "Windows 下用 netstat -ano 查连接与 PID，再定位发起 DNS 的进程。"
             },
             {
               "external_id": "2021-11-pm-case3-q3(1)",
@@ -1412,7 +1501,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "上述流量最有可能对应的恶意程序类型是什么？",
-              "answer": "木马/后门（DNS 隧道木马，C&C 隐蔽通道）"
+              "answer": "木马/后门（DNS 隧道木马，C&C 隐蔽通道）",
+              "explanation": "大量异常 DNS 查询多指向木马/后门通过 DNS 隧道做 C&C。"
             },
             {
               "external_id": "2021-11-pm-case3-q3(2)",
@@ -1420,7 +1510,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "上述流量中隐藏的异常行为是什么？请简要说明。",
-              "answer": "利用 DNS 协议构建隐蔽隧道，通过大量随机子域名向外传输/交互数据"
+              "answer": "利用 DNS 协议构建隐蔽隧道，通过大量随机子域名向外传输/交互数据",
+              "explanation": "异常行为是利用 DNS 字段构造隐蔽通道，借随机子域名外传或交互数据。"
             },
             {
               "external_id": "2021-11-pm-case3-q3(3)",
@@ -1428,7 +1519,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "上述流量所对应的网络攻击违反了信息安全的哪个目标？",
-              "answer": "保密性（兼及可控性）"
+              "answer": "保密性（兼及可控性）",
+              "explanation": "隐蔽外传数据主要破坏保密性（亦削弱可控性）。"
             },
             {
               "external_id": "2021-11-pm-case3-q4(1)",
@@ -1436,7 +1528,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "iptables 默认实现数据包过滤的表是什么？该表默认包含哪几条链？",
-              "answer": "filter 表；INPUT、OUTPUT、FORWARD"
+              "answer": "filter 表；INPUT、OUTPUT、FORWARD",
+              "explanation": "iptables 默认过滤表为 filter，含 INPUT、OUTPUT、FORWARD 三条链。"
             },
             {
               "external_id": "2021-11-pm-case3-q4(2)",
@@ -1444,7 +1537,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "李工首先要在 iptables 防火墙中查看现有的过滤规则，请给出该命令。",
-              "answer": "iptables -L -n"
+              "answer": "iptables -L -n",
+              "explanation": "查看现有规则用 iptables -L -n（数字形式显示地址端口）。"
             },
             {
               "external_id": "2021-11-pm-case3-q4(3)",
@@ -1452,7 +1546,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "李工要禁止该计算机继续发送 DNS 数据包，请给出相应过滤规则。",
-              "answer": "iptables -A OUTPUT -s 192.168.229.1 -p udp --dport 53 -j DROP"
+              "answer": "iptables -A OUTPUT -s 192.168.229.1 -p udp --dport 53 -j DROP",
+              "explanation": "在 OUTPUT 链丢弃该主机发往 UDP/53 的包，如：iptables -A OUTPUT -s 192.168.229.1 -p udp --dport 53 -j DROP。"
             },
             {
               "external_id": "2021-11-pm-case3-q5",
@@ -1460,7 +1555,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "请说明导致 DNS 成为 C&C 攻击首选隐蔽传输通道协议的原因。",
-              "answer": "1. 防火墙通常放行 DNS（UDP/53）；2. DNS 流量基数大、异常易淹没，隐蔽性强；3. 多数环境缺少 DNS 隧道专项检测。"
+              "answer": "1. 防火墙通常放行 DNS（UDP/53）；2. DNS 流量基数大、异常易淹没，隐蔽性强；3. 多数环境缺少 DNS 隧道专项检测。",
+              "explanation": "防火墙常放行 DNS；DNS 流量大易淹没异常；多数环境缺少 DNS 隧道专项检测，故常被用作 C&C 隐蔽通道。"
             }
           ]
         },
@@ -1494,7 +1590,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "Android 系统应用程序权限声明信息都在哪个配置文件中？给出该配置文件名。",
-              "answer": "AndroidManifest.xml"
+              "answer": "AndroidManifest.xml",
+              "explanation": "Android 应用权限声明集中在 AndroidManifest.xml。"
             },
             {
               "external_id": "2021-11-pm-case4-q2(2)",
@@ -1511,7 +1608,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "若应用 A 提供了 AService 服务，其他应用 B 要访问该服务，请将申明语句补充完整：\n<____ android:name=\"com.demo.AService\">",
-              "answer": "<uses-permission android:name=\"com.demo.AService\"/>"
+              "answer": "<uses-permission android:name=\"com.demo.AService\"/>",
+              "explanation": "其他应用访问受保护服务须声明 uses-permission，如 <uses-permission android:name=\"com.demo.AService\"/>。"
             },
             {
               "external_id": "2021-11-pm-case4-q3",
@@ -1519,7 +1617,8 @@
               "type": "short_answer",
               "score": 3,
               "stem": "说明以下三种攻击分别针对哪个 Android 组件：\n（1）目录遍历攻击；（2）界面劫持攻击；（3）短信拦截攻击。",
-              "answer": "（1）ContentProvider；（2）Activity；（3）BroadcastReceiver"
+              "answer": "（1）ContentProvider；（2）Activity；（3）BroadcastReceiver",
+              "explanation": "目录遍历多针对 ContentProvider；界面劫持针对 Activity；短信拦截针对 BroadcastReceiver。"
             },
             {
               "external_id": "2021-11-pm-case4-q4",
@@ -1527,7 +1626,8 @@
               "type": "short_answer",
               "score": 2,
               "stem": "移动终端常见数据存储方式：①SharedPreferences；②文件存储；③SQLite数据库；④ContentProvider；⑤网络存储。选出 Android 系统支持的数据存储方式编号。",
-              "answer": "①②③④⑤"
+              "answer": "①②③④⑤",
+              "explanation": "所列 SharedPreferences、文件、SQLite、ContentProvider、网络存储均为 Android 支持的数据存储方式。"
             }
           ]
         }
@@ -1548,7 +1648,8 @@
           "C": "可用性",
           "D": "可控性"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "可用性指合法用户能够及时获取所需信息或服务；题干描述正是可用性定义。"
       },
       {
         "external_id": "2021-11-am-q02",
@@ -1560,7 +1661,8 @@
           "C": "Google Android",
           "D": "SIMATIC WinCC"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "震网（Stuxnet）专门攻击工控/SCADA，目标为伊朗核设施所用西门子 SIMATIC WinCC 系统。"
       },
       {
         "external_id": "2021-11-am-q03",
@@ -1572,7 +1674,8 @@
           "C": "延缓、阻止、检测、限制",
           "D": "可靠、可用、可控、可信"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "实现信息安全目标，网络需具备防御、监测、应急、恢复等基本功能。"
       },
       {
         "external_id": "2021-11-am-q04",
@@ -1584,7 +1687,8 @@
           "C": "《中华人民共和国数据安全法》和《中华人民共和国网络安全法》",
           "D": "《中华人民共和国数据安全法》和《中华人民共和国国家安全法》"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "审查公告明确依据《国家安全法》《网络安全法》及《网络安全审查办法》启动审查。"
       },
       {
         "external_id": "2021-11-am-q05",
@@ -1596,7 +1700,8 @@
           "C": "2021年11月1日",
           "D": "2021年12月1日"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "《数据安全法》于2021年6月10日通过，自2021年9月1日起施行。"
       },
       {
         "external_id": "2021-11-am-q06",
@@ -1608,7 +1713,8 @@
           "C": "Web服务",
           "D": "网络访问"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "等保2.0“一个中心”即安全管理中心，含系统管理、审计管理、安全管理与集中管控；安全审计属该中心。"
       },
       {
         "external_id": "2021-11-am-q07",
@@ -1620,7 +1726,8 @@
           "C": "国际密码、国产密码和商用密码",
           "D": "普通密码，涉密密码和商用密码"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "《密码法》规定国家对密码分类管理：核心密码、普通密码和商用密码。"
       },
       {
         "external_id": "2021-11-am-q08",
@@ -1632,7 +1739,8 @@
           "C": "堆栈保护",
           "D": "地址空间随机化技术"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "Canary 在返回地址前插入校验值，溢出改写后可被检测，属于堆栈保护技术。"
       },
       {
         "external_id": "2021-11-am-q09",
@@ -1644,7 +1752,8 @@
           "C": "对于受到刑事处罚的人员，终身不得从事网络安全管理和网络安全运营关键岗位的工作",
           "D": "网信部门、公安机关、保护工作部门和其他有关部门及其工作人员未履行相关职责或者玩忽职守、滥用职权、徇私舞弊的，或者发生重大责任事故的，会对相关监管、保护和服务人员给予处分，严重者追究法律责任"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "B 错误：条例规定受治安管理处罚者5年内（非3年）不得从事网安关键岗位；刑事处罚则终身禁止。"
       },
       {
         "external_id": "2021-11-am-q10",
@@ -1656,7 +1765,8 @@
           "C": "拒绝服务攻击",
           "D": "窃听"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "被动攻击只窃听或流量分析、不篡改数据；窃听属被动，重放/假冒/DoS 均为主动攻击。"
       },
       {
         "external_id": "2021-11-am-q11",
@@ -1668,7 +1778,8 @@
           "C": "RST/ACK",
           "D": "ID头信息"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "TCP SYN 半开扫描：目标端口开放时回 SYN/ACK，关闭则回 RST/ACK。"
       },
       {
         "external_id": "2021-11-am-q12",
@@ -1680,7 +1791,8 @@
           "C": "SQL注入",
           "D": "泪滴攻击"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "SYN Flood、DNS 放大、泪滴均为拒绝服务；SQL 注入属注入类漏洞利用，不是 DoS。"
       },
       {
         "external_id": "2021-11-am-q13",
@@ -1692,7 +1804,8 @@
           "C": "Metasploit",
           "D": "WireShark"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "Wireshark 用于抓包与协议分析，属网络嗅探器；SuperScan 为扫描器，L0phtCrack 为口令破解，Metasploit 为渗透框架。"
       },
       {
         "external_id": "2021-11-am-q14",
@@ -1704,7 +1817,8 @@
           "C": "防篡改",
           "D": "防窃取"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "插入无关代码属代码混淆，增大反编译阅读难度，是防反编译手段。"
       },
       {
         "external_id": "2021-11-am-q15",
@@ -1716,7 +1830,8 @@
           "C": "对称密码",
           "D": "序列密码"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "加解密密钥不同且难以互推，即为非对称（公钥）密码。"
       },
       {
         "external_id": "2021-11-am-q16",
@@ -1741,7 +1856,8 @@
           "C": "SM4",
           "D": "SM9"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "SM4 为国产分组密码；SM2/SM9 为公钥，SM3 为杂凑算法。"
       },
       {
         "external_id": "2021-11-am-q18",
@@ -1753,7 +1869,8 @@
           "C": "256比特",
           "D": "512比特"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "MD5 以 512 比特分组处理消息，输出 128 比特摘要。"
       },
       {
         "external_id": "2021-11-am-q19",
@@ -1765,7 +1882,8 @@
           "C": "序列密码体制和哈希算法",
           "D": "公钥密码体制和对称密码体制"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "常见数字签名：对消息摘要用发送方私钥签名，接收方用公钥与哈希校验，即公钥体制加单向哈希。"
       },
       {
         "external_id": "2021-11-am-q20",
@@ -1777,7 +1895,8 @@
           "C": "椭圆离散对数问题",
           "D": "背包问题"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "Diffie-Hellman 密钥交换的安全性基于求解离散对数问题的困难性。"
       },
       {
         "external_id": "2021-11-am-q21",
@@ -1789,7 +1908,8 @@
           "C": "ARP协议可以实现MAC地址和IP地址之间的转换",
           "D": "域名地址和端口地址无法转换"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "A 错误：DHCP 动态分配 IP，不能做 IP 与端口地址转换；DNS/ARP 分别处理域名-IP、IP-MAC。"
       },
       {
         "external_id": "2021-11-am-q22",
@@ -1801,7 +1921,8 @@
           "C": "用户A能读文件E",
           "D": "用户B不能读文件E"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "BLP 简单安全：向下读需级别支配且范畴包含。用户 A 绝密但范畴仅{人事处}，不包含 F 的{人事处,财务处}，故不能读 F。"
       },
       {
         "external_id": "2021-11-am-q23",
@@ -1813,7 +1934,8 @@
           "C": "调用特性",
           "D": "＊特性"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "Biba 的＊特性规定主体不能向上写（不可修改更高完整级客体）。"
       },
       {
         "external_id": "2021-11-am-q24",
@@ -1825,7 +1947,8 @@
           "C": "恢复",
           "D": "响应"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "PDRR 中恢复（Recovery）包含数据备份与系统恢复等措施。"
       },
       {
         "external_id": "2021-11-am-q25",
@@ -1837,7 +1960,8 @@
           "C": "CMM3级",
           "D": "CMM4级"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "软件安全 CMM 充分定义级（3级）相关过程含漏洞评估、代码分析、安全编码标准等。"
       },
       {
         "external_id": "2021-11-am-q26",
@@ -1849,7 +1973,8 @@
           "C": "第三级",
           "D": "第四级"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "等保第四级要求对应用程序全部执行环节做动态可信验证并关联感知。"
       },
       {
         "external_id": "2021-11-am-q27",
@@ -1861,7 +1986,8 @@
           "C": "资料室",
           "D": "储藏室"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "按 GB/T 2887，监控室、配电/UPS 等属第一类辅助房间；终端室属主要工作房间，资料室/储藏室分属二、三类。"
       },
       {
         "external_id": "2021-11-am-q28",
@@ -1873,7 +1999,8 @@
           "C": "通讯运营商信息",
           "D": "用户名和口令"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "标识应为唯一可辨识身份标志（如 IP、MAC、运营商信息）；用户名加口令属于鉴别手段，不宜作标识。"
       },
       {
         "external_id": "2021-11-am-q29",
@@ -1885,7 +2012,8 @@
           "C": "票据发放服务器TGS",
           "D": "应用服务器"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "Kerberos 中应用服务器是最终为用户提供业务服务的设备或系统。"
       },
       {
         "external_id": "2021-11-am-q30",
@@ -1897,7 +2025,8 @@
           "C": "RA",
           "D": "客户端"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "CA 负责证书签发、废止、更新等生命周期管理，是 PKI 核心。"
       },
       {
         "external_id": "2021-11-am-q31",
@@ -1909,7 +2038,8 @@
           "C": "数据库／数据访问控制",
           "D": "应用系统访问控制"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "按对象分类，文件读写控制属于操作系统访问控制。"
       },
       {
         "external_id": "2021-11-am-q32",
@@ -1921,7 +2051,8 @@
           "C": "保护位",
           "D": "口令"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "基于列的自主访问控制包括访问控制表、保护位；能力表/前缀表等属基于行。"
       },
       {
         "external_id": "2021-11-am-q33",
@@ -1933,7 +2064,8 @@
           "C": "基于时间的访问控制规则",
           "D": "基于异常事件的访问控制规则"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "按完成任务所需权限授权，对应基于角色的访问控制（RBAC）。"
       },
       {
         "external_id": "2021-11-am-q34",
@@ -1945,7 +2077,8 @@
           "C": "IP地址限制",
           "D": "文件授权"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "对文件夹的 NTFS 许可属于文件授权控制。"
       },
       {
         "external_id": "2021-11-am-q35",
@@ -1957,7 +2090,8 @@
           "C": "网络访问审计",
           "D": "网络物理隔离"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "防火墙可做访问限制、带宽控制与审计等，但不能实现网络物理隔离。"
       },
       {
         "external_id": "2021-11-am-q36",
@@ -1969,7 +2103,8 @@
           "C": "destination表示目的IP地址",
           "D": "log表示记录符合规则条件的网络包"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "B 错误：deny 表示匹配后拒绝通过，permit 才是允许。"
       },
       {
         "external_id": "2021-11-am-q37",
@@ -1981,7 +2116,8 @@
           "C": "利用操作系统的文件调用事件来检测网页文件的完整性变化，可以发现网站被非授权修改",
           "D": "网络流量清洗可以过滤掉针对目标网络攻击的恶意网络流量"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "A 错误：WAF 防护 Web 应用层攻击，并不局限于仅针对 80、443 端口。"
       },
       {
         "external_id": "2021-11-am-q38",
@@ -1993,7 +2129,8 @@
           "C": "完整性服务",
           "D": "认证服务"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "VPN 可提供保密性、完整性与认证；网络隔离（物理/强隔离）不是 VPN 能力。"
       },
       {
         "external_id": "2021-11-am-q39",
@@ -2005,7 +2142,8 @@
           "C": "Frame Relay",
           "D": "隧道技术"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "网络层 VPN 典型实现为隧道技术（如 IPSec）；ATM、帧中继、MPLS 多归链路层 VPN。"
       },
       {
         "external_id": "2021-11-am-q40",
@@ -2017,7 +2155,8 @@
           "C": "IP ESP",
           "D": "ISAKMP"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "IPSec 的 AH（认证头）提供完整性校验与数据源认证；ESP 侧重加密与可选认证。"
       },
       {
         "external_id": "2021-11-am-q41",
@@ -2029,7 +2168,8 @@
           "C": "响应单元",
           "D": "事件数据库"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "CIDF 中事件产生器从环境采集事件并提供给系统其他部分。"
       },
       {
         "external_id": "2021-11-am-q42",
@@ -2041,7 +2181,8 @@
           "C": "DNS",
           "D": "ARP"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "蜜罐用 ARP 将同一 MAC 映射到多个 IP，实现一机绑定多地址。"
       },
       {
         "external_id": "2021-11-am-q43",
@@ -2053,7 +2194,8 @@
           "C": "注册表修改",
           "D": "协议攻击"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "注册表修改发生在主机本地，适合 HIDS；NIDS 主要看网络包与流量特征。"
       },
       {
         "external_id": "2021-11-am-q44",
@@ -2065,7 +2207,8 @@
           "C": "单硬盘内外分区技术将单台物理PC虚拟成逻辑上的两台PC",
           "D": "网闸通过具有控制功能开关来连接或切断两个独立主机系统的数据交换"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "A 错误：物理断开要求不同安全域不得以直接或间接方式相连。"
       },
       {
         "external_id": "2021-11-am-q45",
@@ -2077,7 +2220,8 @@
           "C": "最近登录日志",
           "D": "系统消息"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "Linux 的 lastlog 记录各用户最近一次登录信息。"
       },
       {
         "external_id": "2021-11-am-q46",
@@ -2089,7 +2233,8 @@
           "C": "审计员可以查看操作员、安全员的工作过程日志",
           "D": "操作员可以修改自己的操作记录"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "D 错误：三权分立下操作员不得篡改自身操作记录，以保证审计有效。"
       },
       {
         "external_id": "2021-11-am-q47",
@@ -2101,7 +2246,8 @@
           "C": "Telnet",
           "D": "HTTP"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "文件传输审计主要针对 FTP 流量提取审计信息。"
       },
       {
         "external_id": "2021-11-am-q48",
@@ -2113,7 +2259,8 @@
           "C": "网络安全特权控制不完备",
           "D": "配置错误"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "“网络安全特权控制不完备”属制度/管理类非技术漏洞；缓冲区溢出、输入验证、配置错误属技术性漏洞。"
       },
       {
         "external_id": "2021-11-am-q49",
@@ -2125,7 +2272,8 @@
           "C": "top.",
           "D": "pwck"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "lsof 可列出进程打开的文件及 TCP/UDP 端口、用户等信息。"
       },
       {
         "external_id": "2021-11-am-q50",
@@ -2137,7 +2285,8 @@
           "C": "多态病毒",
           "D": "隐蔽病毒"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "磁盘杀手通过感染磁盘引导扇区传播，属于引导型病毒。"
       },
       {
         "external_id": "2021-11-am-q51",
@@ -2149,7 +2298,8 @@
           "C": "扫描模块、传播模块、蠕虫引擎模块、破坏模块",
           "D": "探测模块、传播模块、负载模块、破坏模块"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "网络蠕虫四模块为：探测模块、传播模块、蠕虫引擎模块、负载模块。"
       },
       {
         "external_id": "2021-11-am-q52",
@@ -2161,7 +2311,8 @@
           "C": "网络物理隔离",
           "D": "屏蔽指定域名"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "IPS 可屏蔽 IP/端口/域名等有害流量，但不能实现网络物理隔离。"
       },
       {
         "external_id": "2021-11-am-q53",
@@ -2173,7 +2324,8 @@
           "C": "置换",
           "D": "扰动"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "扰动指发布数据时添加噪声（增删、变换等）；抑制置空、泛化降精度、置换改属主。"
       },
       {
         "external_id": "2021-11-am-q54",
@@ -2185,7 +2337,8 @@
           "C": "餐饮外卖、运动健身",
           "D": "问诊挂号、求职招聘"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "规范中餐饮外卖、运动健身等服务类型可具有位置权限以提供必要服务。"
       },
       {
         "external_id": "2021-11-am-q55",
@@ -2197,7 +2350,8 @@
           "C": "拒绝服务",
           "D": "暴力破解"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "邮件炸弹短时间灌入大量邮件致系统/网络不可用，威胁效果属拒绝服务。"
       },
       {
         "external_id": "2021-11-am-q56",
@@ -2209,7 +2363,8 @@
           "C": "网络攻击事件",
           "D": "有害程序事件"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "传播违法信息、炒作敏感问题危害国安与社会稳定，归类为信息内容安全事件。"
       },
       {
         "external_id": "2021-11-am-q57",
@@ -2221,7 +2376,8 @@
           "C": "arp",
           "D": "cmp"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "cmp 可逐字节比较二进制文件与原始介质对应文件，用于完整性核对。"
       },
       {
         "external_id": "2021-11-am-q58",
@@ -2233,7 +2389,8 @@
           "C": "取证现场保护-保存证据-证据识别-传输证据-分析证据-提交证据",
           "D": "取证现场保护-证据识别-提交证据-传输证据-保存证据-分析证据"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "取证步骤为：现场保护→证据识别→传输证据→保存证据→分析证据→提交证据。"
       },
       {
         "external_id": "2021-11-am-q59",
@@ -2245,7 +2402,8 @@
           "C": "ID头信息扫描",
           "D": "ACK扫描"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "ID 头信息扫描需借助第三方主机配合探测端口状态。"
       },
       {
         "external_id": "2021-11-am-q60",
@@ -2257,7 +2415,8 @@
           "C": "灰盒测试",
           "D": "盲盒测试"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "仅提供部分对象信息、模拟不同级别威胁者，属于灰盒渗透测试。"
       },
       {
         "external_id": "2021-11-am-q61",
@@ -2269,7 +2428,8 @@
           "C": "结构化保护级",
           "D": "访问验证保护级"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "GB 17859 第五级访问验证保护级要求提供系统恢复机制。"
       },
       {
         "external_id": "2021-11-am-q62",
@@ -2281,7 +2441,8 @@
           "C": "应用程序框架层",
           "D": "应用程序层"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "显示驱动属于硬件驱动，位于 Android 的 Linux 内核层。"
       },
       {
         "external_id": "2021-11-am-q63",
@@ -2293,7 +2454,8 @@
           "C": "减少风险",
           "D": "消除风险"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "打补丁降低漏洞被利用概率，属于减少风险，而非完全消除或转移风险。"
       },
       {
         "external_id": "2021-11-am-q64",
@@ -2305,7 +2467,8 @@
           "C": "SysEvent.evt",
           "D": "CybEvent.evt"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "Windows 安全日志文件名为 SecEvent.evt（应用 AppEvent.evt、系统 SysEvent.evt）。"
       },
       {
         "external_id": "2021-11-am-q65",
@@ -2317,7 +2480,8 @@
           "C": "inetd.conf的文件属主为root",
           "D": "关闭与系统业务运行有关的网络通信端口"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "服务最小化要求收紧服务相关配置文件权限；将 services 设为 600，限制普通用户读取服务端口映射。"
       },
       {
         "external_id": "2021-11-am-q66",
@@ -2329,7 +2493,8 @@
           "C": "替换",
           "D": "访问控制"
         },
-        "answer": "D"
+        "answer": "D",
+        "explanation": "屏蔽、变形、替换等是脱敏变换手段；访问控制是权限机制，不属于数据脱敏技术本身。"
       },
       {
         "external_id": "2021-11-am-q67",
@@ -2341,7 +2506,8 @@
           "C": "Oracle数据库有口令加密和复杂度验证等安全功能",
           "D": "Oracle数据库提供细粒度访问控制"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "B 错误：Oracle 支持网络/第三方等多种认证，并非不支持三方认证。"
       },
       {
         "external_id": "2021-11-am-q68",
@@ -2353,7 +2519,8 @@
           "C": "网络层",
           "D": "应用层"
         },
-        "answer": "B"
+        "answer": "B",
+        "explanation": "第二代以太网交换机工作在 OSI 数据链路层，按 MAC 选端口转发。"
       },
       {
         "external_id": "2021-11-am-q69",
@@ -2365,7 +2532,8 @@
           "C": "access.conf",
           "D": "mime.conf"
         },
-        "answer": "C"
+        "answer": "C",
+        "explanation": "传统 Apache 三分配置中，access.conf 负责基本文件读取与目录访问控制。"
       },
       {
         "external_id": "2021-11-am-q70",
@@ -2377,7 +2545,8 @@
           "C": "key-string",
           "D": "no ip finger"
         },
-        "answer": "A"
+        "answer": "A",
+        "explanation": "enable secret 以加密形式保存特权模式口令；enable password 多为明文或弱混淆。"
       },
       {
         "external_id": "2021-11-am-q71",

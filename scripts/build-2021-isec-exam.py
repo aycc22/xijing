@@ -9,6 +9,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "public/data/exams/2021-isec-engineer.json"
 MORNING_DATA = Path(__file__).resolve().parent / "data/2021-isec-morning.json"
+AFTERNOON_EXPLANATIONS = json.loads(
+    (Path(__file__).resolve().parent / "data/2021-isec-afternoon-explanations.json").read_text(encoding="utf-8")
+)
 IMG_BASE = "/data/exams/2021-isec/images"
 
 SQL_CODE = (
@@ -571,6 +574,10 @@ def build_afternoon_cases() -> list[dict]:
                 item["answer"] = sq["answer"]
             if "explanation" in sq:
                 item["explanation"] = sq["explanation"]
+            else:
+                key = f"case{case['number']}-{sq['number']}"
+                if key in AFTERNOON_EXPLANATIONS:
+                    item["explanation"] = AFTERNOON_EXPLANATIONS[key]
             sub_questions.append(item)
         cases.append(
             {
