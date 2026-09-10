@@ -21,7 +21,14 @@ onUnmounted(() => {
 
 const focusMode = computed(() => {
   const name = route.name
-  return name === 'quiz' || name === 'result' || name === 'exam' || name === 'exam-result'
+  return (
+    name === 'quiz' ||
+    name === 'result' ||
+    name === 'result-review' ||
+    name === 'exam' ||
+    name === 'exam-result' ||
+    name === 'exam-result-review'
+  )
 })
 
 const isHome = computed(() => route.name === 'home')

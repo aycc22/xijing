@@ -66,15 +66,31 @@ export function historyResultText(session: HistorySession): string {
   return `${summary.correct}/${summary.total} · ${summary.rate}%`
 }
 
+export function practiceResultPath(sessionId: string): string {
+  return `/result/${sessionId}`
+}
+
+export function practiceReviewPath(sessionId: string): string {
+  return `${practiceResultPath(sessionId)}/review`
+}
+
+export function examResultPath(sessionId: string): string {
+  return `/exam-result/${sessionId}`
+}
+
+export function examReviewPath(sessionId: string): string {
+  return `${examResultPath(sessionId)}/review`
+}
+
 export function detailPathForSession(session: HistorySession): string {
   const status = sessionHistoryStatus(session)
   const isExam = session.kind === 'exam' || session.mode === 'exam'
   if (isExam) {
     if (status === 'in_progress' && session.paper_id) return `/exam/${session.paper_id}`
-    return `/exam-result/${session.id}`
+    return examResultPath(session.id)
   }
   if (status === 'in_progress') return `/quiz/${session.bank_id}`
-  return `/result/${session.id}`
+  return practiceResultPath(session.id)
 }
 
 export function mergeHistorySessions(rows: HistorySession[]): HistorySession[] {
