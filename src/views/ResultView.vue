@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import SessionReviewPlayer from '../components/SessionReviewPlayer.vue'
 import AiSessionReportPanel from '../components/AiSessionReportPanel.vue'
 import { useAiSessionAnalysis } from '../composables/useAiSessionAnalysis'
-import { computePracticeSummary, toPracticeReviewItems, verdictForRate } from '../lib/practiceResult'
+import { computePracticeSummary, verdictForRate } from '../lib/practiceResult'
 import { formatErrorMessage } from '../lib/errors'
+import { practiceReviewPath } from '../lib/history'
 import { parseQuestionSnapshot } from '../lib/questionSnapshot'
 import { supabase } from '../lib/supabase'
 import type { AttemptSession } from '../lib/types'
@@ -14,7 +14,6 @@ const route = useRoute()
 const router = useRouter()
 const session = ref<AttemptSession | null>(null)
 const bankTitle = ref('')
-const reviews = ref(toPracticeReviewItems([]))
 const error = ref('')
 const loading = ref(true)
 const analysis = useAiSessionAnalysis()
@@ -47,8 +46,7 @@ async function load() {
     .select('question_id, selected_keys, is_correct, is_skipped, question_snapshot, answered_at')
     .eq('session_id', sessionId)
     .order('answered_at', { ascending: true })
-  if (aErr) error.value = formatErrorMessage(aErr, '无法加载逐题明细')
-  else reviews.value = toPracticeReviewItems(answers ?? [])
+  if (aErr) error.value = formatErrorMessage(aErr, '无法加载作答记录')
 
   const { data: bank } = await supabase
     .from('question_banks')
@@ -123,17 +121,17 @@ onMounted(load)
         :error="analysis.error.value"
         @regenerate="analysis.regenerate('practice', session.id)"
       />
-      <SessionReviewPlayer
-        v-if="reviews.length"
-        :items="reviews"
-        heading="逐题复盘"
-        :session-id="session.id"
-        session-type="practice"
-      />
 
       <div class="relative mt-2 flex w-full max-w-2xs flex-col items-center gap-5 self-center">
-        <button
+        <RouterLink
+          v-if="summary.total"
           class="btn w-full"
+          :to="practiceReviewPath(session.id)"
+        >
+          查看逐题复盘
+        </RouterLink>
+        <button
+          class="btn-secondary w-full"
           type="button"
           @click="router.push(`/quiz/${session.bank_id}?new=1`)"
         >

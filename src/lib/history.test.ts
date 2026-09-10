@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest'
 import {
   computeHistoryStats,
   detailPathForSession,
+  examResultPath,
+  examReviewPath,
   historyStatusLabel,
   mergeHistorySessions,
   modeLabel,
   partitionHistory,
+  practiceResultPath,
+  practiceReviewPath,
   sessionHistoryStatus,
   type HistorySession,
 } from './history'
@@ -69,8 +73,19 @@ describe('labels', () => {
   })
 })
 
+describe('result and review paths', () => {
+  it('keeps summary and review on distinct deep-linkable routes', () => {
+    expect(practiceResultPath('p1')).toBe('/result/p1')
+    expect(practiceReviewPath('p1')).toBe('/result/p1/review')
+    expect(examResultPath('e1')).toBe('/exam-result/e1')
+    expect(examReviewPath('e1')).toBe('/exam-result/e1/review')
+    expect(practiceReviewPath('p1')).not.toBe(practiceResultPath('p1'))
+    expect(examReviewPath('e1')).not.toBe(examResultPath('e1'))
+  })
+})
+
 describe('detailPathForSession', () => {
-  it('sends finished practice to result page', () => {
+  it('sends finished practice to result page, not the review page', () => {
     expect(
       detailPathForSession(session({ id: 'p1', finished_at: '2026-08-21T12:00:00Z' })),
     ).toBe('/result/p1')
