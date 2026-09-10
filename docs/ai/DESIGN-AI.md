@@ -196,8 +196,9 @@ supabase functions deploy ai-proxy
 **服务端步骤：**
 
 1. 读题目；校验当前用户为题库 owner 或 `profiles.role = admin`。
-2. 调 DeepSeek 得到 `{ tags, difficulty?, exam_point_note? }`。
-3. 若 `apply === true`，更新 `questions.tags`（及可选 `difficulty`）；否则仅返回建议。
+2. 若 `apply === true` 且 `tags_edited_at` 非空且 `force !== true`，不调上游、不写库，返回 `applied: false`。
+3. 调 DeepSeek 得到 `{ tags, difficulty?, exam_point_note? }`。
+4. 若 `apply === true`（且未跳过），更新 `questions.tags`（及可选 `difficulty`）；否则仅返回建议。
 
 **批量：** 前端循环调用本 action（或后续加 `analyze_question_batch`）；首期前端串行/有限并发（≤ 3），单次操作选题 ≤ 50。
 
