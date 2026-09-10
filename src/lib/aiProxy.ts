@@ -1,4 +1,7 @@
 import { supabase } from './supabase'
+import type { AnalyzeQuestionSuggestion } from './aiTag'
+import type { AiFeedback, GradingStatus } from './aiGrade'
+import type { QuestionAiExplain } from './aiExplain'
 
 export type AiErrorCode =
   | 'unauthorized'
@@ -28,6 +31,34 @@ export interface AnalyzeSessionRequest {
   force?: boolean
 }
 
+export interface ExplainQuestionRequest {
+  action: 'explain_question'
+  question_id: string
+  session_type: 'practice' | 'exam'
+  session_id: string
+  force?: boolean
+}
+
+export interface AnalyzeQuestionRequest {
+  action: 'analyze_question'
+  question_id: string
+  apply?: boolean
+  force?: boolean
+}
+
+export interface GradeShortAnswerRequest {
+  action: 'grade_short_answer'
+  session_id: string
+  question_id: string
+  force?: boolean
+}
+
+export type AiProxyRequest =
+  | AnalyzeSessionRequest
+  | ExplainQuestionRequest
+  | AnalyzeQuestionRequest
+  | GradeShortAnswerRequest
+
 export interface SessionAiReport {
   id: string
   session_type: 'practice' | 'exam'
@@ -45,16 +76,46 @@ export interface AnalyzeSessionResponse {
   cached: boolean
 }
 
+export interface ExplainUserResultPayload {
+  is_correct: boolean
+  is_skipped: boolean
+  selected_keys: string[]
+}
+
+export interface ExplainQuestionResponse {
+  explain: QuestionAiExplain & { question_id: string }
+  user_result: ExplainUserResultPayload | null
+  cached: boolean
+}
+
+export interface AnalyzeQuestionResponse {
+  suggestion: AnalyzeQuestionSuggestion
+  applied: boolean
+}
+
+export interface GradeShortAnswerResponse {
+  grade: {
+    question_id: string
+    ai_score: number
+    max_score: number
+    ai_feedback: AiFeedback
+    grading_status: GradingStatus
+    earned: number
+    score: number
+  }
+  cached: boolean
+}
+
 const CODE_MESSAGES: Record<AiErrorCode, string> = {
-  unauthorized: '请先登录后再使用智能分析',
-  forbidden: '只能分析自己的练习或考试记录',
-  not_found: '会话不存在',
+  unauthorized: '请先登录后再使用 AI 功能',
+  forbidden: '没有权限执行此操作',
+  not_found: '题目或会话不存在',
   ai_disabled: '智能解读暂未开通',
-  rate_limited: '今日分析次数已用完，请明日再试',
-  invalid_action: '不支持的分析请求',
+  rate_limited: '今日 AI 次数已用完，请明日再试',
+  invalid_action: '不支持的请求',
   upstream_error: '智能解读暂不可用',
   upstream_invalid: '智能解读暂不可用',
-  not_ready: '请先完成作答后再生成分析',
+  not_ready: '请先揭晓本题或完成交卷',
   network: '网络异常，智能解读暂不可用',
   unknown: '智能解读暂不可用',
 }
@@ -113,21 +174,74 @@ export function mapAiProxyFailure(input: {
   }
 }
 
+function invalidShape(): AiProxyResult<never> {
+  return {
+    ok: false,
+    error: { code: 'upstream_invalid', message: CODE_MESSAGES.upstream_invalid },
+  }
+}
+
+function isAnalyzeSessionResponse(data: unknown): data is AnalyzeSessionResponse {
+  return isRecord(data) && isRecord(data.report)
+}
+
+function isExplainQuestionResponse(data: unknown): data is ExplainQuestionResponse {
+  return isRecord(data) && isRecord(data.explain)
+}
+
+function isAnalyzeQuestionResponse(data: unknown): data is AnalyzeQuestionResponse {
+  return isRecord(data) && isRecord(data.suggestion) && Array.isArray(data.suggestion.tags)
+}
+
+function isGradeShortAnswerResponse(data: unknown): data is GradeShortAnswerResponse {
+  return isRecord(data) && isRecord(data.grade) && typeof data.grade.question_id === 'string'
+}
+
+async function invokeRaw(body: AiProxyRequest): Promise<{ data: unknown; error: unknown }> {
+  return supabase.functions.invoke('ai-proxy', { body })
+}
+
 export async function invokeAiProxy(
   body: AnalyzeSessionRequest,
-): Promise<AiProxyResult<AnalyzeSessionResponse>> {
-  const { data, error } = await supabase.functions.invoke('ai-proxy', { body })
+): Promise<AiProxyResult<AnalyzeSessionResponse>>
+export async function invokeAiProxy(
+  body: ExplainQuestionRequest,
+): Promise<AiProxyResult<ExplainQuestionResponse>>
+export async function invokeAiProxy(
+  body: AnalyzeQuestionRequest,
+): Promise<AiProxyResult<AnalyzeQuestionResponse>>
+export async function invokeAiProxy(
+  body: GradeShortAnswerRequest,
+): Promise<AiProxyResult<GradeShortAnswerResponse>>
+export async function invokeAiProxy(
+  body: AiProxyRequest,
+): Promise<
+  AiProxyResult<
+    | AnalyzeSessionResponse
+    | ExplainQuestionResponse
+    | AnalyzeQuestionResponse
+    | GradeShortAnswerResponse
+  >
+> {
+  const { data, error } = await invokeRaw(body)
   if (error) {
     const httpStatus = readHttpStatus(error)
     return { ok: false, error: mapAiProxyFailure({ data, error, httpStatus }) }
   }
-  if (!isRecord(data) || !isRecord(data.report)) {
-    return {
-      ok: false,
-      error: { code: 'upstream_invalid', message: CODE_MESSAGES.upstream_invalid },
-    }
+  if (body.action === 'analyze_session') {
+    if (!isAnalyzeSessionResponse(data)) return invalidShape()
+    return { ok: true, data }
   }
-  return { ok: true, data: data as unknown as AnalyzeSessionResponse }
+  if (body.action === 'explain_question') {
+    if (!isExplainQuestionResponse(data)) return invalidShape()
+    return { ok: true, data }
+  }
+  if (body.action === 'analyze_question') {
+    if (!isAnalyzeQuestionResponse(data)) return invalidShape()
+    return { ok: true, data }
+  }
+  if (!isGradeShortAnswerResponse(data)) return invalidShape()
+  return { ok: true, data }
 }
 
 export function aiErrorUserMessage(error: AiProxyError | null | undefined): string {

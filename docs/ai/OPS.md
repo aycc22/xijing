@@ -4,7 +4,7 @@
 
 ## 迁移
 
-将 `supabase/migrations/` 同步到远程（含 `202609100001_ai_session_reports.sql`）：
+将 `supabase/migrations/` 同步到远程（含 `202609100001_ai_session_reports.sql`、`202609100002_ai_explain_tag_grade.sql`）：
 
 ```bash
 supabase link --project-ref <你的项目 ref>
@@ -27,4 +27,4 @@ supabase functions deploy ai-proxy
 
 紧急关闭：清空或删除 `DEEPSEEK_API_KEY` 即可全局禁用模型调用。
 
-P1 `analyze_question` 与 P2 `grade_short_answer` 尚未实现。
+P1a `explain_question`、P1b `analyze_question` 与 P2 `grade_short_answer` 已实现，部署时需同步迁移并重新 `supabase functions deploy ai-proxy`。

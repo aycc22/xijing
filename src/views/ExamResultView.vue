@@ -6,6 +6,8 @@ import AiSessionReportPanel from '../components/AiSessionReportPanel.vue'
 import { useAiSessionAnalysis } from '../composables/useAiSessionAnalysis'
 import { formatExamDuration, summarizeByType, type GradedExamItem } from '../lib/examSession'
 import { computePracticeSummary, verdictForRate } from '../lib/practiceResult'
+import { mergeAiGradeIntoItems, needsAiGrade } from '../lib/aiGrade'
+import { invokeAiProxy } from '../lib/aiProxy'
 import { questionTypeLabel } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 
@@ -27,6 +29,8 @@ const paperBankId = ref<string | null>(null)
 const loading = ref(true)
 const error = ref('')
 const analysis = useAiSessionAnalysis()
+const gradingBusy = ref(false)
+const gradingError = ref('')
 
 const summary = computed(() =>
   session.value
@@ -78,6 +82,61 @@ async function load() {
     qtype: item.snapshot?.qtype ?? '',
   }))
   void analysis.autoAnalyzeOnce('exam', sessionId, analysisRows)
+  void gradePendingShortAnswers(resultItems)
+}
+
+async function applyGradeToSession(questionId: string, force = false) {
+  const current = session.value
+  if (!current) return
+  const result = await invokeAiProxy({
+    action: 'grade_short_answer',
+    session_id: current.id,
+    question_id: questionId,
+    force,
+  })
+  if (!result.ok) {
+    gradingError.value = result.error.message
+    return
+  }
+  gradingError.value = ''
+  if (session.value) {
+    session.value = {
+      ...session.value,
+      result_items: mergeAiGradeIntoItems(session.value.result_items, questionId, {
+        grading_status: result.data.grade.grading_status,
+        ai_score: result.data.grade.ai_score,
+        ai_feedback: result.data.grade.ai_feedback,
+      }),
+    }
+  }
+}
+
+async function gradePendingShortAnswers(items: GradedExamItem[]) {
+  const pending = items.filter((item) =>
+    needsAiGrade({ qtype: item.snapshot?.qtype, grading_status: item.grading_status }),
+  )
+  if (!pending.length) return
+  gradingBusy.value = true
+  gradingError.value = ''
+  const started = Date.now()
+  for (const item of pending) {
+    if (Date.now() - started > 60_000) break
+    await applyGradeToSession(item.question_id)
+  }
+  gradingBusy.value = false
+}
+
+async function retryFailedGrades() {
+  const current = session.value
+  if (!current) return
+  const failed = current.result_items.filter(
+    (item) => item.snapshot?.qtype === 'short_answer' && item.grading_status === 'failed',
+  )
+  gradingBusy.value = true
+  for (const item of failed) {
+    await applyGradeToSession(item.question_id, true)
+  }
+  gradingBusy.value = false
 }
 
 onMounted(load)
@@ -132,7 +191,25 @@ onMounted(load)
         @regenerate="session && analysis.regenerate('exam', session.id)"
       />
 
-      <SessionReviewPlayer v-if="rows.length" :items="rows" heading="逐题明细" />
+      <p v-if="gradingBusy" class="m-0 text-center text-sm text-muted">正在生成简答 AI 评分（仅供参考）…</p>
+      <p v-if="gradingError" class="alert-warn m-0">{{ gradingError }}</p>
+      <button
+        v-if="session.result_items.some((item) => item.snapshot?.qtype === 'short_answer' && item.grading_status === 'failed')"
+        class="btn-secondary mx-auto min-h-11"
+        type="button"
+        :disabled="gradingBusy"
+        @click="retryFailedGrades"
+      >
+        重试失败的 AI 评分
+      </button>
+
+      <SessionReviewPlayer
+        v-if="rows.length"
+        :items="rows"
+        heading="逐题明细"
+        :session-id="session.id"
+        session-type="exam"
+      />
 
       <div class="flex flex-col gap-2.5 sm:mx-auto sm:w-full sm:max-w-sm sm:flex-row sm:flex-wrap">
         <button

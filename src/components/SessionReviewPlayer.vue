@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import CaseMaterialPanel from './CaseMaterialPanel.vue'
+import AiQuestionExplainPanel from './AiQuestionExplainPanel.vue'
 import { resultStatusLabel, resultStatusSymbol } from '../lib/practiceResult'
 import { questionTypeLabel } from '../lib/scoring'
 import {
@@ -23,6 +24,8 @@ const props = withDefaults(
   defineProps<{
     items: ReviewPlayerItem[]
     heading?: string
+    sessionId?: string
+    sessionType?: 'practice' | 'exam'
   }>(),
   { heading: '逐题复盘' },
 )
@@ -214,6 +217,44 @@ function next() {
       <p v-if="snapshot?.explanation" class="alert-info m-0 break-words">
         <span class="font-semibold">解析</span> · {{ snapshot.explanation }}
       </p>
+
+      <div
+        v-if="snapshot?.qtype === 'short_answer' && current"
+        class="rounded-xl border border-line/70 bg-raise/40 px-3.5 py-3 text-sm"
+      >
+        <p v-if="typeof current.ai_score === 'number'" class="m-0 text-ink">
+          AI 建议分 {{ current.ai_score }}/{{ current.score }}
+          <span class="text-muted">（AI 辅助评分，仅供参考）</span>
+          <span
+            v-if="typeof current.score === 'number' && current.ai_score >= current.score * 0.6"
+            class="ml-1 text-ok"
+          >
+            · 基本掌握
+          </span>
+        </p>
+        <p v-else-if="current.grading_status === 'pending'" class="m-0 text-muted">AI 评分中…</p>
+        <p v-else-if="current.grading_status === 'failed'" class="m-0 text-warn">AI 评分失败，可稍后重试</p>
+        <p v-if="current.ai_feedback?.text" class="m-0 mt-1.5 leading-relaxed text-ink">
+          {{ current.ai_feedback.text }}
+        </p>
+        <ul
+          v-if="current.ai_feedback?.rubric_hits?.length"
+          class="mt-2 m-0 flex list-none flex-col gap-1 p-0 text-xs"
+        >
+          <li v-for="hit in current.ai_feedback.rubric_hits" :key="hit.point" class="text-muted">
+            {{ hit.hit ? '✓' : '○' }} {{ hit.point }}
+          </li>
+        </ul>
+      </div>
+
+      <AiQuestionExplainPanel
+        v-if="sessionId && sessionType && current"
+        :question-id="current.question_id"
+        :session-id="sessionId"
+        :session-type="sessionType"
+        :is-correct="current.is_correct"
+        :is-skipped="Boolean(current.is_skipped)"
+      />
 
       <div class="flex items-center gap-2.5 border-t border-line/60 pt-3">
         <button

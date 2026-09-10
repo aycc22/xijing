@@ -23,6 +23,7 @@
 | **考点（Tag）** | 题目上的知识点标签字符串，存于 `questions.tags`；会后薄弱点分析按考点聚合。首期不建独立考点表 |
 | **Tags Edited At** | `questions.tags_edited_at`：非空表示标签已经过上传者确认（手改或 AI 预览确认），批量 AI 打标默认跳过 |
 | **Session AI Report** | 一次已完成刷题/考试会话的 AI 薄弱点报告（见 docs/ai） |
+| **AI 点评 / AI-EXPLAIN** | 揭晓后对单题的教学向解读（考点、考查意图、易混点）；入口「AI 点评」；不改分、默认不写回 tags（见 docs/ai） |
 | **AI Assisted Grading** | 对考试 `short_answer` 的 DeepSeek 建议分与评语，仅供参考；**不**改写正式 `earned` / 会话总分（双轨，见 docs/adr/0001） |
 | **正式得分** | 考试小题计入 `earned` 与会话 `score` 的分数；首期简答来自模糊匹配，日后人工阅卷可覆盖 |
 
@@ -39,7 +40,7 @@
 
 完整产品范围、优先级、业务规则和验收场景见 [REQUIREMENTS.md](./REQUIREMENTS.md)。
 
-DeepSeek AI 增量能力（会后薄弱点分析、题目考点辅助打标、考试主观简答 AI 辅助评分）见：
+DeepSeek AI 增量能力（会后薄弱点分析、揭晓后单题 AI 点评、题目考点辅助打标、考试主观简答 AI 辅助评分）见：
 
 - [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md)（需求分析）
 - [docs/ai/DESIGN-AI.md](./docs/ai/DESIGN-AI.md)（技术设计与实现清单）

@@ -1,5 +1,6 @@
 import { sameAnswerSet, type QuestionType } from './types'
 import type { PaperItem } from './paperSnapshot'
+import type { AiFeedback, GradingStatus } from './aiGrade'
 
 export interface ExamAnswer {
   selected: string[]
@@ -18,6 +19,9 @@ export interface GradedExamItem {
   is_correct: boolean
   flagged: boolean
   snapshot: PaperItem['snapshot']
+  grading_status?: GradingStatus
+  ai_score?: number
+  ai_feedback?: AiFeedback
 }
 
 export interface GradedExam {

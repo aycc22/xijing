@@ -123,7 +123,13 @@ onMounted(load)
         :error="analysis.error.value"
         @regenerate="analysis.regenerate('practice', session.id)"
       />
-      <SessionReviewPlayer v-if="reviews.length" :items="reviews" heading="逐题复盘" />
+      <SessionReviewPlayer
+        v-if="reviews.length"
+        :items="reviews"
+        heading="逐题复盘"
+        :session-id="session.id"
+        session-type="practice"
+      />
 
       <div class="relative mt-2 flex w-full max-w-2xs flex-col items-center gap-5 self-center">
         <button

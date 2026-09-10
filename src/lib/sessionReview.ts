@@ -22,6 +22,9 @@ export interface ReviewPlayerItem {
   is_skipped?: boolean
   earned?: number
   score?: number
+  grading_status?: 'scored' | 'pending' | 'done' | 'failed'
+  ai_score?: number
+  ai_feedback?: { text: string; rubric_hits: { point: string; hit: boolean }[] }
   snapshot: ReviewPlayerSnapshot | null
 }
 
