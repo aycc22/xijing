@@ -96,6 +96,18 @@ supabase db push
 supabase functions deploy email-auth
 ```
 
+## DeepSeek 智能分析（P0）
+
+会后薄弱点分析走 Edge Function `ai-proxy`，密钥不得进入前端。配置与部署见 [docs/ai/OPS.md](./docs/ai/OPS.md)：
+
+```bash
+supabase db push
+supabase secrets set DEEPSEEK_API_KEY=sk-...
+supabase functions deploy ai-proxy
+```
+
+未配置密钥时，结果页仍显示本地考点统计，智能解读提示暂不可用。
+
 ## 领域说明
 
 见 [CONTEXT.md](./CONTEXT.md)。

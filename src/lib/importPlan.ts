@@ -40,6 +40,7 @@ export function toImportStats(plan: ImportPlan, failed = 0): ImportStats {
 }
 
 export function questionContentFromRow(row: ParsedQuestionRow) {
+  const tags = row.tags ?? []
   return {
     external_id: row.external_id,
     qtype: row.qtype,
@@ -50,7 +51,8 @@ export function questionContentFromRow(row: ParsedQuestionRow) {
     case_id: row.case_id,
     case_material: row.case_material || null,
     difficulty: row.difficulty,
-    tags: row.tags ?? [],
+    tags,
+    ...(tags.length ? { tags_edited_at: new Date().toISOString() } : {}),
   }
 }
 

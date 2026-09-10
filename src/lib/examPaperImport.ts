@@ -54,6 +54,7 @@ export interface ExamChoiceQuestion {
   blanks?: ExamClozeBlank[]
   answer: string
   explanation?: string
+  tags?: string[] | string
 }
 
 export interface ExamClozeBlank {
@@ -62,6 +63,7 @@ export interface ExamClozeBlank {
   stem: string
   options: Record<string, string>
   answer: string
+  tags?: string[] | string
 }
 
 export interface ExamCaseBlock {
@@ -83,6 +85,7 @@ export interface ExamSubQuestion {
   options?: Record<string, string>
   answer?: string
   explanation?: string
+  tags?: string[] | string
 }
 
 export interface ParsedExamQuestionRow extends ParsedQuestionRow {
@@ -103,6 +106,19 @@ function resolveExamAssetsBase(bundle: ExamPaperBundle): string {
   const fromExam = bundle.exam.assets_base?.trim()
   if (fromExam) return fromExam.replace(/\/$/, '')
   return EXAM_ASSETS_BASE
+}
+
+export function normalizeExamTags(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw.map((item) => String(item).trim()).filter(Boolean)
+  }
+  if (typeof raw === 'string') {
+    return raw
+      .split(/[;；,，]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+  }
+  return []
 }
 
 function parseChoiceQuestion(
@@ -133,7 +149,7 @@ function parseChoiceQuestion(
         case_id: caseId,
         case_material: material,
         difficulty: null,
-        tags: [],
+        tags: normalizeExamTags(blank.tags ?? q.tags),
         score: 1,
         section,
         attachments: null,
@@ -166,7 +182,7 @@ function parseChoiceQuestion(
       case_id: null,
       case_material: '',
       difficulty: null,
-      tags: [],
+      tags: normalizeExamTags(q.tags),
       score: q.score ?? 1,
       section,
       attachments: null,
@@ -203,7 +219,7 @@ function parseSubQuestion(
       case_id: caseId,
       case_material: caseMaterial,
       difficulty: null,
-      tags: [],
+      tags: normalizeExamTags(sq.tags),
       score: sq.score,
       section,
       attachments: caseAttachments,
@@ -233,7 +249,7 @@ function parseSubQuestion(
     case_id: caseId,
     case_material: caseMaterial,
     difficulty: null,
-    tags: [],
+    tags: normalizeExamTags(sq.tags),
     score: sq.score,
     section,
     attachments: caseAttachments,

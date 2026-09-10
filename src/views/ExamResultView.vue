@@ -2,6 +2,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import SessionReviewPlayer from '../components/SessionReviewPlayer.vue'
+import AiSessionReportPanel from '../components/AiSessionReportPanel.vue'
+import { useAiSessionAnalysis } from '../composables/useAiSessionAnalysis'
 import { formatExamDuration, summarizeByType, type GradedExamItem } from '../lib/examSession'
 import { computePracticeSummary, verdictForRate } from '../lib/practiceResult'
 import { questionTypeLabel } from '../lib/scoring'
@@ -24,6 +26,7 @@ const session = ref<ExamSessionRow | null>(null)
 const paperBankId = ref<string | null>(null)
 const loading = ref(true)
 const error = ref('')
+const analysis = useAiSessionAnalysis()
 
 const summary = computed(() =>
   session.value
@@ -55,9 +58,10 @@ async function load() {
     await router.replace(`/exam/${data.paper_id}`)
     return
   }
+  const resultItems = Array.isArray(data.result_items) ? (data.result_items as GradedExamItem[]) : []
   session.value = {
     ...data,
-    result_items: Array.isArray(data.result_items) ? (data.result_items as GradedExamItem[]) : [],
+    result_items: resultItems,
   }
   const { data: paper } = await supabase
     .from('paper_instances')
@@ -66,6 +70,14 @@ async function load() {
     .maybeSingle()
   paperBankId.value = paper?.bank_id ?? null
   loading.value = false
+
+  const analysisRows = resultItems.map((item) => ({
+    questionId: item.question_id,
+    isCorrect: Boolean(item.is_correct),
+    stem: item.snapshot?.stem ?? '',
+    qtype: item.snapshot?.qtype ?? '',
+  }))
+  void analysis.autoAnalyzeOnce('exam', sessionId, analysisRows)
 }
 
 onMounted(load)
@@ -111,6 +123,14 @@ onMounted(load)
           </li>
         </ul>
       </section>
+
+      <AiSessionReportPanel
+        :tag-stats="analysis.localTagStats.value"
+        :report="analysis.report.value"
+        :loading="analysis.loading.value"
+        :error="analysis.error.value"
+        @regenerate="session && analysis.regenerate('exam', session.id)"
+      />
 
       <SessionReviewPlayer v-if="rows.length" :items="rows" heading="逐题明细" />
 

@@ -3,3 +3,7 @@
 
 [functions.email-auth]
 verify_jwt = false
+
+# JWT 在函数内校验，以便返回统一的 { code: 'unauthorized' }
+[functions.ai-proxy]
+verify_jwt = false
