@@ -24,6 +24,14 @@ describe('examPaperJson', () => {
       expect(result.bundle.exam.assets_base).toBe('/data/exams/2022-soft-designer/images')
       expect(result.bundle.papers).toHaveLength(2)
     }
+    const q12 = result.rows.find((r) => r.external_id === '2022-11-am-q12')
+    expect(q12?.options.find((o) => o.key === 'A')?.text).toBe(
+      '该软件的著作权归属仅依据委托人与受托人在书面合同中的约定来确定',
+    )
+    const q17 = result.rows.find((r) => r.external_id === '2022-11-am-q17')
+    expect(q17?.case_id).toBe('2022-11-am-fig-q17-18')
+    expect(q17?.attachments?.length).toBe(1)
+    expect((q17?.attachments?.[0] as { url?: string })?.url).toContain('fig-am-q17.png')
   })
 
   it('parses 2022 exam sample', () => {

@@ -17,6 +17,11 @@ const KNOWN_ATTACHMENT_EXTENSIONS: Record<string, string> = {
   'fig3-1': 'png',
   'fig3-2': 'png',
   'fig4-1': 'png',
+  'fig-am-q17': 'png',
+  'fig-am-q24': 'png',
+  'fig-am-q27': 'png',
+  'fig-am-q41': 'png',
+  'fig-am-q64': 'jpg',
 }
 
 export function appBasePath(): string {
