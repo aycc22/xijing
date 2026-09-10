@@ -89,7 +89,7 @@ const rateLabel = (rate: number) => `${Math.round(rate * 100)}%`
     </button>
 
     <p class="m-0 text-xs leading-relaxed text-muted/80">
-      本题分析可能将题干、解析与作答发送至 DeepSeek 进行处理。考点统计使用题目<strong>当前</strong>标签。
+      本次分析可能将题干、解析与作答发送至第三方模型服务（DeepSeek）进行处理。考点统计使用题目<strong>当前</strong>标签。
     </p>
   </section>
 </template>
