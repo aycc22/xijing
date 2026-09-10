@@ -54,6 +54,10 @@ export interface ExamChoiceQuestion {
   blanks?: ExamClozeBlank[]
   answer: string
   explanation?: string
+  /** 上午连题/配图题可挂到同一案例组以展示附图 */
+  case_id?: string
+  case_material?: string
+  attachments?: ExamCaseBlock['attachments']
 }
 
 export interface ExamClozeBlank {
@@ -109,6 +113,7 @@ function parseChoiceQuestion(
   q: ExamChoiceQuestion,
   section: string,
   line: number,
+  assetsBase: string,
 ): ParsedExamQuestionRow[] {
   if (q.type === 'cloze') {
     const passage = q.passage?.trim() || ''
@@ -152,6 +157,15 @@ function parseChoiceQuestion(
     validateChoiceAnswers(qtype, options, answer_keys)
   }
 
+  const caseId = q.case_id?.trim() || null
+  const caseMaterial = q.case_material?.trim() || (caseId ? '（见附图）' : '')
+  const caseAttachments =
+    caseId && q.attachments?.length
+      ? normalizeExamAttachments(q.attachments, assetsBase)
+      : caseId
+        ? []
+        : null
+
   return [
     {
       line,
@@ -163,13 +177,13 @@ function parseChoiceQuestion(
       options,
       answer_keys,
       explanation: q.explanation ?? '',
-      case_id: null,
-      case_material: '',
+      case_id: caseId,
+      case_material: caseMaterial,
       difficulty: null,
       tags: [],
       score: q.score ?? 1,
       section,
-      attachments: null,
+      attachments: caseAttachments,
       reference_answer: '',
     },
   ]
@@ -250,7 +264,7 @@ export function flattenExamPaperBundle(bundle: ExamPaperBundle): ParsedExamQuest
     const section = paper.id
     if (paper.paper_type === 'choice') {
       for (const q of paper.questions ?? []) {
-        const parsed = parseChoiceQuestion(q, section, line)
+        const parsed = parseChoiceQuestion(q, section, line, assetsBase)
         rows.push(...parsed)
         line += parsed.length
       }

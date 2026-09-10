@@ -12,7 +12,7 @@
       "信管网（cnitpm.com）公开真题整理",
       "信管网下午案例分析参考答案整理"
     ],
-    "notes": "2022年下半年软件设计师真题。上午综合知识75分；下午案例分析共6道大题（试题一必答，试题二至六选答4题，共答5题计75分）。系统中收录全部6道大题便于练习。部分题目依赖原卷配图（DFD/ER/UML/界面等），当前以材料中的【配图说明】标注，配图文件可后续补齐到 assets_base。试题四～六代码按公开填空答案整理为骨架，表述可能与原卷排版略有差异。",
+    "notes": "2022年下半年软件设计师真题。上午综合知识75分；下午案例分析共6道大题（试题一必答，试题二至六选答4题，共答5题计75分）。系统中收录全部6道大题便于练习。部分题目依赖原卷配图（DFD/ER/UML/界面等），当前以材料中的【配图说明】标注，配图文件可后续补齐到 assets_base。上午卷活动图/前趋图/地址结构/UML/最短路径图已收录于 assets_base；下午案例分析配图仍待补齐。试题四～六代码按公开填空答案整理为骨架，表述可能与原卷排版略有差异。",
     "assets_base": "/data/exams/2022-soft-designer/images"
   },
   "papers": [
@@ -198,7 +198,7 @@
           "score": 1,
           "stem": "以下关于某委托开发软件的著作权归属的叙述中，正确的是()。",
           "options": {
-            "A": "该软件的著作权归属仅依据委托人与受托人在书面合同中的约定来确定算机",
+            "A": "该软件的著作权归属仅依据委托人与受托人在书面合同中的约定来确定",
             "B": "无论是否有合同约定，该软件的著作权都由委托人和受托人共同享有",
             "C": "若无书面合同或合同中未明确约定，则该软件的著作权由受托人享有",
             "D": "若无书面合同或合同中未明确约定，则该软件的著作权由委托人享有"
@@ -279,7 +279,17 @@
             "D": "58"
           },
           "answer": "D",
-          "explanation": "参考答案：D"
+          "explanation": "参考答案：D",
+          "case_id": "2022-11-am-fig-q17-18",
+          "case_material": "软件项目活动网络图（顶点为里程碑，边上数字为活动天数）。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q17",
+              "description": "第17～18题活动图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q17.png"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q18",
@@ -294,7 +304,17 @@
             "D": "F→H"
           },
           "answer": "B",
-          "explanation": "参考答案：B"
+          "explanation": "参考答案：B",
+          "case_id": "2022-11-am-fig-q17-18",
+          "case_material": "软件项目活动网络图（顶点为里程碑，边上数字为活动天数）。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q17",
+              "description": "第17～18题活动图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q17.png"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q19",
@@ -316,7 +336,7 @@
           "number": 20,
           "type": "single",
           "score": 1,
-          "stem": "当函数调用执行时，在栈顶创建项目用来支持被调用函数执行的一段存储空间称为活动记录或栈航，栈帧中不包括()。",
+          "stem": "当函数调用执行时，在栈顶创建项目用来支持被调用函数执行的一段存储空间称为活动记录或栈帧，栈帧中不包括()。",
           "options": {
             "A": "形参变量",
             "B": "全局变量",
@@ -361,7 +381,7 @@
           "number": 23,
           "type": "single",
           "score": 1,
-          "stem": "在计算机系统中，若P1进程正在运行，操作系统强行撤下Pl进程所占用的CPU，让具有更高优先级的进程P2运行，这种调度方式称为()。",
+          "stem": "在计算机系统中，若P1进程正在运行，操作系统强行撤下P1进程所占用的CPU，让具有更高优先级的进程P2运行，这种调度方式称为()。",
           "options": {
             "A": "中断方式",
             "B": "先进先出方式",
@@ -384,7 +404,17 @@
             "D": "P(S1)P(S2)和V(S2)V(S3)"
           },
           "answer": "C",
-          "explanation": "参考答案：C"
+          "explanation": "参考答案：C",
+          "case_id": "2022-11-am-fig-q24-26",
+          "case_material": "进程前趋图与 PV 操作控制示意。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q24",
+              "description": "第24～26题进程前趋图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q24.png"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q25",
@@ -399,7 +429,17 @@
             "D": "P(S3)和P(S6)V(S7)"
           },
           "answer": "C",
-          "explanation": "参考答案：C"
+          "explanation": "参考答案：C",
+          "case_id": "2022-11-am-fig-q24-26",
+          "case_material": "进程前趋图与 PV 操作控制示意。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q24",
+              "description": "第24～26题进程前趋图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q24.png"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q26",
@@ -414,7 +454,17 @@
             "D": "V(S8)和P(S7)P(S8)"
           },
           "answer": "D",
-          "explanation": "参考答案：D"
+          "explanation": "参考答案：D",
+          "case_id": "2022-11-am-fig-q24-26",
+          "case_material": "进程前趋图与 PV 操作控制示意。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q24",
+              "description": "第24～26题进程前趋图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q24.png"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q27",
@@ -429,7 +479,17 @@
             "D": "最多可有1024个段，每个段最大允许有1024个页，页的大小为4K"
           },
           "answer": "D",
-          "explanation": "参考答案：D"
+          "explanation": "参考答案：D",
+          "case_id": "2022-11-am-fig-q27",
+          "case_material": "段页式地址结构示意。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q27",
+              "description": "第27题段页式地址结构",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q27.png"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q28",
@@ -639,7 +699,17 @@
             "D": "对象的生命周期中某个条件或者状态"
           },
           "answer": "C",
-          "explanation": "参考答案：C"
+          "explanation": "参考答案：C",
+          "case_id": "2022-11-am-fig-q41-42",
+          "case_material": "UML 活动图示意。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q41",
+              "description": "第41～42题 UML 活动图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q41.png"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q42",
@@ -654,14 +724,24 @@
             "D": "A2或A3、A4和A5"
           },
           "answer": "D",
-          "explanation": "参考答案：D"
+          "explanation": "参考答案：D",
+          "case_id": "2022-11-am-fig-q41-42",
+          "case_material": "UML 活动图示意。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q41",
+              "description": "第41～42题 UML 活动图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q41.png"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q43",
           "number": 43,
           "type": "single",
           "score": 1,
-          "stem": "UML构件图(Qmponent diagram)现了-组构件之间的组织和依赖，专注于系统的静态()图，图中通常包括构件、接口以及各种关系",
+          "stem": "UML构件图(Component diagram)实现了一组构件之间的组织和依赖，专注于系统的静态()图，图中通常包括构件、接口以及各种关系",
           "options": {
             "A": "关联",
             "B": "实现",
@@ -799,9 +879,9 @@
           "stem": "某高校人力资源管理系统的数据库中，教师关系模式为T(教师号，姓名，部门号，岗位，联系地址，薪资)，函数依赖集F={教师号→(姓名，部门号，岗位，联系地址)，岗位→薪资}。T关系的主键为(52)，函数依赖集F(53)\n（第52空）",
           "options": {
             "A": "教师号，T存在冗余以及插入异常和删除异常的问题",
-            "B": "教师号，T不存在沉余以及插入异常和删除异常的问题",
-            "C": "(教师号，岗位)，T存在沉余以及插入异常和删除异常的问题",
-            "D": "(教师号，岗位)，T不存在沉余以及插入异常和删除异常的问题"
+            "B": "教师号，T不存在冗余以及插入异常和删除异常的问题",
+            "C": "(教师号，岗位)，T存在冗余以及插入异常和删除异常的问题",
+            "D": "(教师号，岗位)，T不存在冗余以及插入异常和删除异常的问题"
           },
           "answer": "A",
           "explanation": "参考答案：A"
@@ -984,7 +1064,17 @@
             "D": "回溯法"
           },
           "answer": "C",
-          "explanation": "参考答案：C"
+          "explanation": "参考答案：C",
+          "case_id": "2022-11-am-fig-q64-65",
+          "case_material": "Dijkstra 最短路径示意图。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q64",
+              "description": "第64～65题最短路径图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q64.jpg"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q65",
@@ -999,7 +1089,17 @@
             "D": "9"
           },
           "answer": "A",
-          "explanation": "参考答案：A"
+          "explanation": "参考答案：A",
+          "case_id": "2022-11-am-fig-q64-65",
+          "case_material": "Dijkstra 最短路径示意图。",
+          "attachments": [
+            {
+              "type": "image",
+              "id": "fig-am-q64",
+              "description": "第64～65题最短路径图",
+              "url": "/data/exams/2022-soft-designer/images/fig-am-q64.jpg"
+            }
+          ]
         },
         {
           "external_id": "2022-11-am-q66",
