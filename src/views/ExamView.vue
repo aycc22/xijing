@@ -410,25 +410,7 @@ function startCountdown() {
         <p v-if="error" class="alert-error m-0">{{ error }}</p>
       </article>
 
-      <AnswerActionBar @open-sheet="sheetOpen = true">
-        <button
-          type="button"
-          class="icon-btn !size-11 shrink-0"
-          :disabled="index === 0"
-          aria-label="上一题"
-          @click="goTo(index - 1)"
-        >
-          <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M15 6 9 12l6 6"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-
+      <AnswerActionBar :can-prev="index > 0" @open-sheet="sheetOpen = true" @prev="goTo(index - 1)">
         <button
           type="button"
           class="btn-secondary !px-3 min-h-11 shrink-0"

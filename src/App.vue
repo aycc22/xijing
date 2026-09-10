@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useAuth } from './composables/useAuth'
+import { examResultPath, practiceResultPath } from './lib/history'
 
 const auth = useAuth()
 const route = useRoute()
@@ -35,6 +36,16 @@ const isHome = computed(() => route.name === 'home')
 const isHomeLanding = computed(() => isHome.value && !auth.user.value)
 
 const showBottomNav = computed(() => Boolean(auth.user.value) && !focusMode.value)
+
+const focusExitTo = computed(() => {
+  const sessionId = String(route.params.sessionId ?? '')
+  if (route.name === 'result-review' && sessionId) return practiceResultPath(sessionId)
+  if (route.name === 'exam-result-review' && sessionId) return examResultPath(sessionId)
+  return '/banks'
+})
+const focusExitLabel = computed(() =>
+  route.name === 'result-review' || route.name === 'exam-result-review' ? '返回结果' : '退出刷题',
+)
 
 watch(
   isHomeLanding,
@@ -121,9 +132,9 @@ function toggleTheme() {
         <RouterLink
           v-else-if="focusMode"
           class="btn-ghost !min-h-9 !px-2 !py-1.5 text-sm"
-          to="/banks"
+          :to="focusExitTo"
         >
-          退出刷题
+          {{ focusExitLabel }}
         </RouterLink>
 
         <button

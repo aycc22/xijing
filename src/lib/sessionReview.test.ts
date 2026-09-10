@@ -8,6 +8,7 @@ import {
   reviewOptionClass,
   reviewOptionLabels,
   reviewOptionSymbol,
+  reviewPrimaryAction,
   reviewSheetStatus,
   reviewStandardAnswerText,
   reviewUserAnswerText,
@@ -45,6 +46,13 @@ describe('review navigation bounds', () => {
     expect(canGoReviewNext(0, 1)).toBe(false)
     expect(canGoReviewNext(1, 3)).toBe(true)
     expect(canGoReviewNext(2, 3)).toBe(false)
+  })
+
+  it('uses 下一题 until the last question, then finish like the quiz bar', () => {
+    expect(reviewPrimaryAction(0, 3)).toBe('next')
+    expect(reviewPrimaryAction(1, 3)).toBe('next')
+    expect(reviewPrimaryAction(2, 3)).toBe('finish')
+    expect(reviewPrimaryAction(0, 1)).toBe('finish')
   })
 })
 

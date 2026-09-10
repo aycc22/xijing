@@ -42,6 +42,10 @@ export function canGoReviewNext(index: number, total: number): boolean {
   return total > 0 && index < total - 1
 }
 
+export function reviewPrimaryAction(index: number, total: number): 'next' | 'finish' {
+  return canGoReviewNext(index, total) ? 'next' : 'finish'
+}
+
 function keySet(keys: string[]): Set<string> {
   return new Set(keys.map((k) => k.toUpperCase()))
 }

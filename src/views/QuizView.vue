@@ -501,25 +501,7 @@ onMounted(start)
         <p v-if="error" class="alert-error">{{ error }}</p>
       </article>
 
-      <AnswerActionBar @open-sheet="sheetOpen = true">
-        <button
-          type="button"
-          class="icon-btn !size-11 shrink-0"
-          :disabled="!canGoPrev(index)"
-          aria-label="上一题"
-          @click="prev"
-        >
-          <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M15 6 9 12l6 6"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-
+      <AnswerActionBar :can-prev="canGoPrev(index)" @open-sheet="sheetOpen = true" @prev="prev">
         <template v-if="!revealed">
           <button class="btn-secondary !px-3 min-h-11 shrink-0" type="button" @click="skipQuestion">
             暂不会
