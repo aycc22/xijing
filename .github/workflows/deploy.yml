@@ -1,3 +1,4 @@
+# Deploy GitHub Pages (build artifact → deploy-pages)
 name: Deploy GitHub Pages
 
 on:
