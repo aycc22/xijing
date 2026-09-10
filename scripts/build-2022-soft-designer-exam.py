@@ -13,7 +13,6 @@ OUT = ROOT / "public/data/exams/2022-soft-designer.json"
 
 OCR_FIXES = [
     ("R1SC", "RISC"),
-    ("R1SC", "RISC"),
     ("2000合", "2000台"),
     ("信，息", "信息"),
     ("口志", "日志"),
@@ -23,7 +22,12 @@ OCR_FIXES = [
     ("游冰", "游泳"),
     ("项点", "顶点"),
     ("边表含", "边表示"),
-    ("前趋图", "前趋图"),
+    ("约定来确定算机", "约定来确定"),
+    ("栈航", "栈帧"),
+    ("沉余", "冗余"),
+    ("Qmponent", "Component"),
+    ("现了-组", "实现了一组"),
+    ("Pl进程", "P1进程"),
     ("Pl、P2", "P1、P2"),
     ("[Amid]", "A[mid]"),
     ("versA.", "versa."),
@@ -545,6 +549,16 @@ int main() {
 
 # 原卷配图/公式题：文字源缺失选项时手工补齐
 MANUAL_FIXES = {
+    12: {
+        "stem": "以下关于某委托开发软件的著作权归属的叙述中，正确的是()。",
+        "options": {
+            "A": "该软件的著作权归属仅依据委托人与受托人在书面合同中的约定来确定",
+            "B": "无论是否有合同约定，该软件的著作权都由委托人和受托人共同享有",
+            "C": "若无书面合同或合同中未明确约定，则该软件的著作权由受托人享有",
+            "D": "若无书面合同或合同中未明确约定，则该软件的著作权由委托人享有",
+        },
+        "answer": "C",
+    },
     21: {
         "stem": "编译器与解释器是程序语言翻译的两种基本形态，以下关于编译器工作方式及特点的叙述中，正确的是()。",
         "options": {
@@ -596,6 +610,88 @@ def apply_manual_fixes(questions: list[dict]) -> None:
         q["options"] = fix["options"]
         q["answer"] = fix["answer"]
         q["explanation"] = f"参考答案：{fix['answer']}"
+
+
+FIGURE_GROUPS = [
+    {
+        "numbers": [17, 18],
+        "case_id": "2022-11-am-fig-q17-18",
+        "case_material": "软件项目活动网络图（顶点为里程碑，边上数字为活动天数）。",
+        "attachments": [
+            {
+                "type": "image",
+                "id": "fig-am-q17",
+                "description": "第17～18题活动图",
+                "url": "/data/exams/2022-soft-designer/images/fig-am-q17.png",
+            }
+        ],
+    },
+    {
+        "numbers": [24, 25, 26],
+        "case_id": "2022-11-am-fig-q24-26",
+        "case_material": "进程前趋图与 PV 操作控制示意。",
+        "attachments": [
+            {
+                "type": "image",
+                "id": "fig-am-q24",
+                "description": "第24～26题进程前趋图",
+                "url": "/data/exams/2022-soft-designer/images/fig-am-q24.png",
+            }
+        ],
+    },
+    {
+        "numbers": [27],
+        "case_id": "2022-11-am-fig-q27",
+        "case_material": "段页式地址结构示意。",
+        "attachments": [
+            {
+                "type": "image",
+                "id": "fig-am-q27",
+                "description": "第27题段页式地址结构",
+                "url": "/data/exams/2022-soft-designer/images/fig-am-q27.png",
+            }
+        ],
+    },
+    {
+        "numbers": [41, 42],
+        "case_id": "2022-11-am-fig-q41-42",
+        "case_material": "UML 活动图示意。",
+        "attachments": [
+            {
+                "type": "image",
+                "id": "fig-am-q41",
+                "description": "第41～42题 UML 活动图",
+                "url": "/data/exams/2022-soft-designer/images/fig-am-q41.png",
+            }
+        ],
+    },
+    {
+        "numbers": [64, 65],
+        "case_id": "2022-11-am-fig-q64-65",
+        "case_material": "Dijkstra 最短路径示意图。",
+        "attachments": [
+            {
+                "type": "image",
+                "id": "fig-am-q64",
+                "description": "第64～65题最短路径图",
+                "url": "/data/exams/2022-soft-designer/images/fig-am-q64.jpg",
+            }
+        ],
+    },
+]
+
+
+def attach_morning_figures(questions: list[dict]) -> None:
+    by_num = {q["number"]: q for q in questions if q.get("type") == "single"}
+    for group in FIGURE_GROUPS:
+        for n in group["numbers"]:
+            q = by_num.get(n)
+            if not q:
+                print(f"WARN missing figure question {n}")
+                continue
+            q["case_id"] = group["case_id"]
+            q["case_material"] = group["case_material"]
+            q["attachments"] = group["attachments"]
 
 
 def harden_english_cloze(questions: list[dict]) -> None:
@@ -659,6 +755,7 @@ def main() -> None:
     morning = parse_morning(text)
     harden_english_cloze(morning)
     apply_manual_fixes(morning)
+    attach_morning_figures(morning)
 
     cleaned = []
     for q in morning:
@@ -697,6 +794,7 @@ def main() -> None:
                 "2022年下半年软件设计师真题。上午综合知识75分；下午案例分析共6道大题（试题一必答，"
                 "试题二至六选答4题，共答5题计75分）。系统中收录全部6道大题便于练习。"
                 "部分题目依赖原卷配图（DFD/ER/UML/界面等），当前以材料中的【配图说明】标注，配图文件可后续补齐到 assets_base。"
+                "上午卷活动图/前趋图/地址结构/UML/最短路径图已收录于 assets_base；下午案例分析配图仍待补齐。"
                 "试题四～六代码按公开填空答案整理为骨架，表述可能与原卷排版略有差异。"
             ),
             "assets_base": "/data/exams/2022-soft-designer/images",
