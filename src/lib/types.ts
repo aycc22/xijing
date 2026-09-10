@@ -50,6 +50,7 @@ export interface Question {
   reference_answer: string
   difficulty: string | null
   tags: string[]
+  tags_edited_at?: string | null
 }
 
 export type SessionMode = 'practice' | 'exam'

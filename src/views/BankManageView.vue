@@ -64,6 +64,7 @@ function emptyDraft() {
     explanation: '',
     case_id: '',
     case_material: '',
+    tags: '',
   }
 }
 
@@ -90,6 +91,13 @@ function draftToAnswerKeys(): string[] {
   return draft.value.answer
     .split(/[;；,，\s]+/)
     .map((s) => s.trim().toUpperCase())
+    .filter(Boolean)
+}
+
+function draftToTags(): string[] {
+  return draft.value.tags
+    .split(/[;；,，]/)
+    .map((s) => s.trim())
     .filter(Boolean)
 }
 
@@ -131,6 +139,7 @@ async function load() {
       ...q,
       options: normalizeOptions(q.options),
       is_active: q.is_active ?? true,
+      tags: Array.isArray(q.tags) ? q.tags : [],
     })) as Question[]
     questionTotal.value = count ?? 0
   }
@@ -157,6 +166,7 @@ function openEdit(q: Question) {
     explanation: q.explanation,
     case_id: q.case_id ?? '',
     case_material: q.case_material ?? '',
+    tags: (q.tags ?? []).join(';'),
   }
   showForm.value = true
 }
@@ -183,6 +193,8 @@ async function saveQuestion() {
     external_id: draft.value.external_id.trim() || null,
     case_id: draft.value.case_id.trim() || null,
     case_material: draft.value.case_material.trim() || null,
+    tags: draftToTags(),
+    tags_edited_at: new Date().toISOString(),
   }
   if (editingId.value) {
     const { error: err } = await supabase.from('questions').update(payload).eq('id', editingId.value)
@@ -401,6 +413,15 @@ onMounted(load)
           <label>case_material（可选）</label>
           <textarea v-model="draft.case_material" rows="2" />
         </div>
+        <div class="field">
+          <label for="question-tags">考点标签（可选）</label>
+          <input
+            id="question-tags"
+            v-model="draft.tags"
+            placeholder="多个标签用分号分隔，如 操作系统;进程调度"
+          />
+          <p class="field-caption">保存后将作为已确认考点，参与会后薄弱点统计。不调用 AI。</p>
+        </div>
         <div class="flex gap-2">
           <button class="btn" type="submit" :disabled="busy">{{ busy ? '保存中…' : '保存' }}</button>
           <button class="btn-secondary" type="button" @click="showForm = false">取消</button>
@@ -421,6 +442,9 @@ onMounted(load)
                 <span v-if="!q.is_active" class="text-bad"> · 已停用</span>
               </p>
               <p class="m-0 mt-1 line-clamp-2 text-sm font-medium text-ink">{{ q.stem }}</p>
+              <div v-if="q.tags?.length" class="mt-1.5 flex flex-wrap gap-1">
+                <span v-for="tag in q.tags" :key="tag" class="chip">{{ tag }}</span>
+              </div>
             </div>
             <div class="flex shrink-0 flex-col gap-1">
               <button class="btn-ghost !min-h-8 !px-2 text-xs" type="button" :disabled="idx === 0" @click="moveQuestion(q, -1)">↑</button>

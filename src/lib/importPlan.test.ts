@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { planQuestionImport } from './importPlan'
+import { planQuestionImport, questionContentFromRow } from './importPlan'
 import type { ParsedQuestionRow } from './csv'
 
 const row = (external_id: string | null): ParsedQuestionRow => ({
@@ -27,5 +27,18 @@ describe('planQuestionImport', () => {
     expect(plan.inserts).toHaveLength(1)
     expect(plan.updates).toHaveLength(1)
     expect(plan.updates[0].questionId).toBe('uuid-1')
+  })
+})
+
+describe('questionContentFromRow tags_edited_at', () => {
+  it('stamps tags_edited_at only when tags are non-empty', () => {
+    const empty = questionContentFromRow(row(null))
+    expect(empty.tags).toEqual([])
+    expect(empty).not.toHaveProperty('tags_edited_at')
+
+    const tagged = questionContentFromRow({ ...row(null), tags: ['操作系统'] })
+    expect(tagged.tags).toEqual(['操作系统'])
+    expect(typeof tagged.tags_edited_at).toBe('string')
+    expect(tagged.tags_edited_at).toMatch(/^\d{4}-\d{2}-\d{2}T/)
   })
 })

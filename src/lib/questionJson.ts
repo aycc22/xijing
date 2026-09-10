@@ -31,6 +31,17 @@ function readNullableStringField(item: Record<string, unknown>, ...keys: string[
   return value || null
 }
 
+function readJsonTags(item: Record<string, unknown>): string[] {
+  const direct = item.tags ?? item['标签']
+  if (Array.isArray(direct)) {
+    return direct.map((entry) => String(entry).trim()).filter(Boolean)
+  }
+  return readStringField(item, 'tags', '标签')
+    .split(/[;；,，]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
 export function parseQuestionJsonItem(item: unknown, index: number): ParsedQuestionRow {
   if (!item || typeof item !== 'object' || Array.isArray(item)) {
     throw new Error('题目必须是对象')
@@ -79,10 +90,7 @@ export function parseQuestionJsonItem(item: unknown, index: number): ParsedQuest
     case_id: readNullableStringField(row, 'case_id', '案例标识'),
     case_material: readStringField(row, 'case_material', '案例材料'),
     difficulty: readNullableStringField(row, 'difficulty', '难度'),
-    tags: readStringField(row, 'tags', '标签')
-      .split(/[;；,，]/)
-      .map((s) => s.trim())
-      .filter(Boolean),
+    tags: readJsonTags(row),
   }
 }
 

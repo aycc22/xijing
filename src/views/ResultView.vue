@@ -2,8 +2,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import SessionReviewPlayer from '../components/SessionReviewPlayer.vue'
+import AiSessionReportPanel from '../components/AiSessionReportPanel.vue'
+import { useAiSessionAnalysis } from '../composables/useAiSessionAnalysis'
 import { computePracticeSummary, toPracticeReviewItems, verdictForRate } from '../lib/practiceResult'
 import { formatErrorMessage } from '../lib/errors'
+import { parseQuestionSnapshot } from '../lib/questionSnapshot'
 import { supabase } from '../lib/supabase'
 import type { AttemptSession } from '../lib/types'
 
@@ -14,6 +17,7 @@ const bankTitle = ref('')
 const reviews = ref(toPracticeReviewItems([]))
 const error = ref('')
 const loading = ref(true)
+const analysis = useAiSessionAnalysis()
 
 const summary = computed(() =>
   session.value
@@ -53,6 +57,18 @@ async function load() {
     .maybeSingle()
   bankTitle.value = bank?.title ?? ''
   loading.value = false
+
+  const rows = (answers ?? []).map((row) => {
+    const snapshot = parseQuestionSnapshot(row.question_snapshot)
+    return {
+      questionId: row.question_id as string,
+      isCorrect: Boolean(row.is_correct),
+      isSkipped: Boolean(row.is_skipped),
+      stem: snapshot?.stem ?? '',
+      qtype: snapshot?.qtype ?? '',
+    }
+  })
+  void analysis.autoAnalyzeOnce('practice', sessionId, rows)
 }
 
 onMounted(load)
@@ -100,6 +116,13 @@ onMounted(load)
       </section>
 
       <p v-if="error" class="alert-error m-0">{{ error }}</p>
+      <AiSessionReportPanel
+        :tag-stats="analysis.localTagStats.value"
+        :report="analysis.report.value"
+        :loading="analysis.loading.value"
+        :error="analysis.error.value"
+        @regenerate="analysis.regenerate('practice', session.id)"
+      />
       <SessionReviewPlayer v-if="reviews.length" :items="reviews" heading="逐题复盘" />
 
       <div class="relative mt-2 flex w-full max-w-2xs flex-col items-center gap-5 self-center">
