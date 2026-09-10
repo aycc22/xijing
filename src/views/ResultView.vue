@@ -1,17 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
-import {
-  computePracticeSummary,
-  formatAnswerLabel,
-  resultStatusLabel,
-  resultStatusSymbol,
-  toPracticeReviewItems,
-  verdictForRate,
-} from '../lib/practiceResult'
+import SessionReviewPlayer from '../components/SessionReviewPlayer.vue'
+import { computePracticeSummary, toPracticeReviewItems, verdictForRate } from '../lib/practiceResult'
 import { formatErrorMessage } from '../lib/errors'
-import { questionTypeLabel } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 import type { AttemptSession } from '../lib/types'
 
@@ -107,65 +99,8 @@ onMounted(load)
         </dl>
       </section>
 
-      <section v-if="reviews.length" class="flex flex-col gap-3">
-        <h2 class="m-0 text-lg font-semibold text-ink">逐题复盘</h2>
-        <p v-if="error" class="alert-error m-0">{{ error }}</p>
-        <details
-          v-for="(row, idx) in reviews"
-          :key="row.question_id + idx"
-          class="surface group"
-          :open="idx === 0"
-        >
-          <summary
-            class="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3.5 marker:content-none"
-          >
-            <div class="min-w-0 flex-1">
-              <p class="m-0 text-xs text-muted">
-                第 {{ idx + 1 }} 题
-                <template v-if="row.snapshot"> · {{ questionTypeLabel(row.snapshot.qtype) }}</template>
-              </p>
-              <p class="m-0 mt-1 line-clamp-2 text-sm font-medium text-ink">
-                {{ row.snapshot?.stem || '（题目快照不可用）' }}
-              </p>
-            </div>
-            <span
-              class="chip shrink-0"
-              :class="
-                row.is_skipped
-                  ? 'border-warn/40 bg-warn/10 text-warn'
-                  : row.is_correct
-                    ? 'border-ok/40 bg-ok/10 text-ok'
-                    : 'border-bad/40 bg-bad/10 text-bad'
-              "
-            >
-              {{ resultStatusSymbol(row) }} {{ resultStatusLabel(row) }}
-            </span>
-          </summary>
-          <div class="flex flex-col gap-3 border-t border-line/60 px-4 py-3.5 text-sm">
-            <CaseMaterialPanel v-if="row.snapshot?.case_material" :material="row.snapshot.case_material" />
-            <ul v-if="row.snapshot?.options?.length" class="m-0 list-none space-y-1 p-0 text-muted">
-              <li v-for="opt in row.snapshot.options" :key="opt.key">
-                <span class="font-medium text-ink">{{ opt.key }}.</span> {{ opt.text }}
-              </li>
-            </ul>
-            <p class="m-0">
-              <span class="font-medium text-muted">你的答案：</span>
-              {{
-                row.snapshot
-                  ? formatAnswerLabel(row.selected_keys, row.snapshot.qtype, row.snapshot.options)
-                  : row.selected_keys.join('、') || '未作答'
-              }}
-            </p>
-            <p v-if="row.snapshot" class="m-0">
-              <span class="font-medium text-muted">标准答案：</span>
-              {{ formatAnswerLabel(row.snapshot.answer_keys, row.snapshot.qtype, row.snapshot.options) }}
-            </p>
-            <p v-if="row.snapshot?.explanation" class="alert-info m-0">
-              <span class="font-semibold">解析</span> · {{ row.snapshot.explanation }}
-            </p>
-          </div>
-        </details>
-      </section>
+      <p v-if="error" class="alert-error m-0">{{ error }}</p>
+      <SessionReviewPlayer v-if="reviews.length" :items="reviews" heading="逐题复盘" />
 
       <div class="relative mt-2 flex w-full max-w-2xs flex-col items-center gap-5 self-center">
         <button

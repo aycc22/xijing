@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
+import SessionReviewPlayer from '../components/SessionReviewPlayer.vue'
 import { formatExamDuration, summarizeByType, type GradedExamItem } from '../lib/examSession'
-import {
-  computePracticeSummary,
-  formatAnswerLabel,
-  verdictForRate,
-} from '../lib/practiceResult'
+import { computePracticeSummary, verdictForRate } from '../lib/practiceResult'
 import { questionTypeLabel } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 
@@ -116,59 +112,7 @@ onMounted(load)
         </ul>
       </section>
 
-      <section class="flex flex-col gap-3">
-        <h2 class="m-0 text-lg font-semibold text-ink">逐题明细</h2>
-        <details
-          v-for="(row, idx) in rows"
-          :key="row.question_id"
-          class="surface group"
-          :open="idx === 0"
-        >
-          <summary
-            class="flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3.5 marker:content-none"
-          >
-            <div class="min-w-0 flex-1">
-              <p class="m-0 text-xs text-muted">
-                第 {{ idx + 1 }} 题 · {{ questionTypeLabel(row.snapshot.qtype) }} ·
-                {{ row.earned }}/{{ row.score }} 分
-              </p>
-              <p class="m-0 mt-1 line-clamp-2 text-sm font-medium text-ink">{{ row.snapshot.stem }}</p>
-            </div>
-            <span
-              class="chip shrink-0"
-              :class="row.is_correct ? 'border-ok/40 bg-ok/10 text-ok' : 'border-bad/40 bg-bad/10 text-bad'"
-            >
-              {{ row.is_correct ? '✓ 正确' : '✗ 错误' }}
-            </span>
-          </summary>
-          <div class="flex flex-col gap-3 border-t border-line/60 px-4 py-3.5 text-sm">
-            <CaseMaterialPanel
-              v-if="row.snapshot.case_material || row.snapshot.attachments?.length"
-              :material="row.snapshot.case_material"
-              :attachments="row.snapshot.attachments"
-            />
-            <p class="m-0">
-              <span class="font-medium text-muted">你的答案：</span>
-              {{
-                row.snapshot.qtype === 'short_answer'
-                  ? row.selected_keys[0] || '（未作答）'
-                  : formatAnswerLabel(row.selected_keys, row.snapshot.qtype, row.snapshot.options)
-              }}
-            </p>
-            <p class="m-0">
-              <span class="font-medium text-muted">标准答案：</span>
-              {{
-                row.snapshot.qtype === 'short_answer'
-                  ? row.snapshot.reference_answer || '（无参考答案）'
-                  : formatAnswerLabel(row.snapshot.answer_keys, row.snapshot.qtype, row.snapshot.options)
-              }}
-            </p>
-            <p v-if="row.snapshot.explanation" class="alert-info m-0">
-              <span class="font-semibold">解析</span> · {{ row.snapshot.explanation }}
-            </p>
-          </div>
-        </details>
-      </section>
+      <SessionReviewPlayer v-if="rows.length" :items="rows" heading="逐题明细" />
 
       <div class="flex flex-col gap-2.5 sm:mx-auto sm:w-full sm:max-w-sm sm:flex-row sm:flex-wrap">
         <button
