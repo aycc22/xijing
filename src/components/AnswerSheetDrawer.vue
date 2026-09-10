@@ -15,7 +15,7 @@ const props = withDefaults(
     total: number
     statuses: SheetCellState[]
     current: number
-    variant?: 'practice' | 'exam'
+    variant?: 'practice' | 'exam' | 'review'
     unanswered?: number
     submitBusy?: boolean
   }>(),
@@ -101,7 +101,8 @@ function onGoTo(i: number) {
           <div class="flex items-baseline gap-2">
             <h2 class="m-0 text-base font-semibold text-ink">答题卡</h2>
             <span class="text-xs text-muted tabular-nums">
-              已答 {{ answeredCount }} / {{ total }}
+              <template v-if="variant === 'review'">{{ current + 1 }} / {{ total }}</template>
+              <template v-else>已答 {{ answeredCount }} / {{ total }}</template>
             </span>
           </div>
           <button
@@ -146,7 +147,7 @@ function onGoTo(i: number) {
               <span class="size-2 rounded-full bg-spark" aria-hidden="true" />
               当前
             </span>
-            <template v-if="variant === 'practice'">
+            <template v-if="variant === 'practice' || variant === 'review'">
               <span class="inline-flex items-center gap-1.5">
                 <span class="size-2 rounded-full bg-ok" aria-hidden="true" />
                 正确
@@ -170,7 +171,10 @@ function onGoTo(i: number) {
                 标记
               </span>
             </template>
-            <span class="inline-flex items-center gap-1.5">
+            <span
+              v-if="variant !== 'review'"
+              class="inline-flex items-center gap-1.5"
+            >
               <span class="size-2 rounded-full border border-line bg-raise" aria-hidden="true" />
               未答
             </span>

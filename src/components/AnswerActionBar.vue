@@ -1,6 +1,14 @@
 <script setup lang="ts">
+withDefaults(
+  defineProps<{
+    canPrev?: boolean
+  }>(),
+  { canPrev: false },
+)
+
 defineEmits<{
   'open-sheet': []
+  prev: []
 }>()
 </script>
 
@@ -25,6 +33,23 @@ defineEmits<{
         </button>
 
         <div class="flex min-w-0 flex-1 items-center gap-2">
+          <button
+            type="button"
+            class="icon-btn !size-11 shrink-0"
+            :disabled="!canPrev"
+            aria-label="上一题"
+            @click="$emit('prev')"
+          >
+            <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M15 6 9 12l6 6"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
           <slot />
         </div>
       </div>

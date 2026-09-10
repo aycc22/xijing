@@ -66,32 +66,18 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="flex flex-col gap-5 py-4 md:py-8">
-    <div>
-      <RouterLink
-        class="inline-flex items-center gap-1 text-sm text-muted transition hover:text-spark"
-        :to="backPath"
-      >
-        ← 返回本次结果
-      </RouterLink>
-      <p class="page-kicker mt-4">复盘</p>
-      <h1 class="page-title">逐题明细</h1>
-      <p v-if="session" class="page-lede">
-        得分 {{ session.score }} · 正确 {{ session.correct_count }} / {{ session.total_count }}
-      </p>
-    </div>
-
+  <div>
     <p v-if="loading" class="px-3 py-16 text-center text-muted">加载复盘…</p>
     <p v-else-if="error" class="alert-error">{{ error }}</p>
 
     <template v-else-if="session">
-      <p v-if="gradingBusy" class="m-0 text-center text-sm text-muted">
+      <p v-if="gradingBusy" class="m-0 mb-2 text-center text-xs text-muted">
         正在生成简答 AI 评分（仅供参考）…
       </p>
-      <p v-if="gradingError" class="alert-warn m-0">{{ gradingError }}</p>
+      <p v-if="gradingError" class="alert-warn m-0 mb-2">{{ gradingError }}</p>
       <button
         v-if="hasFailedGrades"
-        class="btn-secondary mx-auto min-h-11"
+        class="btn-secondary mx-auto mb-2 min-h-9 px-3 text-sm"
         type="button"
         :disabled="gradingBusy"
         @click="retryFailedGrades"
@@ -102,9 +88,9 @@ onMounted(load)
       <SessionReviewPlayer
         v-if="rows.length"
         :items="rows"
-        heading="题目"
         :session-id="session.id"
         session-type="exam"
+        :finish-to="backPath"
       />
       <div v-else class="surface py-14 text-center">
         <p class="m-0 font-medium text-ink">没有可复盘的题目</p>
