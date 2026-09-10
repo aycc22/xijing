@@ -20,6 +20,7 @@ import { useAuth } from '../composables/useAuth'
 import { invokeAiProxy, aiErrorUserMessage } from '../lib/aiProxy'
 import {
   AI_TAG_BATCH_LIMIT,
+  questionUpdateFromAnalyze,
   selectQuestionsForAiTag,
   type AnalyzeQuestionSuggestion,
 } from '../lib/aiTag'
@@ -61,6 +62,8 @@ const forceOverwrite = ref(false)
 const aiBusy = ref(false)
 const aiProgress = ref('')
 const aiFailures = ref<{ id: string; stem: string; message: string }[]>([])
+const batchAbort = ref(false)
+const batchPending = ref<{ count: number; skipped: number } | null>(null)
 const preview = ref<{
   question: Question
   suggestion: AnalyzeQuestionSuggestion
@@ -391,11 +394,7 @@ async function confirmPreviewApply() {
   aiBusy.value = true
   error.value = ''
   const suggestion = preview.value.suggestion
-  const payload: Record<string, unknown> = {
-    tags: suggestion.tags,
-    tags_edited_at: new Date().toISOString(),
-  }
-  if (suggestion.difficulty) payload.difficulty = suggestion.difficulty
+  const payload = questionUpdateFromAnalyze(suggestion, new Date().toISOString(), true)
   const { error: err } = await supabase
     .from('questions')
     .update(payload)
@@ -409,9 +408,8 @@ async function confirmPreviewApply() {
   await load()
 }
 
-async function batchAnalyzeTags() {
+async function requestBatchAnalyze() {
   error.value = ''
-  aiFailures.value = []
   const selected = questions.value.filter((q) => selectedIds.value.has(q.id))
   if (!selected.length) {
     error.value = '请先勾选要分析的题目'
@@ -424,30 +422,52 @@ async function batchAnalyzeTags() {
       : '没有可分析的题目'
     return
   }
+  batchPending.value = { count: plan.toAnalyze.length, skipped: plan.skippedEdited.length }
+}
+
+async function runBatchAnalyze(ids?: string[]) {
+  error.value = ''
+  const source = ids?.length
+    ? questions.value.filter((q) => ids.includes(q.id))
+    : questions.value.filter((q) => selectedIds.value.has(q.id))
+  const plan = selectQuestionsForAiTag(source, { force: forceOverwrite.value || Boolean(ids) })
+  if (!plan.toAnalyze.length) return
+  batchPending.value = null
+  batchAbort.value = false
   aiBusy.value = true
+  if (!ids) aiFailures.value = []
   let done = 0
   for (const question of plan.toAnalyze) {
+    if (batchAbort.value) break
     aiProgress.value = `AI 考点 ${done + 1}/${plan.toAnalyze.length}`
     const applyResult = await invokeAiProxy({
       action: 'analyze_question',
       question_id: question.id,
       apply: true,
+      force: forceOverwrite.value || Boolean(ids),
     })
     if (!applyResult.ok) {
-      aiFailures.value.push({
-        id: question.id,
-        stem: question.stem,
-        message: aiErrorUserMessage(applyResult.error),
-      })
+      aiFailures.value = [
+        ...aiFailures.value.filter((fail) => fail.id !== question.id),
+        { id: question.id, stem: question.stem, message: aiErrorUserMessage(applyResult.error) },
+      ]
+    } else {
+      aiFailures.value = aiFailures.value.filter((fail) => fail.id !== question.id)
     }
     done += 1
   }
   aiProgress.value = plan.truncated
     ? `已处理前 ${AI_TAG_BATCH_LIMIT} 题（单次最多 ${AI_TAG_BATCH_LIMIT}）`
-    : ''
+    : batchAbort.value
+      ? '已中止批量打标'
+      : ''
   aiBusy.value = false
-  selectedIds.value = new Set()
+  if (!ids) selectedIds.value = new Set()
   await load()
+}
+
+function abortBatch() {
+  batchAbort.value = true
 }
 
 onMounted(load)
@@ -481,18 +501,43 @@ onMounted(load)
           <button class="btn-secondary" type="button" @click="toggleSelectPage">
             {{ questions.every((q) => selectedIds.has(q.id)) && questions.length ? '取消本页' : '全选本页' }}
           </button>
-          <button class="btn-secondary" type="button" :disabled="aiBusy" @click="batchAnalyzeTags">
+          <button class="btn-secondary" type="button" :disabled="aiBusy" @click="requestBatchAnalyze">
             {{ aiBusy ? aiProgress || 'AI 分析中…' : '批量 AI 考点' }}
           </button>
+          <button v-if="aiBusy" class="btn-ghost" type="button" @click="abortBatch">中止</button>
         </div>
         <label class="flex items-center gap-2 text-sm text-muted">
           <input v-model="forceOverwrite" type="checkbox" class="size-4" />
           强制覆盖已确认标签
         </label>
         <p v-if="aiProgress && !aiBusy" class="m-0 text-xs text-muted">{{ aiProgress }}</p>
+        <div
+          v-if="batchPending"
+          class="rounded-xl border border-spark/40 bg-raise/40 px-3.5 py-3 text-sm"
+        >
+          <p class="m-0 text-ink">
+            将为 {{ batchPending.count }} 题调用 AI 并写入考点
+            <template v-if="batchPending.skipped">（跳过已确认 {{ batchPending.skipped }} 题）</template>
+            。确认后才会改库。
+          </p>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <button class="btn" type="button" @click="runBatchAnalyze()">确认开始</button>
+            <button class="btn-secondary" type="button" @click="batchPending = null">取消</button>
+          </div>
+        </div>
         <ul v-if="aiFailures.length" class="m-0 list-none space-y-1 rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm">
           <li v-for="fail in aiFailures" :key="fail.id" class="text-bad">
             {{ fail.stem.slice(0, 24) }}… · {{ fail.message }}
+          </li>
+          <li>
+            <button
+              class="btn-secondary !min-h-9 text-sm"
+              type="button"
+              :disabled="aiBusy"
+              @click="runBatchAnalyze(aiFailures.map((fail) => fail.id))"
+            >
+              重试失败题目
+            </button>
           </li>
         </ul>
       </div>

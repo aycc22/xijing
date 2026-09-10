@@ -224,13 +224,27 @@ function next() {
       >
         <p v-if="typeof current.ai_score === 'number'" class="m-0 text-ink">
           AI 建议分 {{ current.ai_score }}/{{ current.score }}
-          <span class="text-muted">（仅供参考，不计入总分）</span>
+          <span class="text-muted">（AI 辅助评分，仅供参考）</span>
+          <span
+            v-if="typeof current.score === 'number' && current.ai_score >= current.score * 0.6"
+            class="ml-1 text-ok"
+          >
+            · 基本掌握
+          </span>
         </p>
         <p v-else-if="current.grading_status === 'pending'" class="m-0 text-muted">AI 评分中…</p>
         <p v-else-if="current.grading_status === 'failed'" class="m-0 text-warn">AI 评分失败，可稍后重试</p>
         <p v-if="current.ai_feedback?.text" class="m-0 mt-1.5 leading-relaxed text-ink">
           {{ current.ai_feedback.text }}
         </p>
+        <ul
+          v-if="current.ai_feedback?.rubric_hits?.length"
+          class="mt-2 m-0 flex list-none flex-col gap-1 p-0 text-xs"
+        >
+          <li v-for="hit in current.ai_feedback.rubric_hits" :key="hit.point" class="text-muted">
+            {{ hit.hit ? '✓' : '○' }} {{ hit.point }}
+          </li>
+        </ul>
       </div>
 
       <AiQuestionExplainPanel

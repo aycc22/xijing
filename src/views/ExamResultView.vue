@@ -96,14 +96,6 @@ async function applyGradeToSession(questionId: string, force = false) {
   })
   if (!result.ok) {
     gradingError.value = result.error.message
-    if (session.value) {
-      session.value = {
-        ...session.value,
-        result_items: mergeAiGradeIntoItems(session.value.result_items, questionId, {
-          grading_status: 'failed',
-        }),
-      }
-    }
     return
   }
   gradingError.value = ''

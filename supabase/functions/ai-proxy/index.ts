@@ -738,6 +738,7 @@ async function handleAnalyzeQuestion(
 ) {
   const questionId = body.question_id
   const apply = body.apply === true
+  const force = body.force === true
   if (typeof questionId !== 'string' || !questionId) {
     return fail('invalid_action', '缺少 question_id', 400)
   }
@@ -746,6 +747,24 @@ async function handleAnalyzeQuestion(
   const role = await loadRole(admin, userId)
   if (loaded.bank.owner_id !== userId && role !== 'admin') {
     return fail('forbidden', '仅题库所有者或管理员可打标', 403)
+  }
+
+  const skipWrite = apply && Boolean(loaded.question.tags_edited_at) && !force
+  if (skipWrite) {
+    const existingTags = Array.isArray(loaded.question.tags) ? loaded.question.tags.map(String) : []
+    return json({
+      suggestion: {
+        tags: existingTags,
+        difficulty:
+          loaded.question.difficulty === 'easy' ||
+          loaded.question.difficulty === 'medium' ||
+          loaded.question.difficulty === 'hard'
+            ? loaded.question.difficulty
+            : null,
+        exam_point_note: '',
+      },
+      applied: false,
+    })
   }
 
   const quota = await ensureAnalyzeQuota(admin, userId)
@@ -779,6 +798,7 @@ async function handleAnalyzeQuestion(
 
   await bumpUsage(admin, userId, 'analyze')
 
+  let applied = false
   if (apply) {
     const update: Record<string, unknown> = {
       tags: suggestion.tags,
@@ -787,9 +807,10 @@ async function handleAnalyzeQuestion(
     if (suggestion.difficulty) update.difficulty = suggestion.difficulty
     const { error: updateErr } = await admin.from('questions').update(update).eq('id', questionId)
     if (updateErr) throw updateErr
+    applied = true
   }
 
-  return json({ suggestion, applied: apply })
+  return json({ suggestion, applied })
 }
 
 async function handleGradeShortAnswer(

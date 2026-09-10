@@ -188,7 +188,8 @@ supabase functions deploy ai-proxy
 {
   "action": "analyze_question",
   "question_id": "<uuid>",
-  "apply": false
+  "apply": false,
+  "force": false
 }
 ```
 

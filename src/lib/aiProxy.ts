@@ -43,6 +43,7 @@ export interface AnalyzeQuestionRequest {
   action: 'analyze_question'
   question_id: string
   apply?: boolean
+  force?: boolean
 }
 
 export interface GradeShortAnswerRequest {
