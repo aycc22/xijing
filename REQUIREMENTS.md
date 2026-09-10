@@ -46,7 +46,7 @@
 - 原生 iOS/Android 客户端；首期采用响应式 Web。
 - 面向高风险正式考试的防作弊能力。
 
-DeepSeek AI 相关能力（会后薄弱点分析、题目考点辅助打标、考试 `short_answer` AI 辅助评分）不作为本说明书 MVP 必做项，由独立基线文档定义与分期验收，见 [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md) 与 [docs/ai/DESIGN-AI.md](./docs/ai/DESIGN-AI.md)。客观题（含客观案例小题）判分规则仍以本文为准，不由 AI 改写。
+DeepSeek AI 相关能力（会后薄弱点分析、揭晓后单题 AI 点评、题目考点辅助打标、考试 `short_answer` AI 辅助评分）不作为本说明书 MVP 必做项，由独立基线文档定义与分期验收，见 [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md) 与 [docs/ai/DESIGN-AI.md](./docs/ai/DESIGN-AI.md)。客观题（含客观案例小题）判分规则仍以本文为准，不由 AI 改写。
 
 ## 3. 用户与权限
 
@@ -300,7 +300,7 @@ DeepSeek AI 相关能力（会后薄弱点分析、题目考点辅助打标、�
 - 薄弱知识点以作答量达到最低样本数后再显示，默认至少 5 题。
 - 连续学习天数按用户本地自然日计算，一天至少完成 1 道题即记为学习。
 - 统计计算需区分刷题与答题模式，并避免把未评分主观题计为错误。
-- 当次会话级知识点聚合与 AI 解读见 [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md)（AI-SESSION）；全站累计统计仍以本节为准。
+- 当次会话级知识点聚合与 AI 解读见 [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md)（AI-SESSION）；揭晓后单题点评见同文档 AI-EXPLAIN；全站累计统计仍以本节为准。
 
 ### 12.3 题库运营统计
 
@@ -577,7 +577,7 @@ DeepSeek AI 相关能力（会后薄弱点分析、题目考点辅助打标、�
 - 组织、班级和定向题库。
 - 题库审核流、通知、排行榜。
 - 原生应用、AI 辅助出题。
-- DeepSeek AI 会后分析 / 考点打标 / 简答辅助评分：见 [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md)（与主版本号解耦，可按该文档 P0→P2 单独交付）。
+- DeepSeek AI 会后分析 / 揭晓后单题点评 / 考点打标 / 简答辅助评分：见 [docs/ai/REQUIREMENTS-AI.md](./docs/ai/REQUIREMENTS-AI.md)（与主版本号解耦，可按该文档 P0→P1a→P1b→P2 单独交付）。
 
 ## 22. 默认产品决策与待确认项
 

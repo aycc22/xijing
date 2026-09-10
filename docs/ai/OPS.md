@@ -27,4 +27,4 @@ supabase functions deploy ai-proxy
 
 紧急关闭：清空或删除 `DEEPSEEK_API_KEY` 即可全局禁用模型调用。
 
-P1 `analyze_question` 与 P2 `grade_short_answer` 尚未实现。
+P1a `explain_question`、P1b `analyze_question` 与 P2 `grade_short_answer` 尚未实现。
