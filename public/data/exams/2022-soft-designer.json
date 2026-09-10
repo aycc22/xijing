@@ -1,0 +1,1348 @@
+{
+  "schema_version": "1.0",
+  "format": "xijing-exam-paper",
+  "exam": {
+    "title": "2022年下半年软件设计师",
+    "year": 2022,
+    "session": "下半年",
+    "exam_date": "2022-11-05",
+    "qualification": "软件设计师",
+    "level": "中级",
+    "sources": [
+      "信管网（cnitpm.com）公开真题整理",
+      "信管网下午案例分析参考答案整理"
+    ],
+    "notes": "2022年下半年软件设计师真题。上午综合知识75分；下午案例分析共6道大题（试题一必答，试题二至六选答4题，共答5题计75分）。系统中收录全部6道大题便于练习。部分题目依赖原卷配图（DFD/ER/UML/界面等），当前以材料中的【配图说明】标注，配图文件可后续补齐到 assets_base。试题四～六代码按公开填空答案整理为骨架，表述可能与原卷排版略有差异。",
+    "assets_base": "/data/exams/2022-soft-designer/images"
+  },
+  "papers": [
+    {
+      "id": "2022-11-am",
+      "title": "综合知识（上午）",
+      "subject": "基础知识",
+      "paper_type": "choice",
+      "duration_minutes": 150,
+      "total_score": 75,
+      "pass_score": 45,
+      "question_count": 75,
+      "questions": [
+        {
+          "external_id": "2022-11-am-q01",
+          "number": 1,
+          "type": "single",
+          "score": 1,
+          "stem": "以下关于RISC(精简指令集计算机)特点的叙述中，错误的是()。",
+          "options": {
+            "A": "对存储器操作进行限制，使控制简单化",
+            "B": "指令种类多，指令功能强",
+            "C": "设置大量通用寄存器",
+            "D": "选取使用频率较高的一些指令，提高执行速度"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q02",
+          "number": 2,
+          "type": "single",
+          "score": 1,
+          "stem": "CPU(中央处理单元)的基本组成部件不包括()。",
+          "options": {
+            "A": "算术逻辑单元",
+            "B": "系统总线",
+            "C": "控制单元",
+            "D": "寄存器组"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q03",
+          "number": 3,
+          "type": "single",
+          "score": 1,
+          "stem": "某种部件用在2000台计算机系统中，运行工作1000小时后，其中有4台计算机的这种部件失效，则该部件的千小时可靠度R为()。",
+          "options": {
+            "A": "0.990",
+            "B": "0.992",
+            "C": "0.996",
+            "D": "0.998"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q04",
+          "number": 4,
+          "type": "single",
+          "score": 1,
+          "stem": "以下存储器中，()使用电容存储信息且需要周期性地进行刷新。",
+          "options": {
+            "A": "DRAM",
+            "B": "EPROM",
+            "C": "SRAM",
+            "D": "EEPROM"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q05",
+          "number": 5,
+          "type": "single",
+          "score": 1,
+          "stem": "对于长度相同但格式不同的两种浮点数，假设前者阶码长、尾数短，后者阶码短、尾数长，其他规定都相同，则二者可表示数值的范围和精度情况为()",
+          "options": {
+            "A": "二者可表示的数的范围和精度相同",
+            "B": "前者所表示的数的范围更大且精度更高",
+            "C": "前者所表示的数的范围更大但精度更低",
+            "D": "前者所表示的数的范围更小但精度更高"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q06",
+          "number": 6,
+          "type": "single",
+          "score": 1,
+          "stem": "计算机系统中采用补码表示有符号的数值，()。",
+          "options": {
+            "A": "可以保持加法和减法运算过程与手工运算方式一致",
+            "B": "可以提高运算过程和结果的精准程度",
+            "C": "可以提高加法和减法运算的速度",
+            "D": "可以将减法运算转化为加法运算从而简化运算器的设计"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q07",
+          "number": 7,
+          "type": "single",
+          "score": 1,
+          "stem": "下列认证方式安全性较低的是()。",
+          "options": {
+            "A": "生物认证",
+            "B": "多因子认证",
+            "C": "口令认证",
+            "D": "U盾认证"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q08",
+          "number": 8,
+          "type": "single",
+          "score": 1,
+          "stem": "X509数字证书标准推荐使用的密码算法是(8)，而国密SM2数字证书采用的公钥密码算法是(9)。\n（第8空）",
+          "options": {
+            "A": "RSA",
+            "B": "DES",
+            "C": "AES",
+            "D": "ECC"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q09",
+          "number": 9,
+          "type": "single",
+          "score": 1,
+          "stem": "X509数字证书标准推荐使用的密码算法是(8)，而国密SM2数字证书采用的公钥密码算法是(9)。\n（第9空）",
+          "options": {
+            "A": "RSA",
+            "B": "DES",
+            "C": "AES",
+            "D": "ECC"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q10",
+          "number": 10,
+          "type": "single",
+          "score": 1,
+          "stem": "某单位网站首页被恶意篡改，应部署()设备阻止恶意攻击。",
+          "options": {
+            "A": "数据库审计",
+            "B": "包过滤防火墙",
+            "C": "web应用防火墙",
+            "D": "入侵检测"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q11",
+          "number": 11,
+          "type": "single",
+          "score": 1,
+          "stem": "使用漏洞扫描系统对信息系统和服务器进行定期扫描可以()。",
+          "options": {
+            "A": "发现高危风险和安全漏洞",
+            "B": "修复高危风险和安全漏洞",
+            "C": "获取系统受攻击的日志信息",
+            "D": "关闭非必要的网络端口和服务"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q12",
+          "number": 12,
+          "type": "single",
+          "score": 1,
+          "stem": "以下关于某委托开发软件的著作权归属的叙述中，正确的是()。",
+          "options": {
+            "A": "该软件的著作权归属仅依据委托人与受托人在书面合同中的约定来确定算机",
+            "B": "无论是否有合同约定，该软件的著作权都由委托人和受托人共同享有",
+            "C": "若无书面合同或合同中未明确约定，则该软件的著作权由受托人享有",
+            "D": "若无书面合同或合同中未明确约定，则该软件的著作权由委托人享有"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q13",
+          "number": 13,
+          "type": "single",
+          "score": 1,
+          "stem": "《计算机软件保护条例》第八条第一款第八项规定的软件著作权中的翻译权将原软件由()的权利。",
+          "options": {
+            "A": "源程序语言转换成目标程序语言",
+            "B": "一种程序设计语言转换成另一种程序设计语言",
+            "C": "一种汇编语言转换成一种自然语言",
+            "D": "一种自然语言文字转换成另一种自然语言文字"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q14",
+          "number": 14,
+          "type": "single",
+          "score": 1,
+          "stem": "M公司将其开发的某软件产品注册商标为S，为确保公司在市场竞争中占据地位，M公司对员工进行了保密约束，此情形下，该公司不享有()",
+          "options": {
+            "A": "软件著作权",
+            "B": "专利权",
+            "C": "商业秘密权",
+            "D": "商标权"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q15",
+          "number": 15,
+          "type": "single",
+          "score": 1,
+          "stem": "某零件厂商的信息系统中，一个基本加工根据客户类型、订单金额、客户信用等信息的不同采取不同的行为，此时最适宜采用()来描述该加工规格说明。",
+          "options": {
+            "A": "自然语言",
+            "B": "流程图",
+            "C": "判定表",
+            "D": "某程序设计语言"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q16",
+          "number": 16,
+          "type": "single",
+          "score": 1,
+          "stem": "优化模块结构时，()不是适当的处理方法。",
+          "options": {
+            "A": "使模块功能完整",
+            "B": "消除重复功能，改善软件结构",
+            "C": "只根据模块功能确定规模大小",
+            "D": "避免或减少模块之间的病态连接"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q17",
+          "number": 17,
+          "type": "single",
+          "score": 1,
+          "stem": "下图是一个软件项目的活动图，其中顶点表示项目里程碑，连接顶点的边表示的活动，边上的数字表示完成该活动所需要的天数。则关键路径长度为(17)。若在实际项目进展中，在其他活动都能正常进行的前提下，活动(18)一旦延期就会影响项目的进度。\n（第17空）",
+          "options": {
+            "A": "34",
+            "B": "47",
+            "C": "54",
+            "D": "58"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q18",
+          "number": 18,
+          "type": "single",
+          "score": 1,
+          "stem": "下图是一个软件项目的活动图，其中顶点表示项目里程碑，连接顶点的边表示的活动，边上的数字表示完成该活动所需要的天数。则关键路径长度为(17)。若在实际项目进展中，在其他活动都能正常进行的前提下，活动(18)一旦延期就会影响项目的进度。\n（第18空）",
+          "options": {
+            "A": "A→B",
+            "B": "C→F",
+            "C": "D→F",
+            "D": "F→H"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q19",
+          "number": 19,
+          "type": "single",
+          "score": 1,
+          "stem": "以下关于风险管理的叙述中，不正确的是()。",
+          "options": {
+            "A": "承认风险是客观存在的，不可能完全避免",
+            "B": "同时管理所有的风险",
+            "C": "风险管理应该贯穿整个项目管理过程",
+            "D": "风险计划本身可能会带来新的风险"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q20",
+          "number": 20,
+          "type": "single",
+          "score": 1,
+          "stem": "当函数调用执行时，在栈顶创建项目用来支持被调用函数执行的一段存储空间称为活动记录或栈航，栈帧中不包括()。",
+          "options": {
+            "A": "形参变量",
+            "B": "全局变量",
+            "C": "返回地址",
+            "D": "局部变量"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q21",
+          "number": 21,
+          "type": "single",
+          "score": 1,
+          "stem": "编译器与解释器是程序语言翻译的两种基本形态，以下关于编译器工作方式及特点的叙述中，正确的是()。",
+          "options": {
+            "A": "边翻译边执行，用户程序运行效率低且可移植性差",
+            "B": "先翻译后执行，用户程序运行效率高且可移植性好",
+            "C": "边翻译边执行，用户程序运行效率低但可移植性好",
+            "D": "先翻译后执行，用户程序运行效率高但可移植性差"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q22",
+          "number": 22,
+          "type": "single",
+          "score": 1,
+          "stem": "对高级语言源程序进行编译或解释过程中需进行语法分析，递归子程序分析属于()的分析法。",
+          "options": {
+            "A": "自上而下",
+            "B": "自下而上",
+            "C": "从左至右",
+            "D": "从右至左"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q23",
+          "number": 23,
+          "type": "single",
+          "score": 1,
+          "stem": "在计算机系统中，若P1进程正在运行，操作系统强行撤下Pl进程所占用的CPU，让具有更高优先级的进程P2运行，这种调度方式称为()。",
+          "options": {
+            "A": "中断方式",
+            "B": "先进先出方式",
+            "C": "可剥夺方式",
+            "D": "不可剥夺方式"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q24",
+          "number": 24,
+          "type": "single",
+          "score": 1,
+          "stem": "进程P1、P2、P3、P4、P5和P6的前趋图如下所示。假设用PV操作来控制这6个进程的同步与互斥的程序如下，程序中的空①和空②处应分别为(24)，空③和空④处应分别为(25)，空⑤和空⑥处应分别为(26)。 Begin S1,S2,S3,S4,S5,S6,S7,S8:semaphore,//定义信号量 S1:=0;S2:=0;S3:=0;S4:=0;S5=0;S6=0;S7=0;S8=0\n（第24空）",
+          "options": {
+            "A": "V(S1)V(S2)和P(S2)P(S3)",
+            "B": "V(S1)P(S2)和V(S3)P(S4)",
+            "C": "V(S1)V(S2)和V(S3)V(S4)",
+            "D": "P(S1)P(S2)和V(S2)V(S3)"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q25",
+          "number": 25,
+          "type": "single",
+          "score": 1,
+          "stem": "进程P1、P2、P3、P4、P5和P6的前趋图如下所示。假设用PV操作来控制这6个进程的同步与互斥的程序如下，程序中的空①和空②处应分别为(24)，空③和空④处应分别为(25)，空⑤和空⑥处应分别为(26)。 Begin S1,S2,S3,S4,S5,S6,S7,S8:semaphore,//定义信号量 S1:=0;S2:=0;S3:=0;S4:=0;S5=0;S6=0;S7=0;S8=0\n（第25空）",
+          "options": {
+            "A": "V(S3)和V(S6)V(S7)",
+            "B": "V(S3)和V(S6)P(S7)",
+            "C": "P(S3)和V(S6)V(S7)",
+            "D": "P(S3)和P(S6)V(S7)"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q26",
+          "number": 26,
+          "type": "single",
+          "score": 1,
+          "stem": "进程P1、P2、P3、P4、P5和P6的前趋图如下所示。假设用PV操作来控制这6个进程的同步与互斥的程序如下，程序中的空①和空②处应分别为(24)，空③和空④处应分别为(25)，空⑤和空⑥处应分别为(26)。 Begin S1,S2,S3,S4,S5,S6,S7,S8:semaphore,//定义信号量 S1:=0;S2:=0;S3:=0;S4:=0;S5=0;S6=0;S7=0;S8=0\n（第26空）",
+          "options": {
+            "A": "V(S6)和P(S7)P(S8)",
+            "B": "P(S8)和P(S7)P(S8)",
+            "C": "P(S8)和P(S7)V(S8)",
+            "D": "V(S8)和P(S7)P(S8)"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q27",
+          "number": 27,
+          "type": "single",
+          "score": 1,
+          "stem": "假设段页式存储管理系统中的地址结构如下图所示，则系统()。",
+          "options": {
+            "A": "最多可有512个段，每个段的大小均为2048个页，页的大小为8k",
+            "B": "最多可有512个段，每个段最大允许有2048个页，页的大小为8K",
+            "C": "最多可有1024个段，每个段的大小均为1024个页，页的大小为4K",
+            "D": "最多可有1024个段，每个段最大允许有1024个页，页的大小为4K"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q28",
+          "number": 28,
+          "type": "single",
+          "score": 1,
+          "stem": "假设做盘磁头从一个磁道移至相邻磁道需要加2ms。文件在磁盘上非连续存放，逻辑上相邻数据块的平均移动距离为5个磁道，每块的旋转延迟时间及传输时间分别为10ms和1ms，则读取一个100块的文件要()ms",
+          "options": {
+            "A": "1100",
+            "B": "1200",
+            "C": "2100",
+            "D": "2200"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q29",
+          "number": 29,
+          "type": "single",
+          "score": 1,
+          "stem": "以下关于快速原型模型优点的叙述中，不正确是()。",
+          "options": {
+            "A": "有助于满足用户的真实需求",
+            "B": "适用于大型软件系统的开发",
+            "C": "开发人员快速开发出原型系统，因此可以加速软件开发过程，节约开发成本",
+            "D": "原型系统已经通过与用户的交互得到验证，因此对应的规格说明文档能正确描述用"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q30",
+          "number": 30,
+          "type": "single",
+          "score": 1,
+          "stem": "以下关于三层C/S结构的叙述中，不正确的是()。",
+          "options": {
+            "A": "允许合理划分三层结构的功能，使之在逻辑上保持相对独立性，提高系统的可维护性和可扩展性",
+            "B": "允许更灵活有效地选用相应的软硬件平台和系统",
+            "C": "应用的各层可以并行开发，但需要相同的开发语言",
+            "D": "利用功能层有效地隔离表示层和数据层，便于严格的安全管理"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q31",
+          "number": 31,
+          "type": "single",
+          "score": 1,
+          "stem": "若模块A和模块B通过外部变量来交换输入、输出信息，则这两个模块的耦合类型是()耦合。",
+          "options": {
+            "A": "数据",
+            "B": "标记",
+            "C": "控制",
+            "D": "公共"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q32",
+          "number": 32,
+          "type": "single",
+          "score": 1,
+          "stem": "软件开发的目标是开发出高质量的软件系统，这里的高质量不包括()。",
+          "options": {
+            "A": "软件必须满足用户规定的需求",
+            "B": "软件应遵循规定标准所定义的一系列开发准则",
+            "C": "软件开发应采用最新的开发技术",
+            "D": "软件应满足某些隐含的需求，如可理解性、可维护性等"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q33",
+          "number": 33,
+          "type": "single",
+          "score": 1,
+          "stem": "白盒测试技术的各种覆盖方法中，()具有最弱的错误发现能力。",
+          "options": {
+            "A": "判定覆盖",
+            "B": "语句覆盖",
+            "C": "条件覆盖",
+            "D": "路径覆盖"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q34",
+          "number": 34,
+          "type": "single",
+          "score": 1,
+          "stem": "文档是软件的重要因素，关于高质量文档，以下说法不正确的是()",
+          "options": {
+            "A": "不论项目规模和复杂程度如何，都要用统一的标准指定相同类型和相同要素的文档",
+            "B": "应该分清读者对象",
+            "C": "应当是完整的、独立的、自成体系的",
+            "D": "行文应十分确切，不出现多义性描述"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q35",
+          "number": 35,
+          "type": "single",
+          "score": 1,
+          "stem": "某财务系统的一个组件中，某个变量没有正确初始化，()，最可能发现该错误。",
+          "options": {
+            "A": "单元测试",
+            "B": "集成测试",
+            "C": "接受测试",
+            "D": "安装测试"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q36",
+          "number": 36,
+          "type": "single",
+          "score": 1,
+          "stem": "软件交付给用户之后进入维护阶段，根据维护具体内容的不同将维护分为不同的类型，其中“采用专用的程序模块对文件或数据中的记录进行增加、修改和删除等操作”的维护属于()。",
+          "options": {
+            "A": "程序维护",
+            "B": "数据维护",
+            "C": "代码维护",
+            "D": "设备维护"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q37",
+          "number": 37,
+          "type": "single",
+          "score": 1,
+          "stem": "采用面向对象方法进行某游戏设计，游戏中有野鸭、红头鸭等各种鸭子边游泳戏水边呱呱叫，不同种类的鸭子具有不同颜色，设计鸭子类负责呱呱叫和游泳方法的实现，显示颜色设计为抽象方法，由野鸭和红头鸭各自具体实现，这一机制称为(37)。当给这些类型的一组不同对象发送同一显示颜色消息时，能实现各自显示自己不同颜色的结果，这种现象称为(38)。\n（第37空）",
+          "options": {
+            "A": "继承",
+            "B": "聚合",
+            "C": "组合",
+            "D": "多态"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q38",
+          "number": 38,
+          "type": "single",
+          "score": 1,
+          "stem": "采用面向对象方法进行某游戏设计，游戏中有野鸭、红头鸭等各种鸭子边游泳戏水边呱呱叫，不同种类的鸭子具有不同颜色，设计鸭子类负责呱呱叫和游泳方法的实现，显示颜色设计为抽象方法，由野鸭和红头鸭各自具体实现，这一机制称为(37)。当给这些类型的一组不同对象发送同一显示颜色消息时，能实现各自显示自己不同颜色的结果，这种现象称为(38)。\n（第38空）",
+          "options": {
+            "A": "覆盖",
+            "B": "重载",
+            "C": "动态绑定",
+            "D": "多态"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q39",
+          "number": 39,
+          "type": "single",
+          "score": 1,
+          "stem": "采用面向对象方法分析时，首先要在应用领域中按自然存在的实体认定对象，即将自然存在的“()”作为一个对象。",
+          "options": {
+            "A": "问题",
+            "B": "关系",
+            "C": "名词",
+            "D": "动词"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q40",
+          "number": 40,
+          "type": "single",
+          "score": 1,
+          "stem": "进行面向对象系统设计时，修改某个类的原因有且只有一个，即一个类只做一种类型的功能，这属于()原则。",
+          "options": {
+            "A": "单一责任",
+            "B": "开放-封闭",
+            "C": "接口分离",
+            "D": "依赖倒置"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q41",
+          "number": 41,
+          "type": "single",
+          "score": 1,
+          "stem": "UML活动图用于建模(41)以下活动图中，活动A1之后，可能的活动执行序列顺序是(42)\n（第41空）",
+          "options": {
+            "A": "系统在它的周边环境的语境中所提供的外部可见服务",
+            "B": "某一时刻一组对象以及它们之间的关系",
+            "C": "系统内从一个活动到另一个活动的流程",
+            "D": "对象的生命周期中某个条件或者状态"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q42",
+          "number": 42,
+          "type": "single",
+          "score": 1,
+          "stem": "UML活动图用于建模(41)以下活动图中，活动A1之后，可能的活动执行序列顺序是(42)\n（第42空）",
+          "options": {
+            "A": "A2、A3、A4和A5",
+            "B": "A3、A4和A5，或A2、A4和A5",
+            "C": "A2、A4和A5",
+            "D": "A2或A3、A4和A5"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q43",
+          "number": 43,
+          "type": "single",
+          "score": 1,
+          "stem": "UML构件图(Qmponent diagram)现了-组构件之间的组织和依赖，专注于系统的静态()图，图中通常包括构件、接口以及各种关系",
+          "options": {
+            "A": "关联",
+            "B": "实现",
+            "C": "结构",
+            "D": "行为"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q44",
+          "number": 44,
+          "type": "single",
+          "score": 1,
+          "stem": "在某系统中，不同级别的日志信息记录方式不同，每个级别的日志处理对象根据信息级别高低，采用不同方式进行记录。每个日志处理对象检查消息的级别，如果达到它的级别则进行记录，否则不记录然后将消息传递给它的下一个日志处理对象。针对此需求，设计如下所示类图。该设计采用()模式使多个前后连接的对象都有机会处理请求，从而避免请求的发送者和接收者之间的耦合关系。该模式属于()模式，该模式适用于()模式。\n（第44空）",
+          "options": {
+            "A": "责任链(Cchain of Responsibility)",
+            "B": "策略(Strategy)",
+            "C": "过滤器(Filter)",
+            "D": "备忘录 (Memento)"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q45",
+          "number": 45,
+          "type": "single",
+          "score": 1,
+          "stem": "在某系统中，不同级别的日志信息记录方式不同，每个级别的日志处理对象根据信息级别高低，采用不同方式进行记录。每个日志处理对象检查消息的级别，如果达到它的级别则进行记录，否则不记录然后将消息传递给它的下一个日志处理对象。针对此需求，设计如下所示类图。该设计采用()模式使多个前后连接的对象都有机会处理请求，从而避免请求的发送者和接收者之间的耦合关系。该模式属于()模式，该模式适用于()模式。\n（第45空）",
+          "options": {
+            "A": "行为型类",
+            "B": "行为型对象",
+            "C": "结构型类",
+            "D": "结构型对象"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q46",
+          "number": 46,
+          "type": "single",
+          "score": 1,
+          "stem": "在某系统中，不同级别的日志信息记录方式不同，每个级别的日志处理对象根据信息级别高低，采用不同方式进行记录。每个日志处理对象检查消息的级别，如果达到它的级别则进行记录，否则不记录然后将消息传递给它的下一个日志处理对象。针对此需求，设计如下所示类图。该设计采用()模式使多个前后连接的对象都有机会处理请求，从而避免请求的发送者和接收者之间的耦合关系。该模式属于()模式，该模式适用于()模式。\n（第46空）",
+          "options": {
+            "A": "不同的标准过滤一组对象，并通过逻辑操作以解耦的方式将它们链接起来",
+            "B": "可处理一个请求的对象集合应被动态指定",
+            "C": "必须保存个对数在某个时刻的状本，需要时它才能恢复到先前的状态",
+            "D": "一个类定义了多种行为，并且以多个条件语句的形式出现"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q47",
+          "number": 47,
+          "type": "single",
+          "score": 1,
+          "stem": "驱动新能源汽车的发动机时，电能和光能汽车分别采用不同驱动方法，而客户装希望使用统一的驱动方法，需定义一个统一的驱动接口屏藏不同的驱动方法，该要求适合采用()模式。",
+          "options": {
+            "A": "中介者(Mediator)",
+            "B": "访问者(Visitor)",
+            "C": "观察者(Observer)",
+            "D": "适配器(Adapter)"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q48",
+          "number": 48,
+          "type": "single",
+          "score": 1,
+          "stem": "在Python3，()不是合法的异常处理结构。",
+          "options": {
+            "A": "try...except…",
+            "B": "try...except...finally",
+            "C": "try...catch...",
+            "D": "raise"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q49",
+          "number": 49,
+          "type": "single",
+          "score": 1,
+          "stem": "在Python3中，表达式list(range(11)【10∶0∶-2】的值为()",
+          "options": {
+            "A": "[10,8,6,4,2,0]",
+            "B": "[10,8,6,4,2]",
+            "C": "[0,2,4,6,8,10]",
+            "D": "[0,2,4,6,8)"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q50",
+          "number": 50,
+          "type": "single",
+          "score": 1,
+          "stem": "在Python3中，执行语句x-imput()，如果从键盘输入123并按回车键，则x的值为()",
+          "options": {
+            "A": "123",
+            "B": "1,2,3",
+            "C": "1 2 3",
+            "D": "'123'"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q51",
+          "number": 51,
+          "type": "single",
+          "score": 1,
+          "stem": "E-R模型向关系模型转换时，两个实体E1和E2之间的多对多联系R应该转换为一个独立的关系模式，且该关系模式的关键字由()组成。",
+          "options": {
+            "A": "联系R的属性",
+            "B": "E1或E2的关键字",
+            "C": "E1和E2的关键字",
+            "D": "E1和E2的关键字加上R的属性"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q52",
+          "number": 52,
+          "type": "single",
+          "score": 1,
+          "stem": "某高校人力资源管理系统的数据库中，教师关系模式为T(教师号，姓名，部门号，岗位，联系地址，薪资)，函数依赖集F={教师号→(姓名，部门号，岗位，联系地址)，岗位→薪资}。T关系的主键为(52)，函数依赖集F(53)\n（第52空）",
+          "options": {
+            "A": "教师号，T存在冗余以及插入异常和删除异常的问题",
+            "B": "教师号，T不存在沉余以及插入异常和删除异常的问题",
+            "C": "(教师号，岗位)，T存在沉余以及插入异常和删除异常的问题",
+            "D": "(教师号，岗位)，T不存在沉余以及插入异常和删除异常的问题"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q53",
+          "number": 53,
+          "type": "single",
+          "score": 1,
+          "stem": "某高校人力资源管理系统的数据库中，教师关系模式为T(教师号，姓名，部门号，岗位，联系地址，薪资)，函数依赖集F={教师号→(姓名，部门号，岗位，联系地址)，岗位→薪资}。T关系的主键为(52)，函数依赖集F(53)\n（第53空）",
+          "options": {
+            "A": "存在传递依赖，故关系模式T最高达到1NF",
+            "B": "存在传递依赖，故关系模式T最高达到2NF",
+            "C": "不存在传递依赖，故关系模式T最高达到3NF",
+            "D": "不存在传递依赖，故关系模式T最高达到4NF"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q54",
+          "number": 54,
+          "type": "single",
+          "score": 1,
+          "stem": "给定员工关系E(员工号，员工名，部门名，电话，家庭住址)、工程关系P(工程号，工程名，前期工程号)、参与关系EP(员工号，工程号，工作量)。查询“005”员工参与了“虎头山隧道”工程的员工名、部门名、工程名、工作量的关系代数表达式如下：\nπ2,3,5,6 ( π1,2,3 ( (54) ) ⋈ ( (55) ) )\n（第54空）",
+          "options": {
+            "A": "σ2='005'(E)",
+            "B": "σ1='005'(E)",
+            "C": "σ2='005'(P)",
+            "D": "σ1='005'(P)"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q55",
+          "number": 55,
+          "type": "single",
+          "score": 1,
+          "stem": "给定员工关系E(员工号，员工名，部门名，电话，家庭住址)、工程关系P(工程号，工程名，前期工程号)、参与关系EP(员工号，工程号，工作量)。查询“005”员工参与了“虎头山隧道”工程的员工名、部门名、工程名、工作量的关系代数表达式如下：\nπ2,3,5,6 ( π1,2,3 ( (54) ) ⋈ ( (55) ) )\n（第55空）",
+          "options": {
+            "A": "π2,3(σ2='虎头山隧道'(P)) ⋈ EP",
+            "B": "π2,3(σ2='虎头山隧道'(EP)) ⋈ P",
+            "C": "π1,2(σ2='虎头山隧道'(EP)) ⋈ P",
+            "D": "π1,2(σ2='虎头山隧道'(P)) ⋈ EP"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q56",
+          "number": 56,
+          "type": "single",
+          "score": 1,
+          "stem": "假设事务程序A中的表达式x/y，若y取值为0，则计算该表达式时，会产生故障。该故障属于()",
+          "options": {
+            "A": "系统故障",
+            "B": "事务故障",
+            "C": "介质故障",
+            "D": "死机"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q57",
+          "number": 57,
+          "type": "single",
+          "score": 1,
+          "stem": "设栈初始时为空，对于入栈序列1，2，3…n这些元素经过栈之后得到出栈序列 P1,P2,P3，.…Pn，若P3-4，则P1，P2不可能的取为()。",
+          "options": {
+            "A": "6,5",
+            "B": "2,3",
+            "C": "3,1",
+            "D": "3,5"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q58",
+          "number": 58,
+          "type": "single",
+          "score": 1,
+          "stem": "设m和n是某二叉树上的两个结点，中序遍历时，n排在m之前的条件是()",
+          "options": {
+            "A": "m是n的祖先结点",
+            "B": "m是n的子孙结点",
+            "C": "m在n的左边",
+            "D": "m在n的右边"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q59",
+          "number": 59,
+          "type": "single",
+          "score": 1,
+          "stem": "若无向图G有n个顶点e条边，则G采用邻接矩阵存储时，矩阵的大小为()",
+          "options": {
+            "A": "n*e",
+            "B": "n 2",
+            "C": "n 2 +e 2",
+            "D": "(n+e) 2"
+          },
+          "answer": "B",
+          "explanation": "参考答案：B"
+        },
+        {
+          "external_id": "2022-11-am-q60",
+          "number": 60,
+          "type": "single",
+          "score": 1,
+          "stem": "以下关于m阶B-树的说法中，错误的是()",
+          "options": {
+            "A": "根结点最多有m棵子树",
+            "B": "所有叶子结点都在同一层次上",
+            "C": "结点中的关键字有序排列",
+            "D": "叶子结点通过指针链接为有序表"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q61",
+          "number": 61,
+          "type": "single",
+          "score": 1,
+          "stem": "下列排序算法中，占用辅助存储空间最多是()。",
+          "options": {
+            "A": "归并排序",
+            "B": "快速排序",
+            "C": "堆排序",
+            "D": "冒泡排序"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q62",
+          "number": 62,
+          "type": "single",
+          "score": 1,
+          "stem": "折半查找在有序数组A中查找特定的记录K：通过比较K和数组中的中间元素A[mid]进行，如果相等，则算法结束∶如果K小于A[mid]，则对数组的前半部分进行折半查找∶否则对数组的后半部分进行折半查找。根据上述描述，折半查找算法采用了(62)算法设计筑略。对有序数组(3，14，27，39，42，55，70，85，93，98)，成功查找和失败查找所需要的平均比较次数分别是(63)(设查找每个元素的概率是相同的)\n（第62空）",
+          "options": {
+            "A": "分治",
+            "B": "动态规划",
+            "C": "贪心",
+            "D": "回溯"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q63",
+          "number": 63,
+          "type": "single",
+          "score": 1,
+          "stem": "折半查找在有序数组A中查找特定的记录K：通过比较K和数组中的中间元素A[mid]进行，如果相等，则算法结束∶如果K小于A[mid]，则对数组的前半部分进行折半查找∶否则对数组的后半部分进行折半查找。根据上述描述，折半查找算法采用了(62)算法设计筑略。对有序数组(3，14，27，39，42，55，70，85，93，98)，成功查找和失败查找所需要的平均比较次数分别是(63)(设查找每个元素的概率是相同的)\n（第63空）",
+          "options": {
+            "A": "29/10和29/11",
+            "B": "30/10和30/11",
+            "C": "29/10和39/11",
+            "D": "30/10和40/11"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q64",
+          "number": 64,
+          "type": "single",
+          "score": 1,
+          "stem": "采用 Dijkstra算法求解下图A点到E点的最短路径，采用的算法设计策略是(64)。该最短路径的长度是(65)\n（第64空）",
+          "options": {
+            "A": "分治法",
+            "B": "动态规则",
+            "C": "贪心算法",
+            "D": "回溯法"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q65",
+          "number": 65,
+          "type": "single",
+          "score": 1,
+          "stem": "采用 Dijkstra算法求解下图A点到E点的最短路径，采用的算法设计策略是(64)。该最短路径的长度是(65)\n（第65空）",
+          "options": {
+            "A": "5",
+            "B": "6",
+            "C": "7",
+            "D": "9"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q66",
+          "number": 66,
+          "type": "single",
+          "score": 1,
+          "stem": "VLAN tag在OSI参考模型的()实现。",
+          "options": {
+            "A": "网络层",
+            "B": "传输层",
+            "C": "数据链路层",
+            "D": "物理层"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q67",
+          "number": 67,
+          "type": "single",
+          "score": 1,
+          "stem": "Telnet协议是一种()的远程登录协议。",
+          "options": {
+            "A": "安全",
+            "B": "B/S模式",
+            "C": "基于TCP",
+            "D": "分布式"
+          },
+          "answer": "C",
+          "explanation": "参考答案：C"
+        },
+        {
+          "external_id": "2022-11-am-q68",
+          "number": 68,
+          "type": "single",
+          "score": 1,
+          "stem": "以下关于HTTPS和HTTP协议的叙述中，错误的是()",
+          "options": {
+            "A": "HTTPS协议使用加密传输",
+            "B": "HTTPS协议默认服务端口号是443",
+            "C": "HTTP协议默认服务端口号是80",
+            "D": "电子支付类网站应使用HTTP协议"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q69",
+          "number": 69,
+          "type": "single",
+          "score": 1,
+          "stem": "将网址转换为IP地址要用()协议。",
+          "options": {
+            "A": "域名解析",
+            "B": "IP地址解析",
+            "C": "路由选择",
+            "D": "传输控制"
+          },
+          "answer": "A",
+          "explanation": "参考答案：A"
+        },
+        {
+          "external_id": "2022-11-am-q70",
+          "number": 70,
+          "type": "single",
+          "score": 1,
+          "stem": "下面关于IP地址和MAC地址说法错误的是()。",
+          "options": {
+            "A": "IP地址长度32或128位，MAC地址的长度48位",
+            "B": "IP 地址工作在网络层, MAC地址工作在数据链路层",
+            "C": "IP地址的分配是基于网将拓扑，MAC地址的分配是基于制造商",
+            "D": "IP地址具有唯一性，MAC地址不具有唯一性"
+          },
+          "answer": "D",
+          "explanation": "参考答案：D"
+        },
+        {
+          "external_id": "2022-11-am-q71-75",
+          "number": 71,
+          "type": "cloze",
+          "score": 5,
+          "stem": "阅读以下英文，完成第71～75空（每空1分）。",
+          "passage": "We initially described SOA without mentioning Web services, and vice versa. This is because they are orthogonal: service-orientation is an architectural (71) while Web services are an implementation (72).The two c an be used together, and they frequently are, but they are not mutually dependent. For example, although it is widely considered to be a distributed-computing solution,SOA can be applied to advantage in a single system,where services might be individual processes with well-defined (73) that co mmunicate using local channels,or in a self-contained cluster, where they might communicate across a high -speed interconnect. Similarly, while Web services are(74) as the basis for a service-oriented environment, there is nothing in their definition that requires them to embody the SOA p rinciples. While(75)is often held up as a key characte ristic of Web services,there is no technical reason that they should be stateless-that would be a design choi ce of the developerwhich may be dictated by the arc hitectural style of the environment in which the servic e is intended to participate.",
+          "blanks": [
+            {
+              "external_id": "2022-11-am-q71",
+              "number": 71,
+              "stem": "第71空",
+              "options": {
+                "A": "design",
+                "B": "style",
+                "C": "technology",
+                "D": "structure"
+              },
+              "answer": "B"
+            },
+            {
+              "external_id": "2022-11-am-q72",
+              "number": 72,
+              "stem": "第72空",
+              "options": {
+                "A": "structure",
+                "B": "style",
+                "C": "technology",
+                "D": "method"
+              },
+              "answer": "C"
+            },
+            {
+              "external_id": "2022-11-am-q73",
+              "number": 73,
+              "stem": "第73空",
+              "options": {
+                "A": "interfaces",
+                "B": "functions",
+                "C": "logics",
+                "D": "formats"
+              },
+              "answer": "B"
+            },
+            {
+              "external_id": "2022-11-am-q74",
+              "number": 74,
+              "stem": "第74空",
+              "options": {
+                "A": "regarded",
+                "B": "well-suited",
+                "C": "worked",
+                "D": "used"
+              },
+              "answer": "A"
+            },
+            {
+              "external_id": "2022-11-am-q75",
+              "number": 75,
+              "stem": "第75空",
+              "options": {
+                "A": "distribution",
+                "B": "interconnection",
+                "C": "dependence",
+                "D": "statelessness"
+              },
+              "answer": "D"
+            }
+          ],
+          "answer": "B、C、B、A、D",
+          "explanation": "参考答案：B、C、B、A、D"
+        }
+      ]
+    },
+    {
+      "id": "2022-11-pm",
+      "title": "应用技术（下午）",
+      "subject": "案例分析",
+      "paper_type": "case",
+      "duration_minutes": 150,
+      "total_score": 75,
+      "pass_score": 45,
+      "case_count": 6,
+      "cases": [
+        {
+          "external_id": "2022-11-pm-case1",
+          "number": 1,
+          "title": "试题一（数据流图）",
+          "score": 15,
+          "material": "随着新能源车数量的迅猛增长，全国各地电动汽车配套充电桩急速增长，同时也带来了充电桩计量准确性的问题。充电桩都需要配备相应的电能计量和电费计费功能，需要对充电计量准确性强制进行检定。现需开发计量检定云端软件，其主要功能是：\n\n（1）数据接收。接收计量装置上报的充电数据，即充电过程中电压、电流、电能等充电监测数据和计量数据（充电监测数据为充电桩监测的数据，计量数据为计量装置计量的数据，以秒为间隔单位），接收计量装置心跳数据，并分别进行存储。\n\n（2）基础数据维护。管理员对充电桩、计量检定装置等基础数据进行维护。\n\n（3）数据分析。实现电压、电流、电能数据的对比，进行误差分析，记录充电桩的充电误差，供计量装置检定。系统根据计量检测人员给出的查询和统计条件展示查询统计结果。\n\n（4）充电桩检定。分析充电误差：计量检测人员根据误差分析结果和检定信息记录，对充电桩进行检定，提交检定结果；系统更新充电桩中的检定信息（检定结果和检定时间），并存储于检定记录。\n\n（5）异常告警。检测计量装置心跳，当心跳停止时，向管理员发出告警。\n\n（6）检定信息获取，供其它与充电桩相关的第三方服务查询充电桩中的检定信息。\n\n现采用结构化方法对计量检定云端软件进行分析与设计，获得如图1-1所示的上下文数据流图和图1-2所示的0层数据流图。\n【配图说明】图1-1 上下文数据流图（实体 E1～E4）；图1-2 0层数据流图（加工与数据存储）。",
+          "attachments": [],
+          "sub_questions": [
+            {
+              "external_id": "2022-11-pm-case1-q1",
+              "number": "1",
+              "type": "short_answer",
+              "score": 4,
+              "stem": "使用说明中的词语，给出图1-1中的实体E1～E4的名称。",
+              "answer": "E1：计量装置；E2：管理员；E3：计量检测人员；E4：第三方服务",
+              "explanation": "根据说明中的外部交互对象识别顶层实体。"
+            },
+            {
+              "external_id": "2022-11-pm-case1-q2",
+              "number": "2",
+              "type": "short_answer",
+              "score": 5,
+              "stem": "使用说明中的词语，给出图1-2中的数据存储D1～D5的名称。",
+              "answer": "D1：充电监测及计量数据文件；D2：基础数据文件；D3：计量装置心跳数据文件；D4：充电误差信息文件；D5：检定记录"
+            },
+            {
+              "external_id": "2022-11-pm-case1-q3",
+              "number": "3",
+              "type": "short_answer",
+              "score": 4,
+              "stem": "根据说明和图中术语，补充图1-2中缺失的数据流及其起点和终点。",
+              "answer": "查询和统计条件：E3→P3数据分析；更新检定信息：P4充电桩检定→D1；检定结果：P4充电桩检定→D5；检定信息：D1→P6检定信息获取"
+            },
+            {
+              "external_id": "2022-11-pm-case1-q4",
+              "number": "4",
+              "type": "short_answer",
+              "score": 2,
+              "stem": "根据说明，给出“充电监测与计量数据”数据流的组成。",
+              "answer": "充电监测数据和计量数据=充电桩ID+计量装置ID+监测电压+监测电流+监测电能+计量电压+计量电流+计量电能+时间"
+            }
+          ]
+        },
+        {
+          "external_id": "2022-11-pm-case2",
+          "number": 2,
+          "title": "试题二（数据库设计）",
+          "score": 15,
+          "material": "某营销公司为了便于对各地的分公司及专卖店进行管理，拟开发一套业务管理系统，请根据下述需求描述完成该系统的数据库设计。\n\n【需求描述】\n（1）分公司信息包括：分公司编号、分公司名、地址和电话。其中，分公司编号唯一确定分公司关系的每一个元组。每个分公司拥有多家专卖店，每家专卖店只属于一个分公司。\n（2）专卖店信息包括：专卖店号、专卖店名、店长、分公司编号、地址、电话，其中店号唯一确定专卖店关系中的每一个元组。每家专卖店只有一名店长，负责专卖店的各项业务；每名店长只负责一家专卖店；每家专卖店有多名职员，每名职员只属于一家专卖店。\n（3）职员信息包括：职员号、职员名、专卖店号、岗位、电话、薪资。其中，职员号唯一标识职员关系中的每一个元组。岗位有店长、营业员等。\n\n【概念模型设计】\n根据需求阶段收集的信息，设计的实体联系图（不完整）如图2-1所示。\n【配图说明】图2-1 实体联系图（不完整）。\n\n【逻辑结构设计】\n根据概念模型设计阶段完成的实体联系图，得出如下关系模式（不完整）：\n分公司（分公司编号，分公司名，地址，电话）\n专卖店（专卖店号，专卖店名，___(a)___，职员，地址，电话）\n职员（职员号，职员名，____(b)___，岗位，电话，薪资）",
+          "attachments": [],
+          "sub_questions": [
+            {
+              "external_id": "2022-11-pm-case2-q1",
+              "number": "1",
+              "type": "short_answer",
+              "score": 6,
+              "stem": "根据需求描述，图2-1实体联系图中缺少三个联系。请补充三个联系及联系类型。",
+              "answer": "分公司与专卖店：1对多；专卖店与店长/职员：1对多（或专卖店—职员1对多，职员中岗位含店长）；店长与专卖店：1对1"
+            },
+            {
+              "external_id": "2022-11-pm-case2-q2",
+              "number": "2",
+              "type": "short_answer",
+              "score": 6,
+              "stem": "（1）将关系模式中的空(a)、(b)的属性补充完整。（2）给出专卖店关系、职员关系的主键与外键。",
+              "answer": "(a)店长，分公司编号；(b)专卖店号。专卖店主键：专卖店号；外键：店长，分公司编号。职员主键：职员号；外键：专卖店号"
+            },
+            {
+              "external_id": "2022-11-pm-case2-q3",
+              "number": "3",
+              "type": "short_answer",
+              "score": 3,
+              "stem": "为了在紧急情况发生时能及时联系到职员的家人，专卖店要求每位职员至少填写一位紧急联系人的姓名、与本人关系和联系电话。还需增加的实体是什么？职员与该实体的联系类型？并给出该实体的关系模式。",
+              "answer": "实体：紧急联系人；联系类型：1对多。关系模式：紧急联系人（联系人编号，职员号，紧急联系人姓名，关系，联系电话）"
+            }
+          ]
+        },
+        {
+          "external_id": "2022-11-pm-case3",
+          "number": 3,
+          "title": "试题三（面向对象与设计模式）",
+          "score": 15,
+          "material": "图3-1所示为某软件系统中一个温度控制模块的界面。界面上提供了两种温度计量单位，即华氏度（Fahrenheit）和摄氏度（Celsius）。软件支持两种计量单位之间的自动换算，即若输入一个华氏度的温度，其对应的摄氏度温度值会自动出现在摄氏度的显示框内，反之亦然。\n\n用户可以通过该界面上的按钮 Raise（升高温度）和 Lower（降低温度）来改变温度的值。界面右侧是一个温度计，将数字形式的温度转换成温度计上的刻度比例进行显示。当温度值改变时，温度计的显示也随之同步变化。\n\n现采用面向对象方法实现该温度控制模块，得到如图3-2所示的用例图和图3-3所示的类图。\n【配图说明】图3-1 界面；图3-2 用例图；图3-3 类图。",
+          "attachments": [],
+          "sub_questions": [
+            {
+              "external_id": "2022-11-pm-case3-q1",
+              "number": "1",
+              "type": "short_answer",
+              "score": 4,
+              "stem": "根据说明中的描述，给出图3-2中U1～U4所对应的用例名。",
+              "answer": "U1：显示温度；U2：显示华氏度；U3：温度计显示；U4：单位换算"
+            },
+            {
+              "external_id": "2022-11-pm-case3-q2",
+              "number": "2",
+              "type": "short_answer",
+              "score": 8,
+              "stem": "根据说明中的描述，给出图3-3中C1～C8所对应的类名（类名使用图3-1中标注的词汇）。",
+              "answer": "C1：TemperatureConvertorDialog；C2～C4：FahrenheitEditBox、CelsiusEditBox、TemperatureBar；C5～C8：FahrenheitRaise、FahrenheitLower、CelsiusRaise、CelsiusLower"
+            },
+            {
+              "external_id": "2022-11-pm-case3-q3",
+              "number": "3",
+              "type": "short_answer",
+              "score": 3,
+              "stem": "现需将该界面改造为更通用的GUI应用，实现任意计量单位之间的换算。可以在图3-3类图上增加哪种设计模式？请简要说明原因。",
+              "answer": "策略模式。多种单位换算规则可封装为可互换的算法策略，便于扩展与切换。"
+            }
+          ]
+        },
+        {
+          "external_id": "2022-11-pm-case4",
+          "number": 4,
+          "title": "试题四（算法：堆排序）",
+          "score": 15,
+          "material": "排序是将一组无序的数据元素调整为非递减顺序的数据序列的过程，堆排序是一种常用的排序算法。用顺序存储结构存储堆中元素。非递减堆排序的步骤是：\n\n（1）将含n个元素的待排序数列构造成一个初始大顶堆，存储在数组R（R[1]，R[2]，…，R[n]）中。此时堆的规模为n，堆顶元素R[1]就是序列中最大的元素，R[n]是堆中最后一个元素。\n（2）将堆顶元素和堆中最后一个元素交换，最后一个元素脱离堆结构，堆的规模减1，将堆中剩余的元素调整成大顶堆；\n（3）重复步骤（2），直到只剩下最后一个元素在堆结构中，此时数组R是一个非递减的数据序列。\n\n【C代码要点】（原卷完整代码略，按填空位置给出骨架）\nvoid Heapify(int R[], int i, int n) { /* 以i为根调整为大顶堆 */\n int l = 2*i, r = 2*i+1, largest = i;\n if (l <= n && (1) ) largest = l;\n if (r <= n && R[r] > R[largest]) largest = r;\n if (largest != i) { swap(R[i], R[largest]); Heapify(R, largest, n); }\n}\nvoid BuildHeap(int R[], int n) {\n for (int i = n/2; i >= 1; i--) (2);\n}\nvoid HeapSort(int R[], int n) {\n BuildHeap(R, n);\n for (int i = n; (3) ; i--) {\n swap(R[1], R[i]);\n Heapify(R, 1, i-1);\n }\n}\n/* 另有一处将堆顶写入结果相关空 (4) */",
+          "attachments": [],
+          "sub_questions": [
+            {
+              "external_id": "2022-11-pm-case4-q1",
+              "number": "1",
+              "type": "short_answer",
+              "score": 8,
+              "stem": "根据说明和C代码，填充空(1)～(4)。",
+              "answer": "(1) R[l] > R[largest]（或与i比较的等价写法）；(2) Heapify(R, i, n)；(3) i > 1；(4) 交换后将堆顶与当前末元素相关赋值/调整（参考：R[1]与R[i]交换后继续 Heapify）",
+              "explanation": "公开参考答案因OCR差异可能写作 R[i]<R[j]、Heapify(R,i,n)、i>1、R[1]=R[n] 等等价形式。"
+            },
+            {
+              "external_id": "2022-11-pm-case4-q2",
+              "number": "2",
+              "type": "short_answer",
+              "score": 2,
+              "stem": "算法的时间复杂度为（5）（用O符号表示）。",
+              "answer": "O(n log n)"
+            },
+            {
+              "external_id": "2022-11-pm-case4-q3",
+              "number": "3",
+              "type": "short_answer",
+              "score": 5,
+              "stem": "数据序列 R=(7，10，13，15，4，20，19，8)，n=8，构建的初始大顶堆为（6）；第一个元素脱离堆结构后，再调整成大顶堆后的数组R为（7）。",
+              "answer": "(6) (20，15，19，10，4，13，7，8)；(7) (19，15，13，10，4，8，7)（末位已脱离堆，具体排列以堆化结果为准）"
+            }
+          ]
+        },
+        {
+          "external_id": "2022-11-pm-case5",
+          "number": 5,
+          "title": "试题五（Java：外观模式）",
+          "score": 15,
+          "material": "Facade（外观）模式是一种通过为多个复杂子系统提供一个一致的接口，而使这些子系统更加容易被访问的模式。以医院为例，就医时患者需要与医院不同的职能部门交互，完成挂号、门诊、取药等操作。为简化就医流程，设置了一个接待员的职位，代患者完成上述就医步骤，患者则只需与接待员交互即可。如图5-1给出了以外观模式实现该场景的类图。\n【配图说明】图5-1 外观模式类图。\n\n【Java 代码骨架】\nabstract class Patient {\n public abstract (1);\n}\nclass ConcretePatient extends Patient {\n private String name;\n public ConcretePatient(String name) { this.name = name; }\n public String getName() { return name; }\n}\nabstract class Staff {\n public abstract (2);\n}\nclass Facade {\n private Patient patient;\n public Facade(Patient patient) { this.patient = patient; }\n public void dispose() {\n new Registration().dispose(patient);\n new Doctor().dispose(patient);\n new Pharmacy().dispose(patient);\n }\n}\npublic class Test {\n public static void main(String[] args) {\n Patient patient = (3);\n (4) f = (5);\n (6);\n }\n}",
+          "attachments": [],
+          "sub_questions": [
+            {
+              "external_id": "2022-11-pm-case5-q1",
+              "number": "1",
+              "type": "short_answer",
+              "score": 15,
+              "stem": "填写 Java 代码中的空(1)～(6)。",
+              "answer": "(1) String getName()；(2) void dispose(Patient patient)；(3) new ConcretePatient(\"\")；(4) Facade；(5) new Facade(patient)；(6) f.dispose()"
+            }
+          ]
+        },
+        {
+          "external_id": "2022-11-pm-case6",
+          "number": 6,
+          "title": "试题六（C++：外观模式）",
+          "score": 15,
+          "material": "Facade（外观）模式是一种通过为多个复杂子系统提供一个一致的接口，而使这些子系统更加容易被访问的模式。以医院为例，就医时患者需要与医院不同的职能部门交互，完成挂号、门诊、取药等操作。为简化就医流程，设置了一个接待员的职位，代患者完成上述就医步骤，患者则只需与接待员交互即可。如图6-1给出了以外观模式实现该场景的类图。\n【配图说明】图6-1 外观模式类图。\n\n【C++ 代码骨架】\nclass Patient {\npublic:\n virtual ~Patient() {}\n (1);\n};\nclass Staff {\npublic:\n virtual ~Staff() {}\n (2);\n};\n// ... Registration / Doctor / Pharmacy 继承 Staff\nclass Facade {\n Patient *patient;\npublic:\n Facade(Patient *p): patient(p) {}\n void dispose();\n};\nint main() {\n Patient *patient = (3);\n (4) f = (5);\n (6);\n delete patient;\n delete f;\n return 0;\n}",
+          "attachments": [],
+          "sub_questions": [
+            {
+              "external_id": "2022-11-pm-case6-q1",
+              "number": "1",
+              "type": "short_answer",
+              "score": 15,
+              "stem": "填写 C++ 代码中的空(1)～(6)。",
+              "answer": "(1) virtual string getName()=0；(2) virtual void dispose(Patient *patient)=0；(3) new ConcretePatient(\"name\")；(4) Facade*；(5) new Facade(patient)；(6) f->dispose()"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

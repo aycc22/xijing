@@ -9,8 +9,23 @@ import { buildPaperItems } from './paperSnapshot'
 
 const samplePath2022 = resolve('public/data/exams/2022-isec-engineer.json')
 const samplePath2021 = resolve('public/data/exams/2021-isec-engineer.json')
+const samplePath2022Soft = resolve('public/data/exams/2022-soft-designer.json')
 
 describe('examPaperJson', () => {
+  it('parses 2022 software designer exam sample', () => {
+    const text = readFileSync(samplePath2022Soft, 'utf8')
+    const result = lintExamPaperJson(text)
+    expect(result.valid).toBe(true)
+    expect(result.stats?.morning).toBe(75)
+    expect(result.stats?.afternoon).toBeGreaterThan(10)
+    expect(result.bundle).toBeTruthy()
+    if (result.bundle) {
+      expect(examBankTitle(result.bundle)).toContain('软件设计师')
+      expect(result.bundle.exam.assets_base).toBe('/data/exams/2022-soft-designer/images')
+      expect(result.bundle.papers).toHaveLength(2)
+    }
+  })
+
   it('parses 2022 exam sample', () => {
     const text = readFileSync(samplePath2022, 'utf8')
     const result = lintExamPaperJson(text)
