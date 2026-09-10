@@ -117,39 +117,35 @@ function next() {
 </script>
 
 <template>
-  <div v-if="current" class="relative flex flex-col gap-4 pb-28">
-    <span class="ink-mark -top-3 right-0" aria-hidden="true">{{ index + 1 }}</span>
-
-    <div class="relative z-10 flex flex-col gap-2.5">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap items-center gap-2">
-          <span v-if="snapshot" class="chip">
-            <span class="size-1.5 rounded-full" :class="qtypeDotClass(snapshot.qtype)" aria-hidden="true" />
-            {{ questionTypeLabel(snapshot.qtype) }}
-            <template v-if="showScore"> · {{ current.earned }}/{{ current.score }} 分</template>
-          </span>
-          <span class="chip shrink-0" :class="statusChipClass()">
-            {{ resultStatusSymbol(status) }} {{ resultStatusLabel(status) }}
+  <div v-if="current" class="relative pb-28">
+    <article class="surface relative z-10 flex flex-col gap-3 md:p-6">
+      <div class="flex flex-col gap-1.5">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+            <span v-if="snapshot" class="chip">
+              <span class="size-1.5 rounded-full" :class="qtypeDotClass(snapshot.qtype)" aria-hidden="true" />
+              {{ questionTypeLabel(snapshot.qtype) }}
+              <template v-if="showScore"> · {{ current.earned }}/{{ current.score }} 分</template>
+            </span>
+            <span class="chip shrink-0" :class="statusChipClass()">
+              {{ resultStatusSymbol(status) }} {{ resultStatusLabel(status) }}
+            </span>
+          </div>
+          <span class="shrink-0 text-xs font-medium text-muted tabular-nums">
+            {{ index + 1 }} / {{ total }}
           </span>
         </div>
-        <span class="font-display text-lg font-semibold text-ink tabular-nums leading-none">
-          {{ index + 1 }}
-          <span class="text-sm font-normal text-muted"> / {{ total }}</span>
-        </span>
+        <div
+          class="path-track"
+          role="progressbar"
+          :aria-valuenow="index + 1"
+          aria-valuemin="1"
+          :aria-valuemax="total"
+        >
+          <span class="path-fill" :style="{ width: progress + '%' }" />
+        </div>
       </div>
 
-      <div
-        class="path-track relative z-10"
-        role="progressbar"
-        :aria-valuenow="index + 1"
-        aria-valuemin="1"
-        :aria-valuemax="total"
-      >
-        <span class="path-fill" :style="{ width: progress + '%' }" />
-      </div>
-    </div>
-
-    <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
       <CaseMaterialPanel
         v-if="snapshot?.case_material || snapshot?.attachments?.length"
         :material="snapshot.case_material"

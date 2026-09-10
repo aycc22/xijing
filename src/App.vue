@@ -32,6 +32,16 @@ const focusMode = computed(() => {
   )
 })
 
+const playerFocus = computed(() => {
+  const name = route.name
+  return (
+    name === 'quiz' ||
+    name === 'exam' ||
+    name === 'result-review' ||
+    name === 'exam-result-review'
+  )
+})
+
 const isHome = computed(() => route.name === 'home')
 const isHomeLanding = computed(() => isHome.value && !auth.user.value)
 
@@ -88,15 +98,20 @@ function toggleTheme() {
     ]"
   >
     <header
-      class="app-header z-30 -mx-4 flex shrink-0 items-center justify-between gap-3 border-b border-line/60 bg-night/85 px-4 pb-3 backdrop-blur-md md:-mx-6 md:px-6"
-      :class="isHomeLanding ? 'static' : 'sticky top-0'"
+      class="app-header z-30 -mx-4 flex shrink-0 items-center justify-between border-b border-line/60 bg-night/85 px-4 backdrop-blur-md md:-mx-6 md:px-6"
+      :class="[
+        isHomeLanding ? 'static' : 'sticky top-0',
+        playerFocus ? 'app-header-compact gap-2 pb-1' : 'gap-3 pb-3',
+      ]"
     >
       <RouterLink
-        class="flex items-center gap-2.5 font-display text-[1.35rem] tracking-wide text-ink transition hover:text-spark"
+        class="flex items-center font-display tracking-wide text-ink transition hover:text-spark"
+        :class="playerFocus ? 'gap-1.5 text-sm' : 'gap-2.5 text-[1.35rem]'"
         to="/"
       >
         <span class="brand-dot" aria-hidden="true"></span>
-        习径
+        <span v-if="!playerFocus">习径</span>
+        <span v-else class="sr-only">习径</span>
       </RouterLink>
 
       <div class="flex items-center gap-2">
@@ -131,7 +146,8 @@ function toggleTheme() {
 
         <RouterLink
           v-else-if="focusMode"
-          class="btn-ghost !min-h-9 !px-2 !py-1.5 text-sm"
+          class="btn-ghost text-sm"
+          :class="playerFocus ? '!min-h-8 !px-2 !py-1' : '!min-h-9 !px-2 !py-1.5'"
           :to="focusExitTo"
         >
           {{ focusExitLabel }}
@@ -140,6 +156,7 @@ function toggleTheme() {
         <button
           type="button"
           class="icon-btn"
+          :class="playerFocus ? '!size-8' : ''"
           :aria-label="theme === 'dark' ? '切换为亮色主题' : '切换为暗色主题'"
           @click="toggleTheme"
         >
@@ -164,7 +181,10 @@ function toggleTheme() {
       </div>
     </header>
 
-    <main class="flex min-h-0 flex-1 flex-col" :class="isHomeLanding ? 'overflow-hidden pt-2' : 'pt-3 md:pt-5'">
+    <main
+      class="flex min-h-0 flex-1 flex-col"
+      :class="isHomeLanding ? 'overflow-hidden pt-2' : playerFocus ? 'pt-1' : 'pt-3 md:pt-5'"
+    >
       <RouterView v-slot="{ Component, route: viewRoute }">
         <div
           :key="viewRoute.fullPath"

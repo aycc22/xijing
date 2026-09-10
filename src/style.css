@@ -164,6 +164,10 @@
     padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
   }
 
+  .app-header-compact {
+    padding-top: max(0.35rem, env(safe-area-inset-top, 0px));
+  }
+
   .page-enter {
     animation: page-rise 0.45s ease-out both;
   }

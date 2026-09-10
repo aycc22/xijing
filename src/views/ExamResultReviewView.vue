@@ -71,13 +71,13 @@ onMounted(load)
     <p v-else-if="error" class="alert-error">{{ error }}</p>
 
     <template v-else-if="session">
-      <p v-if="gradingBusy" class="m-0 mb-3 text-center text-sm text-muted">
+      <p v-if="gradingBusy" class="m-0 mb-2 text-center text-xs text-muted">
         正在生成简答 AI 评分（仅供参考）…
       </p>
-      <p v-if="gradingError" class="alert-warn m-0 mb-3">{{ gradingError }}</p>
+      <p v-if="gradingError" class="alert-warn m-0 mb-2">{{ gradingError }}</p>
       <button
         v-if="hasFailedGrades"
-        class="btn-secondary mx-auto mb-3 min-h-11"
+        class="btn-secondary mx-auto mb-2 min-h-9 px-3 text-sm"
         type="button"
         :disabled="gradingBusy"
         @click="retryFailedGrades"
