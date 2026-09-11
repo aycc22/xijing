@@ -450,3 +450,95 @@
 .sheet-slide-leave-to {
   transform: translateY(100%);
 }
+
+/* 刷题 / 答题切题：跟手滑动 + 缓动换页 */
+.qswipe-track {
+  overflow-x: visible;
+  overflow-y: visible;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+}
+
+.qswipe-track.qswipe-clip {
+  overflow-x: hidden;
+}
+
+.qswipe-page.qswipe-live {
+  will-change: transform, opacity;
+}
+
+.qswipe-page button,
+.qswipe-page .option {
+  touch-action: pan-y;
+}
+
+.qswipe-page textarea,
+.qswipe-page input,
+.qswipe-page select {
+  touch-action: auto;
+}
+
+.qswipe-page.qswipe-follow,
+.qswipe-page.qswipe-snap {
+  transform: translate3d(var(--qswipe-follow, 0px), 0, 0);
+}
+
+.qswipe-page.qswipe-snap {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qswipe-next-enter-active,
+.qswipe-next-leave-active,
+.qswipe-prev-enter-active,
+.qswipe-prev-leave-active {
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.24s ease;
+}
+
+.qswipe-next-leave-active,
+.qswipe-prev-leave-active,
+.qswipe-fade-leave-active {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  width: 100%;
+}
+
+.qswipe-next-leave-from {
+  transform: translate3d(var(--qswipe-commit-from, 0px), 0, 0);
+}
+
+.qswipe-next-leave-to {
+  transform: translate3d(-32%, 0, 0);
+  opacity: 0;
+}
+
+.qswipe-next-enter-from {
+  transform: translate3d(28%, 0, 0);
+  opacity: 0;
+}
+
+.qswipe-prev-leave-from {
+  transform: translate3d(var(--qswipe-commit-from, 0px), 0, 0);
+}
+
+.qswipe-prev-leave-to {
+  transform: translate3d(32%, 0, 0);
+  opacity: 0;
+}
+
+.qswipe-prev-enter-from {
+  transform: translate3d(-28%, 0, 0);
+  opacity: 0;
+}
+
+.qswipe-fade-enter-active,
+.qswipe-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.qswipe-fade-enter-from,
+.qswipe-fade-leave-to {
+  opacity: 0;
+}

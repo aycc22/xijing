@@ -26,6 +26,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
+import QuestionSwipePager from '../components/QuestionSwipePager.vue'
 import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
 import type { QuestionType } from '../lib/types'
 
@@ -353,7 +354,15 @@ function startCountdown() {
           <p class="m-0 text-xs text-muted">请稍候，不要关闭页面</p>
         </div>
       </div>
-      <div class="relative z-10 flex flex-wrap items-center justify-between gap-2">
+      <QuestionSwipePager
+        :page-key="index"
+        :can-prev="index > 0"
+        :can-next="index + 1 < items.length"
+        @prev="goTo(index - 1)"
+        @next="goTo(index + 1)"
+      >
+      <div class="relative z-10 flex flex-col gap-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2">
           <span class="chip">
             <span
@@ -409,6 +418,8 @@ function startCountdown() {
         </div>
         <p v-if="error" class="alert-error m-0">{{ error }}</p>
       </article>
+      </div>
+      </QuestionSwipePager>
 
       <AnswerActionBar :can-prev="index > 0" @open-sheet="sheetOpen = true" @prev="goTo(index - 1)">
         <button
