@@ -32,6 +32,7 @@ import { buildQuestionSnapshot } from '../lib/questionSnapshot'
 import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/userLearning'
 import { useAuth } from '../composables/useAuth'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
+import QuestionSwipePager from '../components/QuestionSwipePager.vue'
 import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
 import AiQuestionExplainPanel from '../components/AiQuestionExplainPanel.vue'
 import type { Question, QuestionOption, QuestionType } from '../lib/types'
@@ -406,7 +407,15 @@ onMounted(start)
     <div v-else-if="current" class="relative flex flex-col gap-4 pb-28">
       <span class="ink-mark -top-3 right-0" aria-hidden="true">{{ index + 1 }}</span>
 
-      <div class="relative z-10 flex flex-col gap-2.5">
+      <QuestionSwipePager
+        :page-key="index"
+        :can-prev="canGoPrev(index)"
+        :can-next="Boolean(currentAttempt && canGoNext(index, questions.length, currentAttempt))"
+        @prev="prev"
+        @next="next"
+      >
+      <div class="relative z-10 flex flex-col gap-4">
+      <div class="flex flex-col gap-2.5">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex flex-wrap items-center gap-2">
             <span class="chip">
@@ -500,6 +509,8 @@ onMounted(start)
 
         <p v-if="error" class="alert-error">{{ error }}</p>
       </article>
+      </div>
+      </QuestionSwipePager>
 
       <AnswerActionBar :can-prev="canGoPrev(index)" @open-sheet="sheetOpen = true" @prev="prev">
         <template v-if="!revealed">
