@@ -452,6 +452,14 @@
 }
 
 /* 刷题 / 考试切题：跟手 + 滑出滑入，避免硬切 */
+.q-swipe-pane {
+  user-select: none;
+}
+
+.q-swipe-pane :is(input, textarea, select) {
+  user-select: text;
+}
+
 .q-slide-next-enter-active,
 .q-slide-next-leave-active,
 .q-slide-prev-enter-active,

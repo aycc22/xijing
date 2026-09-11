@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
   <div
     ref="root"
     class="relative overflow-x-hidden touch-pan-y"
-    :class="axis === 'horizontal' ? 'select-none' : ''"
+    :class="dragging || axis === 'horizontal' ? 'select-none' : ''"
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
     @pointerup="onPointerEnd"
