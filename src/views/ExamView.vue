@@ -27,6 +27,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
 import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
+import QuestionSwipeStage from '../components/QuestionSwipeStage.vue'
 import type { QuestionType } from '../lib/types'
 
 const route = useRoute()
@@ -83,6 +84,8 @@ const sheetStatuses = computed<SheetCellState[]>(() =>
 const currentFlagged = computed(() =>
   Boolean(current.value && answers.value[current.value.question_id]?.flagged),
 )
+const canPrevQuestion = computed(() => index.value > 0)
+const canNextQuestion = computed(() => index.value + 1 < items.value.length)
 
 function qtypeDotClass(qtype: QuestionType) {
   switch (qtype) {
@@ -151,6 +154,16 @@ function goTo(i: number) {
   index.value = i
   sheetOpen.value = false
   scheduleSave()
+}
+
+function prev() {
+  if (!canPrevQuestion.value) return
+  goTo(index.value - 1)
+}
+
+function next() {
+  if (!canNextQuestion.value) return
+  goTo(index.value + 1)
 }
 
 async function begin() {
@@ -373,6 +386,13 @@ function startCountdown() {
           剩余 {{ remainingLabel }}
         </p>
 
+      <QuestionSwipeStage
+        :content-key="index"
+        :can-prev="canPrevQuestion"
+        :can-next="canNextQuestion"
+        @prev="prev"
+        @next="next"
+      >
       <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
         <CaseMaterialPanel
           v-if="shouldShowCaseMaterial(caseRows, index)"
@@ -409,8 +429,9 @@ function startCountdown() {
         </div>
         <p v-if="error" class="alert-error m-0">{{ error }}</p>
       </article>
+      </QuestionSwipeStage>
 
-      <AnswerActionBar :can-prev="index > 0" @open-sheet="sheetOpen = true" @prev="goTo(index - 1)">
+      <AnswerActionBar :can-prev="canPrevQuestion" @open-sheet="sheetOpen = true" @prev="prev">
         <button
           type="button"
           class="btn-secondary !px-3 min-h-11 shrink-0"
@@ -424,7 +445,7 @@ function startCountdown() {
           v-if="index + 1 < items.length"
           class="btn min-h-11 flex-1"
           type="button"
-          @click="goTo(index + 1)"
+          @click="next"
         >
           下一题
         </button>

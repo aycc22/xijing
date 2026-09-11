@@ -450,3 +450,45 @@
 .sheet-slide-leave-to {
   transform: translateY(100%);
 }
+
+/* 刷题 / 考试切题：跟手 + 滑出滑入，避免硬切 */
+.q-slide-next-enter-active,
+.q-slide-next-leave-active,
+.q-slide-prev-enter-active,
+.q-slide-prev-leave-active {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.q-slide-next-leave-active,
+.q-slide-prev-leave-active {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  width: 100%;
+}
+
+.q-slide-next-enter-from {
+  transform: translate3d(100%, 0, 0);
+}
+
+.q-slide-next-leave-from {
+  transform: translate3d(var(--q-swipe-from, 0px), 0, 0);
+}
+
+.q-slide-next-leave-to {
+  transform: translate3d(-100%, 0, 0);
+}
+
+.q-slide-prev-enter-from {
+  transform: translate3d(-100%, 0, 0);
+}
+
+.q-slide-prev-leave-from {
+  transform: translate3d(var(--q-swipe-from, 0px), 0, 0);
+}
+
+.q-slide-prev-leave-to {
+  transform: translate3d(100%, 0, 0);
+}

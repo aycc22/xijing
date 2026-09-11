@@ -48,5 +48,6 @@ describe('practiceSession', () => {
     expect(canGoNext(0, 5, unanswered)).toBe(false)
     expect(canGoNext(0, 5, answered)).toBe(true)
     expect(canGoNext(4, 5, answered)).toBe(false)
+    expect(canGoNext(0, 5, undefined)).toBe(false)
   })
 })

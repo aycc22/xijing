@@ -49,8 +49,8 @@ export function canGoPrev(index: number): boolean {
   return index > 0
 }
 
-export function canGoNext(index: number, total: number, attempt: QuestionAttempt): boolean {
-  return attempt.revealed && index < total - 1
+export function canGoNext(index: number, total: number, attempt: QuestionAttempt | undefined): boolean {
+  return Boolean(attempt?.revealed && index < total - 1)
 }
 
 export function syncAttemptSelection(attempt: QuestionAttempt, selected: string[]): QuestionAttempt {

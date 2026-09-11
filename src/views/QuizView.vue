@@ -33,6 +33,7 @@ import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/use
 import { useAuth } from '../composables/useAuth'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
 import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
+import QuestionSwipeStage from '../components/QuestionSwipeStage.vue'
 import AiQuestionExplainPanel from '../components/AiQuestionExplainPanel.vue'
 import type { Question, QuestionOption, QuestionType } from '../lib/types'
 
@@ -80,6 +81,10 @@ const progress = computed(() =>
   questions.value.length ? ((index.value + (revealed.value ? 1 : 0)) / questions.value.length) * 100 : 0,
 )
 const submitEnabled = computed(() => canSubmitAnswer(currentAttempt.value))
+const canPrevQuestion = computed(() => canGoPrev(index.value))
+const canNextQuestion = computed(() =>
+  canGoNext(index.value, questions.value.length, attempts.value[index.value]),
+)
 const wrongOnly = computed(() => route.query.wrong === '1')
 const unansweredOnly = computed(() => route.query.unanswered === '1')
 const randomOrder = computed(() => route.query.order === 'random')
@@ -406,6 +411,14 @@ onMounted(start)
     <div v-else-if="current" class="relative flex flex-col gap-4 pb-28">
       <span class="ink-mark -top-3 right-0" aria-hidden="true">{{ index + 1 }}</span>
 
+      <QuestionSwipeStage
+        :content-key="index"
+        :can-prev="canPrevQuestion"
+        :can-next="canNextQuestion"
+        @prev="prev"
+        @next="next"
+      >
+      <div class="flex flex-col gap-4">
       <div class="relative z-10 flex flex-col gap-2.5">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex flex-wrap items-center gap-2">
@@ -500,8 +513,10 @@ onMounted(start)
 
         <p v-if="error" class="alert-error">{{ error }}</p>
       </article>
+      </div>
+      </QuestionSwipeStage>
 
-      <AnswerActionBar :can-prev="canGoPrev(index)" @open-sheet="sheetOpen = true" @prev="prev">
+      <AnswerActionBar :can-prev="canPrevQuestion" @open-sheet="sheetOpen = true" @prev="prev">
         <template v-if="!revealed">
           <button class="btn-secondary !px-3 min-h-11 shrink-0" type="button" @click="skipQuestion">
             暂不会

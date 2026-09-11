@@ -5,9 +5,11 @@ import CaseMaterialPanel from './CaseMaterialPanel.vue'
 import AiQuestionExplainPanel from './AiQuestionExplainPanel.vue'
 import AnswerActionBar from './AnswerActionBar.vue'
 import AnswerSheetDrawer, { type SheetCellState } from './AnswerSheetDrawer.vue'
+import QuestionSwipeStage from './QuestionSwipeStage.vue'
 import { resultStatusLabel, resultStatusSymbol } from '../lib/practiceResult'
 import { questionTypeLabel } from '../lib/scoring'
 import {
+  canGoReviewNext,
   canGoReviewPrev,
   clampReviewIndex,
   markReviewOption,
@@ -118,6 +120,13 @@ function next() {
 
 <template>
   <div v-if="current" class="relative pb-28">
+    <QuestionSwipeStage
+      :content-key="index"
+      :can-prev="canGoReviewPrev(index)"
+      :can-next="canGoReviewNext(index, total)"
+      @prev="prev"
+      @next="next"
+    >
     <article class="surface relative z-10 flex flex-col gap-3 md:p-6">
       <div class="flex flex-col gap-1.5">
         <div class="flex items-center justify-between gap-2">
@@ -246,6 +255,7 @@ function next() {
         :is-skipped="Boolean(current.is_skipped)"
       />
     </article>
+    </QuestionSwipeStage>
 
     <AnswerActionBar :can-prev="canGoReviewPrev(index)" @open-sheet="sheetOpen = true" @prev="prev">
       <button
