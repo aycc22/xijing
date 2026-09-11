@@ -16,10 +16,25 @@ export const SWIPE_FOLLOW_FACTOR = 0.38
 export const SWIPE_FOLLOW_MAX_PX = 64
 /** 到边界（不能上一题/下一题）时的跟手阻尼 */
 export const SWIPE_EDGE_RESISTANCE = 0.28
-export const SWIPE_ANIMATION_MS = 300
+/**
+ * 切题过渡时长。300ms + easeOutExpo 在手机上会显得「一闪而过」；
+ * 480ms 接近 Keen Slider 默认、长于 iOS UIPageViewController 的 ~350ms，
+ * 配合下方 ease-out 曲线，整段位移都看得清。
+ */
+export const SWIPE_ANIMATION_MS = 480
+/** 答题卡跳题的淡入淡出，略短于滑页但仍慢于硬切 */
+export const SWIPE_FADE_MS = 340
 /** 切题动画结束后的额外冷却，防止一次手势连跳两题 */
-export const SWIPE_COOLDOWN_MS = 140
-export const SWIPE_SNAP_BACK_MS = 220
+export const SWIPE_COOLDOWN_MS = 160
+/** 未过阈值回弹，略快于换页，但仍跟手后能看清回位 */
+export const SWIPE_SNAP_BACK_MS = 360
+/**
+ * easeOutQuad：比 cubic-bezier(0.22, 1, 0.36, 1)（easeOutExpo）更匀速，
+ * 接近 iOS UIScrollView 分页减速，前段不会把动作「甩完」。
+ */
+export const SWIPE_EASING = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+/** 定时器相对 CSS 过渡的余量，避免动画未结束就解锁 */
+export const SWIPE_UNLOCK_BUFFER_MS = 64
 
 const IGNORE_SELECTOR = 'textarea, input, select, [contenteditable="true"], [data-no-swipe]'
 
@@ -255,7 +270,7 @@ export function endSwipeGesture(
       ...released,
       followX: 0,
       animating: true,
-      lockedUntil: input.now + SWIPE_SNAP_BACK_MS,
+      lockedUntil: input.now + SWIPE_SNAP_BACK_MS + SWIPE_UNLOCK_BUFFER_MS,
       suppressClick: Math.abs(dx) >= SWIPE_AXIS_LOCK_PX,
     },
     intent: null,

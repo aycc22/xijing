@@ -451,12 +451,16 @@
   transform: translateY(100%);
 }
 
-/* 刷题 / 答题切题：跟手滑动 + 缓动换页 */
+/* 刷题 / 答题切题：跟手滑动 + 缓动换页（时长/曲线由 QuestionSwipePager 注入，与 JS 锁同步） */
 .qswipe-track {
   overflow-x: visible;
   overflow-y: visible;
   touch-action: pan-y;
   overscroll-behavior-x: none;
+  --qswipe-duration: 480ms;
+  --qswipe-snap-duration: 360ms;
+  --qswipe-fade-duration: 340ms;
+  --qswipe-easing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .qswipe-track.qswipe-clip {
@@ -484,7 +488,7 @@
 }
 
 .qswipe-page.qswipe-snap {
-  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform var(--qswipe-snap-duration) var(--qswipe-easing);
 }
 
 .qswipe-next-enter-active,
@@ -492,8 +496,8 @@
 .qswipe-prev-enter-active,
 .qswipe-prev-leave-active {
   transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.24s ease;
+    transform var(--qswipe-duration) var(--qswipe-easing),
+    opacity var(--qswipe-duration) var(--qswipe-easing);
 }
 
 .qswipe-next-leave-active,
@@ -510,13 +514,13 @@
 }
 
 .qswipe-next-leave-to {
-  transform: translate3d(-32%, 0, 0);
-  opacity: 0;
+  transform: translate3d(-40%, 0, 0);
+  opacity: 0.12;
 }
 
 .qswipe-next-enter-from {
-  transform: translate3d(28%, 0, 0);
-  opacity: 0;
+  transform: translate3d(18%, 0, 0);
+  opacity: 0.35;
 }
 
 .qswipe-prev-leave-from {
@@ -524,18 +528,18 @@
 }
 
 .qswipe-prev-leave-to {
-  transform: translate3d(32%, 0, 0);
-  opacity: 0;
+  transform: translate3d(40%, 0, 0);
+  opacity: 0.12;
 }
 
 .qswipe-prev-enter-from {
-  transform: translate3d(-28%, 0, 0);
-  opacity: 0;
+  transform: translate3d(-18%, 0, 0);
+  opacity: 0.35;
 }
 
 .qswipe-fade-enter-active,
 .qswipe-fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity var(--qswipe-fade-duration) var(--qswipe-easing);
 }
 
 .qswipe-fade-enter-from,
