@@ -4,9 +4,13 @@ import {
   SWIPE_AXIS_LOCK_PX,
   SWIPE_COMMIT_DISTANCE_PX,
   SWIPE_COOLDOWN_MS,
+  SWIPE_EASING,
+  SWIPE_FADE_MS,
   SWIPE_FLICK_DISTANCE_PX,
   SWIPE_FOLLOW_FACTOR,
   SWIPE_FOLLOW_MAX_PX,
+  SWIPE_SNAP_BACK_MS,
+  SWIPE_UNLOCK_BUFFER_MS,
   canAcceptSwipeStart,
   cancelSwipeGesture,
   consumeSwipeClickSuppression,
@@ -286,5 +290,43 @@ describe('velocity helper', () => {
 describe('lock window', () => {
   it('covers the animation plus cooldown', () => {
     expect(lockGesturesUntil(1000) - 1000).toBe(SWIPE_ANIMATION_MS + SWIPE_COOLDOWN_MS)
+  })
+
+  it('keeps a committed swipe locked through the longer page-turn', () => {
+    const now = 1_000
+    const result = dragHorizontal(200, 120, { now })
+    const commitAt = now + 200
+    expect(result.state.lockedUntil).toBe(commitAt + SWIPE_ANIMATION_MS + SWIPE_COOLDOWN_MS)
+    expect(canAcceptSwipeStart(result.state, commitAt + SWIPE_ANIMATION_MS - 1)).toBe(false)
+    expect(canAcceptSwipeStart(result.state, result.state.lockedUntil - 1)).toBe(false)
+  })
+})
+
+describe('page-turn timing', () => {
+  it('is slower than a 300ms snap so the motion is readable on a phone', () => {
+    expect(SWIPE_ANIMATION_MS).toBeGreaterThanOrEqual(420)
+    expect(SWIPE_SNAP_BACK_MS).toBeGreaterThanOrEqual(300)
+    expect(SWIPE_FADE_MS).toBeGreaterThanOrEqual(280)
+    expect(SWIPE_UNLOCK_BUFFER_MS).toBeGreaterThan(0)
+    expect(SWIPE_SNAP_BACK_MS).toBeLessThanOrEqual(SWIPE_ANIMATION_MS)
+  })
+
+  it('uses an ease-out curve rather than linear or ease-in', () => {
+    expect(SWIPE_EASING.startsWith('cubic-bezier(')).toBe(true)
+    const nums = SWIPE_EASING.slice('cubic-bezier('.length, -1).split(',').map(Number)
+    expect(nums).toHaveLength(4)
+    const [x1, y1, x2, y2] = nums
+    expect(y1).toBeGreaterThan(x1)
+    expect(y2).toBeGreaterThan(x2)
+  })
+
+  it('keeps CSS fallbacks aligned with JS timing constants', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { fileURLToPath } = await import('node:url')
+    const css = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8')
+    expect(css).toContain(`--qswipe-duration: ${SWIPE_ANIMATION_MS}ms`)
+    expect(css).toContain(`--qswipe-snap-duration: ${SWIPE_SNAP_BACK_MS}ms`)
+    expect(css).toContain(`--qswipe-fade-duration: ${SWIPE_FADE_MS}ms`)
+    expect(css).toContain(`--qswipe-easing: ${SWIPE_EASING}`)
   })
 })

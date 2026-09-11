@@ -2,7 +2,10 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import {
   SWIPE_ANIMATION_MS,
+  SWIPE_EASING,
+  SWIPE_FADE_MS,
   SWIPE_SNAP_BACK_MS,
+  SWIPE_UNLOCK_BUFFER_MS,
   cancelSwipeGesture,
   consumeSwipeClickSuppression,
   endSwipeGesture,
@@ -38,9 +41,17 @@ let unlockTimer: ReturnType<typeof setTimeout> | null = null
 
 const followActive = computed(() => gesture.value.dragging || snapBack.value)
 
+const pageTransitionMs = computed(() =>
+  transitionName.value === 'qswipe-fade' ? SWIPE_FADE_MS : SWIPE_ANIMATION_MS,
+)
+
 const trackStyle = computed(() => ({
   '--qswipe-follow': `${gesture.value.followX}px`,
   '--qswipe-commit-from': `${commitFromX.value}px`,
+  '--qswipe-duration': `${SWIPE_ANIMATION_MS}ms`,
+  '--qswipe-snap-duration': `${SWIPE_SNAP_BACK_MS}ms`,
+  '--qswipe-fade-duration': `${SWIPE_FADE_MS}ms`,
+  '--qswipe-easing': SWIPE_EASING,
 }))
 
 function clearTimers() {
@@ -69,12 +80,14 @@ watch(
       transitionName.value = transitionNameForIndexChange(from, to)
       commitFromX.value = 0
     }
+    const durationMs =
+      transitionName.value === 'qswipe-fade' ? SWIPE_FADE_MS : SWIPE_ANIMATION_MS
     gesture.value = {
       ...markSwipeAnimationFinished(gesture.value),
       animating: true,
-      lockedUntil: Math.max(gesture.value.lockedUntil, Date.now() + SWIPE_ANIMATION_MS),
+      lockedUntil: Math.max(gesture.value.lockedUntil, Date.now() + durationMs),
     }
-    armUnlock(SWIPE_ANIMATION_MS + 40)
+    armUnlock(durationMs + SWIPE_UNLOCK_BUFFER_MS)
   },
 )
 
@@ -133,7 +146,7 @@ function finishPointer(event: PointerEvent, cancelled: boolean) {
           setGesture({ ...gesture.value, followX: 0 })
         }
       })
-      armUnlock(SWIPE_SNAP_BACK_MS + 20)
+      armUnlock(SWIPE_SNAP_BACK_MS + SWIPE_UNLOCK_BUFFER_MS)
     }
     return
   }
@@ -157,7 +170,7 @@ function finishPointer(event: PointerEvent, cancelled: boolean) {
     setGesture(ended.state)
     if (ended.intent === 'next') emit('next')
     else emit('prev')
-    armUnlock(SWIPE_ANIMATION_MS + 40)
+    armUnlock(SWIPE_ANIMATION_MS + SWIPE_UNLOCK_BUFFER_MS)
     return
   }
 
@@ -169,7 +182,7 @@ function finishPointer(event: PointerEvent, cancelled: boolean) {
         setGesture({ ...gesture.value, followX: 0 })
       }
     })
-    armUnlock(SWIPE_SNAP_BACK_MS + 20)
+    armUnlock(SWIPE_SNAP_BACK_MS + SWIPE_UNLOCK_BUFFER_MS)
     return
   }
 
@@ -215,7 +228,7 @@ onBeforeUnmount(clearTimers)
     @pointercancel="onPointerCancel"
     @click.capture="onClickCapture"
   >
-    <Transition :name="transitionName" @after-enter="onAfterEnter">
+    <Transition :name="transitionName" :duration="pageTransitionMs" @after-enter="onAfterEnter">
       <div
         :key="pageKey"
         class="qswipe-page"
