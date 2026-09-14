@@ -65,7 +65,7 @@ const errorText = computed(() => (error.value ? aiErrorUserMessage(error.value) 
   <div class="flex flex-col gap-2">
     <div class="flex flex-wrap gap-2">
       <button
-        class="btn-secondary min-h-11"
+        class="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-spark/35 bg-transparent text-[14px] font-medium text-spark transition hover:bg-spark/10 disabled:opacity-50"
         type="button"
         :disabled="loading"
         @click="load(false)"

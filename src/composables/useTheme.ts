@@ -17,7 +17,7 @@ function applyTheme(next: AppTheme) {
   localStorage.setItem(THEME_KEY, next)
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute('content', next === 'dark' ? '#0a0e14' : '#edf0f4')
+    ?.setAttribute('content', next === 'dark' ? '#0c1014' : '#f7f5f0')
 }
 
 export function useTheme() {

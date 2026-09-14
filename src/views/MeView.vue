@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import ThemeToggle from '../components/ThemeToggle.vue'
+import { useAppRefresh } from '../composables/useAppRefresh'
 import { useAuth } from '../composables/useAuth'
 import { useTheme } from '../composables/useTheme'
 import { formatErrorMessage } from '../lib/errors'
@@ -10,6 +11,7 @@ import type { AppRole } from '../lib/types'
 const auth = useAuth()
 const router = useRouter()
 const { theme } = useTheme()
+const { refreshing, error: refreshError, refresh } = useAppRefresh()
 
 const resetting = ref(false)
 const loggingOut = ref(false)
@@ -27,6 +29,7 @@ const displayName = computed(
 )
 const email = computed(() => auth.user.value?.email ?? '')
 const role = computed(() => auth.profile.value?.role ?? 'learner')
+const initial = computed(() => displayName.value.slice(0, 1).toUpperCase())
 
 async function sendResetEmail() {
   error.value = ''
@@ -61,48 +64,85 @@ async function logout() {
 </script>
 
 <template>
-  <div>
-    <section class="py-4 md:py-6">
-      <p class="page-kicker">账号</p>
-      <h1 class="page-title">我的</h1>
-      <p class="page-lede">查看资料、切换主题或退出登录。改密走邮箱链接，不会在此页填写密码。</p>
-    </section>
-
-    <div class="flex flex-col gap-3">
-      <article class="surface flex flex-col gap-3">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="m-0 text-lg font-semibold text-ink">{{ displayName }}</p>
-            <p class="m-0 mt-1 break-all text-sm text-muted">{{ email || '未绑定邮箱' }}</p>
-          </div>
-          <span class="chip-lit shrink-0">{{ roleLabel[role] }}</span>
-        </div>
-      </article>
-
-      <div class="surface flex items-center justify-between gap-3">
-        <div>
-          <p class="m-0 font-medium text-ink">外观</p>
-          <p class="m-0 mt-1 text-sm text-muted">
-            {{ theme === 'dark' ? '夜径 · 暗色' : '晨光 · 亮色' }}
-          </p>
-        </div>
-        <ThemeToggle />
-      </div>
-
-      <p v-if="error" class="alert-error m-0">{{ error }}</p>
-      <p v-if="notice" class="alert-info m-0">{{ notice }}</p>
-
-      <button
-        class="btn-secondary btn-block"
-        type="button"
-        :disabled="resetting || loggingOut || !email"
-        @click="sendResetEmail"
+  <div class="flex flex-col gap-4 pb-4">
+    <article class="flex items-center gap-3.5 rounded-3xl border border-line bg-surface p-5">
+      <span
+        class="grid size-12 shrink-0 place-items-center rounded-2xl bg-spark/12 text-lg font-semibold text-spark ring-1 ring-spark/25 ring-inset"
+        aria-hidden="true"
       >
-        {{ resetting ? '发送中…' : '发送重置密码邮件' }}
-      </button>
-      <button class="btn btn-block" type="button" :disabled="loggingOut || resetting" @click="logout">
-        {{ loggingOut ? '退出中…' : '退出登录' }}
-      </button>
+        {{ initial }}
+      </span>
+      <div class="min-w-0 flex-1">
+        <p class="m-0 truncate text-lg font-semibold text-ink">{{ displayName }}</p>
+        <p class="m-0 mt-0.5 truncate text-sm text-muted">{{ email || '未绑定邮箱' }}</p>
+      </div>
+      <span class="chip-gold shrink-0">{{ roleLabel[role] }}</span>
+    </article>
+
+    <div class="flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3">
+      <div>
+        <p class="m-0 font-medium text-ink">外观</p>
+        <p class="m-0 mt-1 text-sm text-muted">
+          {{ theme === 'dark' ? '夜径 · 暗色' : '晨光 · 亮色' }}
+        </p>
+      </div>
+      <ThemeToggle />
     </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <RouterLink
+        v-if="auth.hasUpload.value"
+        class="rounded-2xl border border-line bg-surface p-4 no-underline"
+        to="/upload"
+      >
+        <p class="m-0 text-[15px] font-medium text-ink">上传题库</p>
+        <p class="mt-0.5 m-0 text-[12px] text-muted">管理自己的题库</p>
+      </RouterLink>
+      <RouterLink
+        v-if="auth.admin.value"
+        class="rounded-2xl border border-line bg-surface p-4 no-underline"
+        to="/admin"
+      >
+        <p class="m-0 text-[15px] font-medium text-ink">权限</p>
+        <p class="mt-0.5 m-0 text-[12px] text-muted">账号与角色</p>
+      </RouterLink>
+      <RouterLink class="rounded-2xl border border-line bg-surface p-4 no-underline" to="/favorites">
+        <p class="m-0 text-[15px] font-medium text-ink">收藏</p>
+        <p class="mt-0.5 m-0 text-[12px] text-muted">收藏的题目</p>
+      </RouterLink>
+      <RouterLink class="rounded-2xl border border-line bg-surface p-4 no-underline" to="/notes">
+        <p class="m-0 text-[15px] font-medium text-ink">笔记</p>
+        <p class="mt-0.5 m-0 text-[12px] text-muted">私人笔记</p>
+      </RouterLink>
+    </div>
+
+    <p v-if="error" class="alert-error m-0">{{ error }}</p>
+    <p v-if="notice" class="alert-info m-0">{{ notice }}</p>
+    <p v-if="refreshError" class="alert-error m-0">{{ refreshError }}</p>
+
+    <button
+      class="btn-secondary btn-block"
+      type="button"
+      :disabled="refreshing"
+      @click="refresh()"
+    >
+      {{ refreshing ? '正在刷新…' : '刷新最新版' }}
+    </button>
+    <button
+      class="btn-secondary btn-block"
+      type="button"
+      :disabled="resetting || loggingOut || !email"
+      @click="sendResetEmail"
+    >
+      {{ resetting ? '发送中…' : '发送重置密码邮件' }}
+    </button>
+    <button
+      class="btn-ghost btn-block text-bad"
+      type="button"
+      :disabled="loggingOut || resetting"
+      @click="logout"
+    >
+      {{ loggingOut ? '退出中…' : '退出登录' }}
+    </button>
   </div>
 </template>

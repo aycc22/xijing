@@ -11,8 +11,8 @@ const { theme, toggleTheme } = useTheme()
 <template>
   <button
     type="button"
-    class="icon-btn"
-    :class="compact ? '!size-8' : ''"
+    class="icon-btn !rounded-full"
+    :class="compact ? '!size-8' : '!size-11'"
     :aria-label="theme === 'dark' ? '切换为亮色主题' : '切换为暗色主题'"
     @click="toggleTheme"
   >

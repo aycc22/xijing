@@ -21,8 +21,8 @@ const rateLabel = (rate: number) => `${Math.round(rate * 100)}%`
 <template>
   <section class="surface flex flex-col gap-4 md:p-6" aria-labelledby="ai-session-heading">
     <div>
-      <h2 id="ai-session-heading" class="m-0 text-lg font-semibold text-ink">智能分析</h2>
-      <p class="mt-1 text-sm text-muted">按当前题目考点汇总当次作答；解读由模型生成，仅供参考。</p>
+      <h2 id="ai-session-heading" class="m-0 text-sm font-medium text-ink">AI 考点分析</h2>
+      <p class="mt-1 text-sm text-muted">按当前题目考点汇总当次作答；解读由模型生成，仅基于已作答题目，仅供参考。</p>
     </div>
 
     <div v-if="tagStats.length" class="flex flex-col gap-2">
