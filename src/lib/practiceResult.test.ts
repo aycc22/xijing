@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   computePracticeSummary,
+  computePracticeSummaryFromAnswers,
   formatAnswerLabel,
   resultStatusLabel,
   resultStatusSymbol,
@@ -8,12 +9,44 @@ import {
 } from './practiceResult'
 
 describe('computePracticeSummary', () => {
-  it('computes wrong count and rate from session totals', () => {
+  it('treats omitted answered_count as fully judged so exam results stay total-based', () => {
     expect(computePracticeSummary({ total_count: 10, correct_count: 7 })).toEqual({
       total: 10,
+      answered: 10,
       correct: 7,
       wrong: 3,
+      unanswered: 0,
       rate: 70,
+    })
+  })
+
+  it('does not count unanswered into wrong or the accuracy denominator', () => {
+    expect(
+      computePracticeSummary({ total_count: 63, correct_count: 3, answered_count: 4 }),
+    ).toEqual({
+      total: 63,
+      answered: 4,
+      correct: 3,
+      wrong: 1,
+      unanswered: 59,
+      rate: 75,
+    })
+  })
+
+  it('counts 暂不会 as attempted wrong via answer rows', () => {
+    expect(
+      computePracticeSummaryFromAnswers(63, [
+        { is_correct: true, is_skipped: false },
+        { is_correct: true, is_skipped: false },
+        { is_correct: true, is_skipped: false },
+        { is_correct: false, is_skipped: true },
+      ]),
+    ).toMatchObject({
+      answered: 4,
+      correct: 3,
+      wrong: 1,
+      unanswered: 59,
+      rate: 75,
     })
   })
 
@@ -52,6 +85,7 @@ describe('practice review from snapshots', () => {
           answer_keys: ['A'],
           explanation: '解析',
           case_material: null,
+          reference_answer: '',
         },
       },
       {

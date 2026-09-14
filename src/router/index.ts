@@ -14,6 +14,7 @@ const router = createRouter({
     { path: '/banks', name: 'banks', component: () => import('../views/BanksView.vue'), meta: { auth: true } },
     { path: '/favorites', name: 'favorites', component: () => import('../views/FavoritesView.vue'), meta: { auth: true } },
     { path: '/notes', name: 'notes', component: () => import('../views/NotesView.vue'), meta: { auth: true } },
+    { path: '/me', name: 'me', component: () => import('../views/MeView.vue'), meta: { auth: true } },
     { path: '/wrong-book', name: 'wrong-book', component: () => import('../views/WrongBookView.vue'), meta: { auth: true } },
     { path: '/history', name: 'history', component: () => import('../views/HistoryView.vue'), meta: { auth: true } },
     {

@@ -13,7 +13,31 @@ export function isTextAnswer(qtype: QuestionType): boolean {
   return qtype === 'short_answer'
 }
 
-export function isAnswerCorrect(selected: string[], answerKeys: string[]): boolean {
+function normalizeShortAnswerText(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+export function isShortAnswerCorrect(user: string, reference: string): boolean {
+  const text = normalizeShortAnswerText(user)
+  const ref = normalizeShortAnswerText(reference)
+  if (!text || !ref) return false
+  return text === ref || ref.includes(text) || text.includes(ref)
+}
+
+export function storedAnswerKeys(keys: string[], qtype?: QuestionType): string[] {
+  if (qtype === 'short_answer') return [...keys]
+  return keys.map((k) => k.toUpperCase())
+}
+
+export function isAnswerCorrect(
+  selected: string[],
+  answerKeys: string[],
+  qtype?: QuestionType,
+  referenceAnswer?: string,
+): boolean {
+  if (qtype === 'short_answer') {
+    return isShortAnswerCorrect(selected[0] ?? '', referenceAnswer ?? answerKeys[0] ?? '')
+  }
   return sameAnswerSet(selected, answerKeys)
 }
 

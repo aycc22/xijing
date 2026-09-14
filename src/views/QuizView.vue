@@ -23,7 +23,7 @@ import {
   type QuestionAttempt,
 } from '../lib/practiceSession'
 import { useScoring } from '../composables/useScoring'
-import { ensureQuestionOptions } from '../lib/scoring'
+import { ensureQuestionOptions, isTextAnswer, storedAnswerKeys } from '../lib/scoring'
 import { supabase } from '../lib/supabase'
 import { recordWrongQuestion, loadWrongQuestionIds, resolveQuestionStartIndex, recordIndependentCorrect } from '../lib/wrongBook'
 import { shuffleKeepingCases, filterUnanswered } from '../lib/practiceOrder'
@@ -67,6 +67,7 @@ async function saveProgress() {
     draftQuestionId: current.value?.id ?? null,
     draftSelectedKeys: selected.value,
     revealed: revealed.value,
+    qtype: current.value?.qtype,
   })
 }
 
@@ -80,7 +81,14 @@ const showCasePanel = computed(() => shouldShowCaseMaterial(questions.value, ind
 const progress = computed(() =>
   questions.value.length ? ((index.value + (revealed.value ? 1 : 0)) / questions.value.length) * 100 : 0,
 )
-const submitEnabled = computed(() => canSubmitAnswer(currentAttempt.value))
+const isShortAnswer = computed(() => Boolean(current.value && isTextAnswer(current.value.qtype)))
+const submitEnabled = computed(() => canSubmitAnswer(currentAttempt.value, current.value?.qtype))
+const textAnswer = computed({
+  get: () => selected.value[0] ?? '',
+  set: (value: string) => {
+    selected.value = value.length ? [value] : []
+  },
+})
 const wrongOnly = computed(() => route.query.wrong === '1')
 const unansweredOnly = computed(() => route.query.unanswered === '1')
 const randomOrder = computed(() => route.query.order === 'random')
@@ -104,6 +112,8 @@ function qtypeDotClass(qtype: QuestionType) {
     case 'judgement':
       return 'bg-ok'
     case 'case_analysis':
+      return 'bg-warn'
+    case 'short_answer':
       return 'bg-warn'
   }
 }
@@ -163,7 +173,7 @@ async function persistAnswer(question: Question, keys: string[], ok: boolean, sk
     {
       session_id: sessionId.value,
       question_id: question.id,
-      selected_keys: keys.map((k) => k.toUpperCase()),
+      selected_keys: storedAnswerKeys(keys, question.qtype),
       is_correct: ok,
       is_skipped: skipped,
       question_snapshot: buildQuestionSnapshot(question),
@@ -174,18 +184,23 @@ async function persistAnswer(question: Question, keys: string[], ok: boolean, sk
 }
 
 async function handleWrong(questionId: string, keys: string[]) {
-  if (!auth.user.value) return
-  await recordWrongQuestion(supabase, auth.user.value.id, questionId, keys)
+  if (!auth.user.value || !current.value) return
+  await recordWrongQuestion(supabase, auth.user.value.id, questionId, keys, current.value.qtype)
 }
 
 async function submitAnswer() {
   if (!current.value || !sessionId.value || revealed.value) return
   if (!submitEnabled.value) {
-    error.value = '请先选择答案'
+    error.value = isShortAnswer.value ? '请先输入作答' : '请先选择答案'
     return
   }
   error.value = ''
-  const ok = isAnswerCorrect(selected.value, current.value.answer_keys)
+  const ok = isAnswerCorrect(
+    selected.value,
+    current.value.answer_keys,
+    current.value.qtype,
+    current.value.reference_answer,
+  )
   if (ok) correctCount.value += 1
   const attempt = markAnswered(attempts.value[index.value], ok)
   persistAttemptAt(index.value, attempt)
@@ -455,7 +470,22 @@ onMounted(start)
           {{ current.stem }}
         </h1>
 
-        <div class="flex flex-col gap-2.5">
+        <div v-if="isShortAnswer" class="field">
+          <label :for="`practice-answer-${current.id}`">你的作答</label>
+          <textarea
+            :id="`practice-answer-${current.id}`"
+            v-model="textAnswer"
+            class="min-h-36 text-sm"
+            rows="6"
+            :disabled="revealed"
+            placeholder="请输入答案（支持多行）"
+            spellcheck="false"
+          />
+          <p v-if="!revealed && !submitEnabled" class="field-caption m-0">
+            本题请输入作答，或点暂不会。
+          </p>
+        </div>
+        <div v-else class="flex flex-col gap-2.5">
           <button
             v-for="opt in current.options"
             :key="opt.key"
@@ -469,6 +499,10 @@ onMounted(start)
             <span class="pt-0.5 leading-relaxed">{{ opt.text }}</span>
           </button>
         </div>
+
+        <p v-if="revealed && isShortAnswer && current.reference_answer" class="alert-info m-0">
+          <span class="font-semibold">参考答案</span> · {{ current.reference_answer }}
+        </p>
 
         <p v-if="revealed && currentAttempt?.status === 'skipped'" class="alert-warn m-0">
           已标记为暂不会，不计入正确。
@@ -523,7 +557,7 @@ onMounted(start)
             :disabled="!submitEnabled"
             @click="submitAnswer"
           >
-            提交答案
+            {{ isShortAnswer ? '提交文字' : '提交答案' }}
           </button>
         </template>
 

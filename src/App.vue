@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import ThemeToggle from './components/ThemeToggle.vue'
 import { useAuth } from './composables/useAuth'
+import { useTheme } from './composables/useTheme'
 import { examResultPath, practiceResultPath } from './lib/history'
 
 const auth = useAuth()
 const route = useRoute()
 const router = useRouter()
+useTheme()
 
 onMounted(() => {
   auth.init()
@@ -65,26 +68,6 @@ watch(
   },
   { immediate: true },
 )
-
-const theme = ref<'dark' | 'light'>(
-  document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
-)
-
-watch(
-  theme,
-  (t) => {
-    document.documentElement.dataset.theme = t
-    localStorage.setItem('xj-theme', t)
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', t === 'dark' ? '#0a0e14' : '#edf0f4')
-  },
-  { immediate: true },
-)
-
-function toggleTheme() {
-  theme.value = theme.value === 'dark' ? 'light' : 'dark'
-}
 </script>
 
 <template>
@@ -127,13 +110,7 @@ function toggleTheme() {
           <RouterLink class="nav-link" to="/history">历史</RouterLink>
           <RouterLink v-if="auth.hasUpload.value" class="nav-link" to="/upload">上传</RouterLink>
           <RouterLink v-if="auth.admin.value" class="nav-link" to="/admin">权限</RouterLink>
-          <button
-            type="button"
-            class="nav-link cursor-pointer border-0 bg-transparent p-0"
-            @click="auth.signOut()"
-          >
-            退出
-          </button>
+          <RouterLink class="nav-link" to="/me">我的</RouterLink>
         </nav>
 
         <RouterLink
@@ -153,31 +130,7 @@ function toggleTheme() {
           {{ focusExitLabel }}
         </RouterLink>
 
-        <button
-          type="button"
-          class="icon-btn"
-          :class="playerFocus ? '!size-8' : ''"
-          :aria-label="theme === 'dark' ? '切换为亮色主题' : '切换为暗色主题'"
-          @click="toggleTheme"
-        >
-          <svg v-if="theme === 'dark'" class="size-4.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linejoin="round"
-            />
-          </svg>
-          <svg v-else class="size-4.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7" />
-            <path
-              d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
+        <ThemeToggle :compact="playerFocus" />
       </div>
     </header>
 
@@ -252,18 +205,18 @@ function toggleTheme() {
           </svg>
           权限
         </RouterLink>
-        <button type="button" class="tab-link cursor-pointer border-0 bg-transparent" @click="auth.signOut()">
+        <RouterLink class="tab-link" to="/me">
           <svg class="size-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6" />
             <path
-              d="M10 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H10M14 16l4-4-4-4M18 12H9"
+              d="M5.5 19c.8-3.2 3.3-5 6.5-5s5.7 1.8 6.5 5"
               stroke="currentColor"
               stroke-width="1.6"
               stroke-linecap="round"
-              stroke-linejoin="round"
             />
           </svg>
-          退出
-        </button>
+          我的
+        </RouterLink>
         </div>
       </nav>
     </Teleport>

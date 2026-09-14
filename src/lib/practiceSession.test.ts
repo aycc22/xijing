@@ -22,6 +22,13 @@ describe('practiceSession', () => {
     expect(canSubmitAnswer({ ...attempt, selected: ['A'] })).toBe(true)
   })
 
+  it('requires non-empty text for short-answer submit', () => {
+    const attempt: QuestionAttempt = { status: 'unanswered', selected: [], revealed: false, isCorrect: null }
+    expect(canSubmitAnswer(attempt, 'short_answer')).toBe(false)
+    expect(canSubmitAnswer({ ...attempt, selected: ['   '] }, 'short_answer')).toBe(false)
+    expect(canSubmitAnswer({ ...attempt, selected: ['网闸'] }, 'short_answer')).toBe(true)
+  })
+
   it('marks skip as revealed incorrect', () => {
     const attempt = markSkipped({ status: 'unanswered', selected: [], revealed: false, isCorrect: null })
     expect(attempt.status).toBe('skipped')

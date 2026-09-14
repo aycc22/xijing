@@ -1,3 +1,5 @@
+import type { QuestionType } from './types'
+
 export type QuestionSheetStatus = 'unanswered' | 'answered' | 'skipped'
 
 export interface QuestionAttempt {
@@ -21,8 +23,12 @@ export function sheetStatus(attempt: QuestionAttempt | undefined): QuestionSheet
   return attempt.status
 }
 
-export function canSubmitAnswer(attempt: QuestionAttempt | undefined): boolean {
+export function canSubmitAnswer(
+  attempt: QuestionAttempt | undefined,
+  qtype?: QuestionType,
+): boolean {
   if (!attempt || attempt.revealed) return false
+  if (qtype === 'short_answer') return Boolean(attempt.selected[0]?.trim())
   return attempt.selected.length > 0
 }
 

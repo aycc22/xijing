@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
   isAnswerCorrect,
+  isShortAnswerCorrect,
   isSingleChoice,
+  isTextAnswer,
   optionRevealClass,
   questionTypeLabel,
+  storedAnswerKeys,
   toggleSelection,
 } from './scoring'
 
@@ -24,6 +27,27 @@ describe('isAnswerCorrect', () => {
   it('scores multiple-choice with order ignored', () => {
     expect(isAnswerCorrect(['A', 'C'], ['C', 'A'])).toBe(true)
     expect(isAnswerCorrect(['A'], ['A', 'C'])).toBe(false)
+  })
+
+  it('fuzzy-matches short answers against the reference, not option keys', () => {
+    expect(isAnswerCorrect(['网闸'], [], 'short_answer', '网闸（安全隔离）')).toBe(true)
+    expect(isAnswerCorrect(['  网闸  '], ['A'], 'short_answer', '网闸（安全隔离）')).toBe(true)
+    expect(isAnswerCorrect(['无关'], [], 'short_answer', '网闸')).toBe(false)
+    expect(isAnswerCorrect(['网闸'], [], 'short_answer', '')).toBe(false)
+  })
+})
+
+describe('short answer helpers', () => {
+  it('treats short_answer as text input', () => {
+    expect(isTextAnswer('short_answer')).toBe(true)
+    expect(isTextAnswer('single')).toBe(false)
+    expect(isShortAnswerCorrect('网闸', '网闸（安全隔离与信息交换系统）')).toBe(true)
+    expect(isShortAnswerCorrect('', '网闸')).toBe(false)
+  })
+
+  it('does not uppercase short-answer text when persisting', () => {
+    expect(storedAnswerKeys(['a'], 'single')).toEqual(['A'])
+    expect(storedAnswerKeys(['网闸隔离'], 'short_answer')).toEqual(['网闸隔离'])
   })
 })
 

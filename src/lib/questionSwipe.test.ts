@@ -329,4 +329,15 @@ describe('page-turn timing', () => {
     expect(css).toContain(`--qswipe-fade-duration: ${SWIPE_FADE_MS}ms`)
     expect(css).toContain(`--qswipe-easing: ${SWIPE_EASING}`)
   })
+
+  it('fades leave and enter cards fully so overlapping ghosts do not linger', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { fileURLToPath } = await import('node:url')
+    const css = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8')
+    expect(css).toMatch(/\.qswipe-next-leave-to\s*\{[^}]*opacity:\s*0/)
+    expect(css).toMatch(/\.qswipe-next-enter-from\s*\{[^}]*opacity:\s*0/)
+    expect(css).toMatch(/\.qswipe-prev-leave-to\s*\{[^}]*opacity:\s*0/)
+    expect(css).toMatch(/\.qswipe-prev-enter-from\s*\{[^}]*opacity:\s*0/)
+    expect(css).toContain('isolation: isolate')
+  })
 })

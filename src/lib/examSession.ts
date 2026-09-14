@@ -1,3 +1,4 @@
+import { isShortAnswerCorrect } from './scoring'
 import { sameAnswerSet, type QuestionType } from './types'
 import type { PaperItem } from './paperSnapshot'
 import type { AiFeedback, GradingStatus } from './aiGrade'
@@ -91,17 +92,6 @@ export function updateExamTextAnswer(
   }
 }
 
-function normalizeText(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, ' ')
-}
-
-function gradeShortAnswer(selected: string[], reference: string): boolean {
-  const user = normalizeText(selected[0] ?? '')
-  const ref = normalizeText(reference)
-  if (!user || !ref) return false
-  return user === ref || ref.includes(user) || user.includes(ref)
-}
-
 export function toPublicPaperItems(items: PaperItem[]): PaperItem[] {
   return items.map((item) => ({
     question_id: item.question_id,
@@ -123,7 +113,7 @@ export function gradeExam(items: PaperItem[], answers: ExamAnswerMap): GradedExa
     const keys = item.snapshot.answer_keys.map((k) => k.toUpperCase())
     let ok = false
     if (item.snapshot.qtype === 'short_answer') {
-      ok = gradeShortAnswer(selected, item.snapshot.reference_answer ?? '')
+      ok = isShortAnswerCorrect(selected[0] ?? '', item.snapshot.reference_answer ?? '')
     } else {
       ok = keys.length > 0 && sameAnswerSet(normalized, keys)
     }

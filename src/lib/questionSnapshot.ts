@@ -7,6 +7,7 @@ export interface QuestionSnapshot {
   answer_keys: string[]
   explanation: string
   case_material: string | null
+  reference_answer?: string
 }
 
 export function buildQuestionSnapshot(question: Question): QuestionSnapshot {
@@ -17,6 +18,7 @@ export function buildQuestionSnapshot(question: Question): QuestionSnapshot {
     answer_keys: [...question.answer_keys],
     explanation: question.explanation,
     case_material: question.case_material,
+    reference_answer: question.reference_answer ?? '',
   }
 }
 
@@ -31,5 +33,6 @@ export function parseQuestionSnapshot(raw: unknown): QuestionSnapshot | null {
     answer_keys: Array.isArray(s.answer_keys) ? s.answer_keys : [],
     explanation: s.explanation ?? '',
     case_material: s.case_material ?? null,
+    reference_answer: typeof s.reference_answer === 'string' ? s.reference_answer : '',
   }
 }

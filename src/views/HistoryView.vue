@@ -16,6 +16,7 @@ import {
 } from '../lib/history'
 import { expireStaleSessions } from '../composables/usePracticeProgress'
 import { formatErrorMessage } from '../lib/errors'
+import { hydratePracticeAnsweredCounts } from '../lib/historyAnswers'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 
@@ -130,7 +131,8 @@ async function load() {
   try {
     await expireStaleSessions(auth.user.value.id)
     const [practice, exams] = await Promise.all([loadPractice(), loadExams()])
-    sessions.value = mergeHistorySessions([...practice, ...exams])
+    const practiceWithCounts = await hydratePracticeAnsweredCounts(supabase, practice)
+    sessions.value = mergeHistorySessions([...practiceWithCounts, ...exams])
     if (!parts.value.inProgress.length && parts.value.finished.length) tab.value = 'finished'
   } catch (err) {
     error.value = formatErrorMessage(err, '加载历史失败')
