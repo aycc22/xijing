@@ -197,7 +197,7 @@ watch(
             </nav>
 
             <RouterLink
-              v-if="!auth.user.value"
+              v-if="!auth.user.value && route.name !== 'login' && route.name !== 'reset-password'"
               class="btn-ghost !min-h-9 !px-3 !py-1.5 text-sm"
               to="/login"
             >
