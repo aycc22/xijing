@@ -6,6 +6,7 @@ import {
   detailPathForSession,
   examResultPath,
   examReviewPath,
+  formatRelativeStudyTime,
   historyResultText,
   historyStatusLabel,
   mergeHistorySessions,
@@ -14,6 +15,7 @@ import {
   practiceResultPath,
   practiceReviewPath,
   sessionHistoryStatus,
+  sessionProgressCounts,
   type HistorySession,
 } from './history'
 
@@ -210,5 +212,23 @@ describe('practice answered counts', () => {
     )
     expect(rows[0].answered_count).toBe(4)
     expect(rows[1].answered_count).toBeUndefined()
+  })
+})
+
+describe('sessionProgressCounts', () => {
+  it('treats current_index as 0-based and clamps to total', () => {
+    expect(sessionProgressCounts({ current_index: 60, total_count: 63 })).toEqual({
+      done: 61,
+      total: 63,
+      percent: 97,
+    })
+    expect(sessionProgressCounts({ current_index: 80, total_count: 63 }).done).toBe(63)
+  })
+})
+
+describe('formatRelativeStudyTime', () => {
+  it('labels same-day timestamps as 今天', () => {
+    const now = Date.parse('2026-09-14T12:00:00+08:00')
+    expect(formatRelativeStudyTime('2026-09-14T09:24:00+08:00', now)).toMatch(/^今天 /)
   })
 })

@@ -30,59 +30,59 @@
 @theme {
   --font-sans: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
   --font-display: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-  --radius-shell: 1.25rem;
+  --radius-shell: 1.5rem;
 }
 
 :root {
   color-scheme: dark;
-  --night: #0a0e14;
-  --deep: #070a0f;
-  --surface: #121822;
-  --raise: #1a2230;
-  --line: #27313f;
-  --ink: #ece7da;
-  --muted: #8e9aa9;
-  --spark: #e6b354;
-  --spark-bright: #f2c86e;
-  --spark-deep: #b98c2e;
-  --spark-ink: #241a06;
+  --night: #0c1014;
+  --deep: #07090b;
+  --surface: #171a1f;
+  --raise: #1e2228;
+  --line: rgb(255 255 255 / 0.08);
+  --ink: #f4f1ea;
+  --muted: #8c9099;
+  --spark: #e8c36a;
+  --spark-bright: #efcd8c;
+  --spark-deep: #b7822b;
+  --spark-ink: #171206;
   --path: #7da2c8;
-  --ok: #55b489;
-  --bad: #e0654f;
+  --ok: #3ba776;
+  --bad: #c2544d;
   --warn: #d99a3d;
 
-  --lift: 0 18px 40px rgb(0 0 0 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.04);
-  --glow: 0 0 0 1px rgb(230 179 84 / 0.35), 0 10px 30px rgb(230 179 84 / 0.18);
-  --ambient-spark: rgb(230 179 84 / 0.08);
+  --lift: 0 18px 40px rgb(0 0 0 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.03);
+  --glow: 0 0 0 1px rgb(232 195 106 / 0.35), 0 10px 30px rgb(232 180 74 / 0.18);
+  --ambient-spark: rgb(232 180 74 / 0.08);
   --ambient-path: rgb(125 162 200 / 0.07);
-  --lantern-halo: rgb(230 179 84 / 0.55);
-  --halo: radial-gradient(closest-side, rgb(230 179 84 / 0.13), transparent 72%);
+  --lantern-halo: rgb(232 195 106 / 0.55);
+  --halo: radial-gradient(closest-side, rgb(232 195 106 / 0.13), transparent 72%);
 }
 
 [data-theme='light'] {
   color-scheme: light;
-  --night: #edf0f4;
-  --deep: #e2e7ee;
+  --night: #f7f5f0;
+  --deep: #efece4;
   --surface: #ffffff;
-  --raise: #f1f4f8;
-  --line: #d3dae3;
-  --ink: #16202b;
-  --muted: #5d6b7a;
-  --spark: #8a6413;
-  --spark-bright: #77550f;
-  --spark-deep: #a87e1f;
+  --raise: #fbfaf7;
+  --line: #e6e1d6;
+  --ink: #1a1c20;
+  --muted: #6b7280;
+  --spark: #b7822b;
+  --spark-bright: #95661c;
+  --spark-deep: #8a6413;
   --spark-ink: #fffaf0;
   --path: #3d5a80;
   --ok: #2f7d55;
   --bad: #c23b3b;
   --warn: #9a5b1f;
 
-  --lift: 0 12px 30px rgb(20 28 36 / 0.08);
-  --glow: 0 0 0 1px rgb(138 100 19 / 0.22), 0 8px 24px rgb(138 100 19 / 0.14);
-  --ambient-spark: rgb(168 126 31 / 0.08);
+  --lift: 0 1px 2px rgb(16 18 22 / 0.04);
+  --glow: 0 0 0 1px rgb(183 130 43 / 0.22), 0 8px 24px rgb(183 130 43 / 0.14);
+  --ambient-spark: rgb(183 130 43 / 0.08);
   --ambient-path: rgb(61 90 128 / 0.09);
-  --lantern-halo: rgb(138 100 19 / 0.35);
-  --halo: radial-gradient(closest-side, rgb(168 126 31 / 0.12), transparent 72%);
+  --lantern-halo: rgb(183 130 43 / 0.35);
+  --halo: radial-gradient(closest-side, rgb(183 130 43 / 0.12), transparent 72%);
 }
 
 @layer base {
@@ -185,11 +185,11 @@
   }
 
   .btn {
-    @apply inline-flex min-h-11 cursor-pointer appearance-none items-center justify-center gap-2 rounded-xl border border-transparent bg-spark px-5 py-2.5 text-[0.95rem] font-semibold text-spark-ink transition hover:bg-spark-bright hover:shadow-glow active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-12 cursor-pointer appearance-none items-center justify-center gap-2 rounded-2xl border border-transparent bg-spark px-5 py-2.5 text-[0.95rem] font-semibold text-spark-ink transition hover:bg-spark-bright hover:shadow-glow active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-raise disabled:text-muted disabled:opacity-100;
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-11 cursor-pointer appearance-none items-center justify-center gap-2 rounded-xl border border-line bg-raise/70 px-5 py-2.5 text-[0.95rem] font-semibold text-ink transition hover:border-spark/45 hover:text-spark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-12 cursor-pointer appearance-none items-center justify-center gap-2 rounded-2xl border border-line bg-raise/70 px-5 py-2.5 text-[0.95rem] font-semibold text-ink transition hover:border-spark/45 hover:text-spark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-ghost {
@@ -256,6 +256,10 @@
     box-shadow: 0 0 6px var(--lantern-halo);
   }
 
+  .chip-gold {
+    @apply inline-flex items-center rounded-md bg-spark/12 px-2 py-[3px] text-[11px] font-medium tracking-wide text-spark;
+  }
+
   /* 分段控件（登录切换 / 角色设置共用） */
   .seg {
     @apply flex gap-1 rounded-xl border border-line bg-deep/70 p-1;
@@ -274,35 +278,35 @@
   }
 
   .option {
-    @apply flex w-full cursor-pointer items-start gap-3 rounded-xl border border-line bg-raise/50 p-3.5 text-left transition hover:border-spark/40 hover:bg-raise active:scale-[0.995];
+    @apply flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-line bg-raise/50 px-3.5 py-3.5 text-left transition hover:border-spark/40 hover:bg-raise active:scale-[0.995];
   }
 
   .option-selected {
-    @apply border-spark/80 bg-spark/10 ring-1 ring-spark/30;
+    @apply border-spark/45 bg-spark/8 ring-1 ring-spark/25;
   }
 
   .option-correct {
-    @apply border-ok/70 bg-ok/10 ring-1 ring-ok/25;
+    @apply border-ok/50 bg-ok/10 ring-1 ring-ok/25;
   }
 
   .option-wrong {
-    @apply border-bad/70 bg-bad/10 ring-1 ring-bad/25;
+    @apply border-bad/45 bg-bad/8 ring-1 ring-bad/20;
   }
 
   .option-key {
-    @apply grid size-8 shrink-0 place-items-center rounded-lg border border-line bg-surface text-sm font-semibold text-muted transition;
+    @apply grid size-7 shrink-0 place-items-center rounded-lg border border-transparent bg-raise text-[13px] font-semibold text-muted transition;
   }
 
   .option-selected .option-key {
-    @apply border-spark bg-spark text-spark-ink;
+    @apply bg-spark text-spark-ink;
   }
 
   .option-correct .option-key {
-    @apply border-ok/60 bg-ok/15 text-ok;
+    @apply bg-ok text-white;
   }
 
   .option-wrong .option-key {
-    @apply border-bad/60 bg-bad/15 text-bad;
+    @apply bg-bad text-white;
   }
 
   /* 签名元素：提灯小径 —— 光轨尽头一盏灯笼 */
@@ -330,6 +334,23 @@
     border-radius: 999px;
     background: var(--spark-bright);
     box-shadow: 0 0 8px 2px var(--lantern-halo);
+  }
+
+  .path-track-thin {
+    height: 3px;
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  [data-theme='light'] .path-track-thin {
+    background: var(--line);
+  }
+
+  .path-track-thin .path-fill {
+    background: var(--spark);
+  }
+
+  .path-track-thin .path-fill::after {
+    display: none;
   }
 
   .ink-mark {
@@ -368,26 +389,16 @@
   }
 
   .tab-link {
-    @apply relative flex flex-1 flex-col items-center gap-0.5 pt-1.5 pb-0 text-[0.7rem] font-medium text-muted transition hover:text-ink;
+    @apply relative flex h-14 flex-1 flex-col items-center justify-center gap-1 pt-1.5 pb-0 text-[11px] font-normal text-muted transition hover:text-ink;
   }
 
   .tab-link.router-link-active,
   .tab-link[aria-current='page'] {
-    @apply text-spark;
+    @apply font-semibold text-spark;
   }
 
-  .tab-link.router-link-active::after,
-  .tab-link[aria-current='page']::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 50%;
-    translate: -50% 0;
-    width: 4px;
-    height: 4px;
-    border-radius: 999px;
-    background: var(--spark);
-    box-shadow: 0 0 6px var(--lantern-halo);
+  .action-sub {
+    @apply flex h-11 w-[3.25rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-[3px] rounded-xl border-0 bg-transparent text-[10px] leading-none text-muted transition hover:bg-raise/80 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .icon-btn {

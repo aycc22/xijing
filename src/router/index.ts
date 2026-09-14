@@ -94,7 +94,7 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.meta.guest && auth.user.value) {
-    return { name: 'banks' }
+    return { name: 'home' }
   }
   if (to.meta.upload && !auth.hasUpload.value) {
     return { name: 'banks', query: { need: 'upload' } }

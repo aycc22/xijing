@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { resolveCaseAttachments, resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
 import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
@@ -31,16 +31,18 @@ import { formatErrorMessage } from '../lib/errors'
 import { buildQuestionSnapshot } from '../lib/questionSnapshot'
 import { loadFavoriteIds, loadNotes, saveNote, toggleFavorite } from '../lib/userLearning'
 import { useAuth } from '../composables/useAuth'
+import { usePlayerChrome } from '../composables/usePlayerChrome'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
 import QuestionSwipePager from '../components/QuestionSwipePager.vue'
 import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
 import AiQuestionExplainPanel from '../components/AiQuestionExplainPanel.vue'
-import type { Question, QuestionOption, QuestionType } from '../lib/types'
+import type { Question, QuestionOption } from '../lib/types'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuth()
 const { isAnswerCorrect, optionRevealClass, questionTypeLabel, toggleSelection } = useScoring()
+const chrome = usePlayerChrome()
 
 const questions = ref<Question[]>([])
 const attempts = ref<QuestionAttempt[]>([])
@@ -102,21 +104,6 @@ const sheetStatuses = computed<SheetCellState[]>(() =>
     return 'unanswered'
   }),
 )
-
-function qtypeDotClass(qtype: QuestionType) {
-  switch (qtype) {
-    case 'single':
-      return 'bg-spark'
-    case 'multiple':
-      return 'bg-path'
-    case 'judgement':
-      return 'bg-ok'
-    case 'case_analysis':
-      return 'bg-warn'
-    case 'short_answer':
-      return 'bg-warn'
-  }
-}
 
 function normalizeOptions(raw: unknown): QuestionOption[] {
   if (!Array.isArray(raw)) return []
@@ -265,6 +252,23 @@ watch(index, () => {
   if (revealed.value) void loadNoteDraft()
 })
 
+watch(
+  [index, revealed, questions, favoritedIds],
+  () => {
+    chrome.setChrome({
+      current: index.value + 1,
+      total: questions.value.length,
+      progress: progress.value,
+      favorited: current.value ? favoritedIds.value.has(current.value.id) : false,
+      onFavorite: current.value ? onToggleFavorite : null,
+    })
+  },
+  { immediate: true },
+)
+
+onMounted(start)
+onUnmounted(() => chrome.clearChrome())
+
 async function start() {
   loading.value = true
   error.value = ''
@@ -410,8 +414,6 @@ async function start() {
   }
   loading.value = false
 }
-
-onMounted(start)
 </script>
 
 <template>
@@ -420,8 +422,6 @@ onMounted(start)
     <p v-else-if="error && !current" class="alert-error">{{ error }}</p>
 
     <div v-else-if="current" class="relative flex flex-col gap-4 pb-28">
-      <span class="ink-mark -top-3 right-0" aria-hidden="true">{{ index + 1 }}</span>
-
       <QuestionSwipePager
         :page-key="index"
         :can-prev="canGoPrev(index)"
@@ -430,43 +430,22 @@ onMounted(start)
         @next="next"
       >
       <div class="relative z-10 flex flex-col gap-4">
-      <div class="flex flex-col gap-2.5">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="chip">
-              <span class="size-1.5 rounded-full" :class="qtypeDotClass(current.qtype)" aria-hidden="true" />
-              {{ questionTypeLabel(current.qtype) }}
-            </span>
-            <span v-if="wrongOnly" class="chip-lit">错题练习</span>
-            <span v-if="unansweredOnly" class="chip-lit">仅未做</span>
-            <span v-if="randomOrder" class="chip-lit">随机</span>
-            <span v-if="resuming" class="chip-lit">续做中</span>
-          </div>
-          <span class="font-display text-lg font-semibold text-ink tabular-nums leading-none">
-            {{ index + 1 }}
-            <span class="text-sm font-normal text-muted"> / {{ questions.length }}</span>
-          </span>
-        </div>
-
-        <div
-          class="path-track relative z-10"
-          role="progressbar"
-          :aria-valuenow="Math.round(progress)"
-          aria-valuemin="0"
-          aria-valuemax="100"
-        >
-          <span class="path-fill" :style="{ width: progress + '%' }" />
-        </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="chip-gold">{{ questionTypeLabel(current.qtype) }}</span>
+        <span v-if="wrongOnly" class="chip-lit">错题练习</span>
+        <span v-if="unansweredOnly" class="chip-lit">仅未做</span>
+        <span v-if="randomOrder" class="chip-lit">随机</span>
+        <span v-if="resuming" class="chip-lit">续做中</span>
       </div>
 
-      <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
+      <article class="relative z-10 flex flex-col gap-4">
         <CaseMaterialPanel
           v-if="showCasePanel"
           :material="caseMaterial"
           :attachments="caseAttachments"
         />
 
-        <h1 class="m-0 text-[1.125rem] leading-snug font-semibold text-ink md:text-xl">
+        <h1 class="m-0 text-[19px] leading-[1.65] font-medium tracking-[0.01em] text-ink">
           {{ current.stem }}
         </h1>
 
@@ -496,36 +475,64 @@ onMounted(start)
             @click="toggle(opt.key)"
           >
             <span v-if="current.qtype !== 'judgement'" class="option-key">{{ opt.key }}</span>
-            <span class="pt-0.5 leading-relaxed">{{ opt.text }}</span>
+            <span class="flex-1 leading-[1.6] text-[15px]">{{ opt.text }}</span>
+            <svg
+              v-if="revealed && optionClass(opt.key) === 'option-correct'"
+              class="size-[18px] shrink-0 text-ok"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 12.5 10 17.5 19 7.5"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
           </button>
         </div>
-
-        <p v-if="revealed && isShortAnswer && current.reference_answer" class="alert-info m-0">
-          <span class="font-semibold">参考答案</span> · {{ current.reference_answer }}
-        </p>
 
         <p v-if="revealed && currentAttempt?.status === 'skipped'" class="alert-warn m-0">
           已标记为暂不会，不计入正确。
         </p>
-        <p v-if="revealed && current.explanation" class="alert-info">
-          <span class="font-semibold">解析</span> · {{ current.explanation }}
-        </p>
 
-        <AiQuestionExplainPanel
-          v-if="revealed && sessionId && current"
-          :question-id="current.id"
-          :session-id="sessionId"
-          session-type="practice"
-          :is-correct="currentAttempt?.isCorrect ?? null"
-          :is-skipped="currentAttempt?.status === 'skipped'"
-        />
-
-        <div v-if="revealed" class="flex flex-col gap-3 border-t border-line/60 pt-3">
-          <div class="flex flex-wrap gap-2">
-            <button class="btn-secondary min-h-11" type="button" @click="onToggleFavorite">
-              {{ favoritedIds.has(current.id) ? '已收藏' : '收藏题目' }}
-            </button>
+        <section
+          v-if="revealed && (current.explanation || current.reference_answer || sessionId)"
+          class="rounded-2xl border border-line bg-raise/40 p-4"
+        >
+          <div class="flex items-center gap-2">
+            <span class="h-3 w-0.5 rounded-full bg-spark" aria-hidden="true" />
+            <h2 class="m-0 text-[13px] font-medium text-ink/80">解析</h2>
+            <span
+              v-if="!isShortAnswer && current.answer_keys.length"
+              class="ml-auto text-[12px] text-muted"
+            >
+              正确答案
+              <span class="ml-1 font-mono font-semibold text-ok">{{ current.answer_keys.join('') }}</span>
+            </span>
           </div>
+          <p v-if="isShortAnswer && current.reference_answer" class="mt-2.5 m-0 text-[14px] leading-[1.8] text-muted">
+            <span class="font-medium text-ink/80">参考答案</span> · {{ current.reference_answer }}
+          </p>
+          <p v-if="current.explanation" class="mt-2.5 m-0 text-[14px] leading-[1.8] text-muted">
+            {{ current.explanation }}
+          </p>
+          <p v-else-if="!current.reference_answer" class="mt-2.5 m-0 text-[14px] text-muted">本题暂无文字解析。</p>
+
+          <AiQuestionExplainPanel
+            v-if="sessionId && current"
+            class="mt-4"
+            :question-id="current.id"
+            :session-id="sessionId"
+            session-type="practice"
+            :is-correct="currentAttempt?.isCorrect ?? null"
+            :is-skipped="currentAttempt?.status === 'skipped'"
+          />
+        </section>
+
+        <div v-if="revealed" class="flex flex-col gap-3 border-t border-line pt-3">
           <div class="field">
             <label :for="`note-${current.id}`">私人笔记</label>
             <textarea
@@ -543,16 +550,22 @@ onMounted(start)
 
         <p v-if="error" class="alert-error">{{ error }}</p>
       </article>
+      <p class="pb-1 text-center text-[11px] tracking-[0.2em] text-muted/40">左右滑动切题</p>
       </div>
       </QuestionSwipePager>
 
       <AnswerActionBar :can-prev="canGoPrev(index)" @open-sheet="sheetOpen = true" @prev="prev">
         <template v-if="!revealed">
-          <button class="btn-secondary !px-3 min-h-11 shrink-0" type="button" @click="skipQuestion">
+          <button class="action-sub" type="button" @click="skipQuestion">
+            <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6" />
+              <path d="M12 11v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              <circle cx="12" cy="8.2" r="0.8" fill="currentColor" />
+            </svg>
             暂不会
           </button>
           <button
-            class="btn min-h-11 flex-1"
+            class="btn ml-1 min-h-11 flex-1"
             type="button"
             :disabled="!submitEnabled"
             @click="submitAnswer"
@@ -564,13 +577,13 @@ onMounted(start)
         <template v-else>
           <button
             v-if="index + 1 < questions.length"
-            class="btn min-h-11 flex-1"
+            class="btn ml-1 min-h-11 flex-1"
             type="button"
             @click="next"
           >
             下一题
           </button>
-          <button v-else class="btn min-h-11 flex-1" type="button" @click="finish">查看结果</button>
+          <button v-else class="btn ml-1 min-h-11 flex-1" type="button" @click="finish">查看结果</button>
         </template>
       </AnswerActionBar>
 

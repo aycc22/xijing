@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AiSessionReportPanel from '../components/AiSessionReportPanel.vue'
 import { useAiSessionAnalysis } from '../composables/useAiSessionAnalysis'
+import { formatExamDuration } from '../lib/examSession'
 import { computePracticeSummary, computePracticeSummaryFromAnswers, verdictForRate } from '../lib/practiceResult'
 import { formatErrorMessage } from '../lib/errors'
 import { practiceReviewPath } from '../lib/history'
@@ -25,6 +26,26 @@ const summary = computed(() =>
     : computePracticeSummary({ total_count: 0, correct_count: 0 }),
 )
 const verdict = computed(() => verdictForRate(summary.value.rate))
+const coverage = computed(() =>
+  summary.value.total ? Math.round((summary.value.answered / summary.value.total) * 100) : 0,
+)
+const durationLabel = computed(() => {
+  if (!session.value?.started_at || !session.value.finished_at) return ''
+  const ms = Date.parse(session.value.finished_at) - Date.parse(session.value.started_at)
+  if (!Number.isFinite(ms) || ms < 0) return ''
+  return formatExamDuration(ms)
+})
+const encouragement = computed(() =>
+  summary.value.answered < 5
+    ? '刚刚起步，样本还小，继续练几题就能看清你的节奏。'
+    : '稳住节奏，错的地方复盘一遍就过去了。',
+)
+const correctShare = computed(() =>
+  summary.value.total ? (summary.value.correct / summary.value.total) * 100 : 0,
+)
+const wrongShare = computed(() =>
+  summary.value.total ? (summary.value.wrong / summary.value.total) * 100 : 0,
+)
 
 async function load() {
   loading.value = true
@@ -78,54 +99,107 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 py-4 md:py-8">
+  <div class="flex flex-col gap-5 py-2 md:py-6">
     <p v-if="loading" class="px-3 py-16 text-center text-muted">加载结果…</p>
     <p v-else-if="error && !session" class="alert-error">{{ error }}</p>
 
     <template v-else-if="session">
-      <section class="relative overflow-hidden py-6 text-center md:py-10">
-        <div class="halo pointer-events-none absolute inset-0" aria-hidden="true"></div>
-        <p class="page-kicker relative m-0 max-w-[80vw] truncate">
-          本次结果<template v-if="bankTitle"> · {{ bankTitle }}</template>
-        </p>
-        <p
-          class="font-display relative m-0 mt-4 text-[clamp(3.5rem,18vw,5.5rem)] leading-none tracking-wide text-ink tabular-nums"
-        >
-          {{ summary.correct }}<span class="text-[0.38em] text-muted"> / {{ summary.answered }}</span>
-        </p>
-        <p class="font-display relative m-0 mt-3 text-xl tracking-wide text-spark">{{ verdict }}</p>
-        <p v-if="summary.unanswered" class="relative m-0 mt-2 text-sm text-muted">
-          已作答 {{ summary.answered }} · 未作答 {{ summary.unanswered }} · 共 {{ summary.total }} 题
-        </p>
-        <div class="path-track relative mx-auto mt-6 w-full max-w-2xs">
-          <span class="path-fill" :style="{ width: summary.rate + '%' }" />
-        </div>
-        <dl class="relative m-0 mt-8 flex flex-wrap justify-center divide-x divide-line/70">
-          <div class="flex flex-col items-center gap-1 px-4 pl-0 sm:px-7">
-            <dd class="m-0 text-2xl font-semibold text-ok tabular-nums">{{ summary.correct }}</dd>
-            <dt class="text-xs tracking-widest text-muted">正确</dt>
+      <div>
+        <p v-if="bankTitle" class="m-0 truncate text-sm text-muted">{{ bankTitle }} · 本次结果</p>
+        <h1 class="mt-1 m-0 text-xl font-semibold tracking-wide text-ink">本次练习完成</h1>
+        <p class="mt-1 m-0 text-sm leading-relaxed text-muted">{{ encouragement }}</p>
+      </div>
+
+      <section
+        aria-labelledby="score-heading"
+        class="rounded-2xl border border-spark/20 bg-surface p-5"
+      >
+        <h2 id="score-heading" class="sr-only">本次成绩</h2>
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="m-0 text-xs tracking-wide text-muted">正确率（按已作答）</p>
+            <p class="mt-1 m-0 flex items-baseline gap-1 font-mono">
+              <span class="text-5xl leading-none font-semibold text-spark tabular-nums">{{ summary.rate }}</span>
+              <span class="text-xl text-spark/70">%</span>
+            </p>
+            <p class="mt-2 m-0 font-mono text-sm text-ink/80">
+              正确 {{ summary.correct }} / 已作答 {{ summary.answered }}
+            </p>
+            <p class="mt-1 m-0 text-sm text-spark">{{ verdict }}</p>
           </div>
-          <div class="flex flex-col items-center gap-1 px-4 sm:px-7">
+          <p
+            v-if="durationLabel"
+            class="mb-1 inline-flex items-center gap-1.5 rounded-full bg-raise px-2.5 py-1 text-xs text-muted"
+          >
+            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6" />
+              <path d="M12 8v4.5l3 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+            {{ durationLabel }}
+          </p>
+        </div>
+
+        <div class="mt-5 space-y-2">
+          <div
+            class="flex h-2 w-full overflow-hidden rounded-full bg-raise"
+            role="img"
+            :aria-label="`共 ${summary.total} 题，正确 ${summary.correct} 题，错误 ${summary.wrong} 题，未作答 ${summary.unanswered} 题`"
+          >
+            <span class="h-full bg-spark" :style="{ width: correctShare + '%' }" />
+            <span class="h-full bg-bad" :style="{ width: wrongShare + '%' }" />
+          </div>
+          <p class="m-0 text-xs text-muted">
+            本次已覆盖题库 {{ coverage }}%（{{ summary.answered }} / {{ summary.total }} 题），其余尚未作答，不计入正确率。
+          </p>
+        </div>
+
+        <dl class="mt-5 grid grid-cols-3 gap-2">
+          <div class="rounded-xl bg-raise/70 px-3 py-2.5 text-center">
+            <dt class="text-xs text-muted">正确</dt>
+            <dd class="mt-0.5 m-0 font-mono text-xl font-semibold text-spark tabular-nums">{{ summary.correct }}</dd>
+          </div>
+          <div class="rounded-xl bg-raise/70 px-3 py-2.5 text-center">
+            <dt class="text-xs text-muted">错误</dt>
             <dd
-              class="m-0 text-2xl font-semibold tabular-nums"
+              class="mt-0.5 m-0 font-mono text-xl font-semibold tabular-nums"
               :class="summary.wrong ? 'text-bad' : 'text-ink'"
             >
               {{ summary.wrong }}
             </dd>
-            <dt class="text-xs tracking-widest text-muted">错误</dt>
           </div>
-          <div v-if="summary.unanswered" class="flex flex-col items-center gap-1 px-4 sm:px-7">
-            <dd class="m-0 text-2xl font-semibold text-ink tabular-nums">{{ summary.unanswered }}</dd>
-            <dt class="text-xs tracking-widest text-muted">未作答</dt>
-          </div>
-          <div class="flex flex-col items-center gap-1 px-4 pr-0 sm:px-7">
-            <dd class="m-0 text-2xl font-semibold text-ink tabular-nums">{{ summary.rate }}%</dd>
-            <dt class="text-xs tracking-widest text-muted">正确率</dt>
+          <div class="rounded-xl bg-raise/70 px-3 py-2.5 text-center">
+            <dt class="text-xs text-muted">未作答</dt>
+            <dd class="mt-0.5 m-0 font-mono text-xl font-semibold text-muted tabular-nums">
+              {{ summary.unanswered }}
+            </dd>
           </div>
         </dl>
       </section>
 
       <p v-if="error" class="alert-error m-0">{{ error }}</p>
+
+      <div class="flex flex-col gap-2.5">
+        <RouterLink
+          v-if="summary.answered"
+          class="btn w-full"
+          :to="practiceReviewPath(session.id)"
+        >
+          查看逐题复盘
+        </RouterLink>
+        <RouterLink class="btn-secondary w-full" to="/banks">返回题库</RouterLink>
+        <nav class="flex items-center justify-center gap-6 pt-1" aria-label="更多去向">
+          <button
+            class="cursor-pointer border-0 bg-transparent p-0 text-sm text-muted transition hover:text-spark"
+            type="button"
+            @click="router.push(`/quiz/${session.bank_id}?new=1`)"
+          >
+            再刷一遍
+          </button>
+          <span class="size-1 rounded-full bg-line" aria-hidden="true"></span>
+          <RouterLink class="text-sm text-muted transition hover:text-spark" to="/history">历史记录</RouterLink>
+        </nav>
+      </div>
+
       <AiSessionReportPanel
         :tag-stats="analysis.localTagStats.value"
         :report="analysis.report.value"
@@ -134,31 +208,7 @@ onMounted(load)
         @regenerate="analysis.regenerate('practice', session.id)"
       />
 
-      <div class="relative mt-2 flex w-full max-w-2xs flex-col items-center gap-5 self-center">
-        <RouterLink
-          v-if="summary.answered"
-          class="btn w-full"
-          :to="practiceReviewPath(session.id)"
-        >
-          查看逐题复盘
-        </RouterLink>
-        <button
-          class="btn-secondary w-full"
-          type="button"
-          @click="router.push(`/quiz/${session.bank_id}?new=1`)"
-        >
-          再刷一遍
-        </button>
-        <nav class="flex items-center gap-6" aria-label="更多去向">
-          <RouterLink class="flex items-center gap-1.5 text-sm text-muted transition hover:text-spark" to="/history">
-            历史记录
-          </RouterLink>
-          <span class="size-1 rounded-full bg-line" aria-hidden="true"></span>
-          <RouterLink class="flex items-center gap-1.5 text-sm text-muted transition hover:text-spark" to="/banks">
-            返回题库
-          </RouterLink>
-        </nav>
-      </div>
+      <p class="pt-1 text-center text-xs text-muted/60">习径 · 每次一点点</p>
     </template>
   </div>
 </template>

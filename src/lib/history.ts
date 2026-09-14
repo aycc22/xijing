@@ -57,10 +57,27 @@ export function historyStatusLabel(status: HistoryStatus): string {
   }
 }
 
+export function sessionProgressCounts(session: { current_index: number; total_count: number }) {
+  const total = Math.max(0, session.total_count)
+  const done = total ? Math.min(Math.max(0, session.current_index + 1), total) : 0
+  return { done, total, percent: total ? Math.round((done / total) * 100) : 0 }
+}
+
+export function formatRelativeStudyTime(iso: string, now = Date.now()): string {
+  const t = Date.parse(iso)
+  if (!Number.isFinite(t)) return ''
+  const date = new Date(t)
+  const time = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  const today = new Date(now)
+  if (date.toDateString() === today.toDateString()) return `今天 ${time}`
+  return `${date.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })} ${time}`
+}
+
 export function historyResultText(session: HistorySession): string {
   const status = sessionHistoryStatus(session)
   if (status === 'in_progress') {
-    return `进度 ${Math.min(session.current_index + 1, session.total_count)} / ${session.total_count}`
+    const { done, total } = sessionProgressCounts(session)
+    return `进度 ${done} / ${total}`
   }
   if (status === 'expired') return '已过期'
   const summary = computePracticeSummary(session)

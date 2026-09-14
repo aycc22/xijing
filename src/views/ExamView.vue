@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { resolveCaseAttachments, resolveCaseMaterial, shouldShowCaseMaterial } from '../lib/case'
 import CaseMaterialPanel from '../components/CaseMaterialPanel.vue'
@@ -25,14 +25,15 @@ import {
 } from '../lib/examTimer'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
+import { usePlayerChrome } from '../composables/usePlayerChrome'
 import AnswerActionBar from '../components/AnswerActionBar.vue'
 import QuestionSwipePager from '../components/QuestionSwipePager.vue'
 import AnswerSheetDrawer, { type SheetCellState } from '../components/AnswerSheetDrawer.vue'
-import type { QuestionType } from '../lib/types'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuth()
+const chrome = usePlayerChrome()
 
 const paperId = computed(() => String(route.params.paperId))
 const sessionId = ref<string | null>(null)
@@ -84,21 +85,6 @@ const sheetStatuses = computed<SheetCellState[]>(() =>
 const currentFlagged = computed(() =>
   Boolean(current.value && answers.value[current.value.question_id]?.flagged),
 )
-
-function qtypeDotClass(qtype: QuestionType) {
-  switch (qtype) {
-    case 'single':
-      return 'bg-spark'
-    case 'multiple':
-      return 'bg-path'
-    case 'judgement':
-      return 'bg-ok'
-    case 'case_analysis':
-      return 'bg-warn'
-    case 'short_answer':
-      return 'bg-warn'
-  }
-}
 
 function scheduleSave() {
   if (saveTimer.value) clearTimeout(saveTimer.value)
@@ -279,11 +265,26 @@ async function load() {
 }
 
 watch(index, () => scheduleSave())
+watch(
+  [index, items, started],
+  () => {
+    if (!started.value || !items.value.length) {
+      chrome.clearChrome()
+      return
+    }
+    chrome.setChrome({
+      current: index.value + 1,
+      total: items.value.length,
+      progress: items.value.length ? ((index.value + 1) / items.value.length) * 100 : 0,
+    })
+  },
+)
 onBeforeUnmount(() => {
   if (saveTimer.value) clearTimeout(saveTimer.value)
   if (countdownTimer) clearInterval(countdownTimer)
   void saveProgress()
 })
+onUnmounted(() => chrome.clearChrome())
 onMounted(load)
 
 function tickCountdown() {
@@ -362,34 +363,27 @@ function startCountdown() {
         @next="goTo(index + 1)"
       >
       <div class="relative z-10 flex flex-col gap-4">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="chip">
-            <span
-              class="size-1.5 rounded-full"
-              :class="qtypeDotClass(current.snapshot.qtype)"
-              aria-hidden="true"
-            />
-            {{ questionTypeLabel(current.snapshot.qtype) }} · {{ current.score }} 分
-          </span>
-        </div>
-          <span class="font-display text-lg font-semibold text-ink tabular-nums leading-none">
-            {{ index + 1 }}
-            <span class="text-sm font-normal text-muted"> / {{ items.length }}</span>
-          </span>
-        </div>
-        <p v-if="remainingLabel" class="relative z-10 m-0 text-sm font-medium tabular-nums" :class="remainingLabel === '0:00' ? 'text-bad' : 'text-spark'">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="chip-gold">
+          {{ questionTypeLabel(current.snapshot.qtype) }} · {{ current.score }} 分
+        </span>
+        <span
+          v-if="remainingLabel"
+          class="text-sm font-medium tabular-nums"
+          :class="remainingLabel === '0:00' ? 'text-bad' : 'text-spark'"
+        >
           剩余 {{ remainingLabel }}
-        </p>
+        </span>
+      </div>
 
-      <article class="surface relative z-10 flex flex-col gap-3.5 md:p-6">
+      <article class="relative z-10 flex flex-col gap-3.5">
         <CaseMaterialPanel
           v-if="shouldShowCaseMaterial(caseRows, index)"
           :material="resolveCaseMaterial(caseRows, index)"
           :attachments="resolveCaseAttachments(caseRows, index)"
         />
 
-        <h1 class="m-0 text-[1.125rem] leading-snug font-semibold text-ink md:text-xl">
+        <h1 class="m-0 text-[19px] leading-[1.65] font-medium tracking-[0.01em] text-ink">
           {{ current.snapshot.stem }}
         </h1>
 

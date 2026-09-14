@@ -20,7 +20,7 @@ const notice = ref('')
 const busy = ref(false)
 
 const redirectAfter = computed(() =>
-  typeof route.query.redirect === 'string' ? route.query.redirect : '/banks',
+  typeof route.query.redirect === 'string' ? route.query.redirect : '/',
 )
 
 async function submit() {

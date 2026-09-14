@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
+import { usePlayerChrome } from '../composables/usePlayerChrome'
 import CaseMaterialPanel from './CaseMaterialPanel.vue'
 import AiQuestionExplainPanel from './AiQuestionExplainPanel.vue'
 import AnswerActionBar from './AnswerActionBar.vue'
@@ -22,7 +23,6 @@ import {
   reviewUserAnswerText,
   type ReviewPlayerItem,
 } from '../lib/sessionReview'
-import type { QuestionType } from '../lib/types'
 
 const props = withDefaults(
   defineProps<{
@@ -37,6 +37,7 @@ const props = withDefaults(
 
 const index = ref(0)
 const sheetOpen = ref(false)
+const chrome = usePlayerChrome()
 
 const total = computed(() => props.items.length)
 const current = computed(() => props.items[index.value] ?? null)
@@ -79,20 +80,19 @@ watch(
   },
 )
 
-function qtypeDotClass(qtype: QuestionType) {
-  switch (qtype) {
-    case 'single':
-      return 'bg-spark'
-    case 'multiple':
-      return 'bg-path'
-    case 'judgement':
-      return 'bg-ok'
-    case 'case_analysis':
-      return 'bg-warn'
-    case 'short_answer':
-      return 'bg-muted'
-  }
-}
+watch(
+  [index, () => props.items.length],
+  () => {
+    chrome.setChrome({
+      current: index.value + 1,
+      total: props.items.length,
+      progress: progress.value,
+    })
+  },
+  { immediate: true },
+)
+
+onUnmounted(() => chrome.clearChrome())
 
 function statusChipClass() {
   if (status.value.is_skipped) return 'border-warn/40 bg-warn/10 text-warn'
@@ -126,32 +126,15 @@ function next() {
       @prev="prev"
       @next="next"
     >
-    <article class="surface relative z-10 flex flex-col gap-3 md:p-6">
-      <div class="flex flex-col gap-1.5">
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex min-w-0 flex-wrap items-center gap-1.5">
-            <span v-if="snapshot" class="chip">
-              <span class="size-1.5 rounded-full" :class="qtypeDotClass(snapshot.qtype)" aria-hidden="true" />
-              {{ questionTypeLabel(snapshot.qtype) }}
-              <template v-if="showScore"> · {{ current.earned }}/{{ current.score }} 分</template>
-            </span>
-            <span class="chip shrink-0" :class="statusChipClass()">
-              {{ resultStatusSymbol(status) }} {{ resultStatusLabel(status) }}
-            </span>
-          </div>
-          <span class="shrink-0 text-xs font-medium text-muted tabular-nums">
-            {{ index + 1 }} / {{ total }}
-          </span>
-        </div>
-        <div
-          class="path-track"
-          role="progressbar"
-          :aria-valuenow="index + 1"
-          aria-valuemin="1"
-          :aria-valuemax="total"
-        >
-          <span class="path-fill" :style="{ width: progress + '%' }" />
-        </div>
+    <article class="relative z-10 flex flex-col gap-4">
+      <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+        <span v-if="snapshot" class="chip-gold">
+          {{ questionTypeLabel(snapshot.qtype) }}
+          <template v-if="showScore"> · {{ current.earned }}/{{ current.score }} 分</template>
+        </span>
+        <span class="chip shrink-0" :class="statusChipClass()">
+          {{ resultStatusSymbol(status) }} {{ resultStatusLabel(status) }}
+        </span>
       </div>
 
       <CaseMaterialPanel
@@ -160,7 +143,7 @@ function next() {
         :attachments="snapshot.attachments"
       />
 
-      <h1 class="m-0 text-[1.125rem] leading-snug font-semibold break-words text-ink md:text-xl">
+      <h1 class="m-0 text-[19px] leading-[1.65] font-medium tracking-[0.01em] break-words text-ink">
         {{ snapshot?.stem || '（题目快照不可用）' }}
       </h1>
 
@@ -212,8 +195,12 @@ function next() {
         </p>
       </div>
 
-      <p v-if="snapshot?.explanation" class="alert-info m-0 break-words">
-        <span class="font-semibold">解析</span> · {{ snapshot.explanation }}
+      <p v-if="snapshot?.explanation" class="m-0 break-words rounded-2xl border border-line bg-raise/40 p-4 text-[14px] leading-[1.8] text-muted">
+        <span class="mb-2 flex items-center gap-2 text-[13px] font-medium text-ink/80">
+          <span class="h-3 w-0.5 rounded-full bg-spark" aria-hidden="true" />
+          解析
+        </span>
+        {{ snapshot.explanation }}
       </p>
 
       <div
@@ -259,7 +246,7 @@ function next() {
     <AnswerActionBar :can-prev="canGoReviewPrev(index)" @open-sheet="sheetOpen = true" @prev="prev">
       <button
         v-if="primaryAction === 'next'"
-        class="btn min-h-11 flex-1"
+        class="btn ml-1 min-h-11 flex-1"
         type="button"
         @click="next"
       >
@@ -267,12 +254,12 @@ function next() {
       </button>
       <RouterLink
         v-else-if="finishTo"
-        class="btn min-h-11 flex-1"
+        class="btn ml-1 min-h-11 flex-1"
         :to="finishTo"
       >
         {{ finishLabel }}
       </RouterLink>
-      <button v-else class="btn min-h-11 flex-1" type="button" disabled>下一题</button>
+      <button v-else class="btn ml-1 min-h-11 flex-1" type="button" disabled>下一题</button>
     </AnswerActionBar>
 
     <AnswerSheetDrawer

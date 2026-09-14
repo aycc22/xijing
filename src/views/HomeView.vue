@@ -7,8 +7,11 @@ import { useInstallPrompt } from '../composables/useInstallPrompt'
 import {
   computeHistoryStats,
   detailPathForSession,
+  formatRelativeStudyTime,
   historyResultText,
   mergeHistorySessions,
+  modeLabel,
+  sessionProgressCounts,
   type HistorySession,
 } from '../lib/history'
 import { formatErrorMessage } from '../lib/errors'
@@ -36,9 +39,13 @@ const recent = ref<HistorySession[]>([])
 const wrongCount = ref(0)
 const favoriteCount = ref(0)
 const noteCount = ref(0)
+const bankCount = ref(0)
 
 const stats = computed(() => computeHistoryStats(recent.value))
 const continueSession = computed(() => recent.value.find((s) => !s.finished_at && !s.expired_at) ?? null)
+const continueProgress = computed(() =>
+  continueSession.value ? sessionProgressCounts(continueSession.value) : { done: 0, total: 0, percent: 0 },
+)
 
 function onInstallClick() {
   if (canNativeInstall.value) {
@@ -59,7 +66,7 @@ async function loadDashboard() {
   error.value = ''
   try {
     const uid = auth.user.value.id
-    const [practiceRes, examRes, wrongRes, favRes, noteRes] = await Promise.all([
+    const [practiceRes, examRes, wrongRes, favRes, noteRes, bankRes] = await Promise.all([
       supabase
         .from('attempt_sessions')
         .select(
@@ -79,6 +86,7 @@ async function loadDashboard() {
       supabase.from('wrong_question_items').select('id', { count: 'exact', head: true }).eq('user_id', uid),
       supabase.from('question_favorites').select('id', { count: 'exact', head: true }).eq('user_id', uid),
       supabase.from('question_notes').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+      supabase.from('question_banks').select('id', { count: 'exact', head: true }).eq('is_published', true),
     ])
     const practice: HistorySession[] = await hydratePracticeAnsweredCounts(
       supabase,
@@ -121,6 +129,7 @@ async function loadDashboard() {
     wrongCount.value = wrongRes.count ?? 0
     favoriteCount.value = favRes.count ?? 0
     noteCount.value = noteRes.count ?? 0
+    bankCount.value = bankRes.count ?? 0
   } catch (err) {
     error.value = formatErrorMessage(err, '加载学习概览失败')
   }
@@ -136,6 +145,7 @@ watch(
       wrongCount.value = 0
       favoriteCount.value = 0
       noteCount.value = 0
+      bankCount.value = 0
     }
   },
 )
@@ -150,142 +160,283 @@ onMounted(() => {
     class="relative flex min-h-0 flex-col"
     :class="auth.user.value ? 'overflow-auto pb-4' : 'h-full overflow-hidden'"
   >
-    <svg
-      class="pointer-events-none absolute -right-8 top-2 h-36 w-52 opacity-90 md:-right-2 md:top-4 md:h-48 md:w-72"
-      viewBox="0 0 220 160"
-      fill="none"
-      aria-hidden="true"
-    >
-      <defs>
-        <linearGradient id="hero-trail" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stop-color="var(--spark-deep)" stop-opacity="0" />
-          <stop offset="0.55" stop-color="var(--spark-deep)" stop-opacity="0.6" />
-          <stop offset="1" stop-color="var(--spark)" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M12 128 C 48 40, 90 148, 128 72 C 152 28, 176 48, 204 38"
-        stroke="url(#hero-trail)"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-dasharray="260"
-        style="--dash-len: 260; animation: path-draw 1.6s 0.2s ease-out both"
-      />
-      <circle
-        cx="204"
-        cy="38"
-        r="4"
-        fill="var(--spark-bright)"
-        style="animation: soft-pulse 2.8s ease-in-out infinite; filter: drop-shadow(0 0 6px var(--lantern-halo))"
-      />
-    </svg>
+    <template v-if="!auth.user.value">
+      <svg
+        class="pointer-events-none absolute -right-8 top-2 h-36 w-52 opacity-90 md:-right-2 md:top-4 md:h-48 md:w-72"
+        viewBox="0 0 220 160"
+        fill="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="hero-trail" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="var(--spark-deep)" stop-opacity="0" />
+            <stop offset="0.55" stop-color="var(--spark-deep)" stop-opacity="0.6" />
+            <stop offset="1" stop-color="var(--spark)" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M12 128 C 48 40, 90 148, 128 72 C 152 28, 176 48, 204 38"
+          stroke="url(#hero-trail)"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-dasharray="260"
+          style="--dash-len: 260; animation: path-draw 1.6s 0.2s ease-out both"
+        />
+        <circle
+          cx="204"
+          cy="38"
+          r="4"
+          fill="var(--spark-bright)"
+          style="animation: soft-pulse 2.8s ease-in-out infinite; filter: drop-shadow(0 0 6px var(--lantern-halo))"
+        />
+      </svg>
 
-    <section class="relative py-4" :class="auth.user.value ? '' : 'flex min-h-0 flex-1 flex-col justify-center'">
-      <p class="page-kicker">习惯成径</p>
-      <h1 class="font-display m-0 text-[clamp(2.75rem,14vw,4.5rem)] leading-none tracking-wide text-ink">
-        习径
-      </h1>
-      <p class="page-lede mt-4 max-w-sm text-pretty">
-        {{
-          auth.user.value
-            ? '从上次停下的地方继续，或去错题本巩固薄弱点。'
-            : '把题库装进手机。一题一答，灯火所至，即是路径。'
-        }}
-      </p>
+      <section class="relative flex min-h-0 flex-1 flex-col justify-center py-4">
+        <p class="page-kicker">习惯成径</p>
+        <h1 class="font-display m-0 text-[clamp(2.75rem,14vw,4.5rem)] leading-none tracking-wide text-ink">
+          习径
+        </h1>
+        <p class="page-lede mt-4 max-w-sm text-pretty">把题库装进手机。一题一答，灯火所至，即是路径。</p>
+        <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <RouterLink class="btn btn-block sm:w-auto" to="/login">登录开始</RouterLink>
+          <button
+            v-if="showInstall"
+            type="button"
+            class="btn-secondary btn-block sm:w-auto"
+            :disabled="installing"
+            @click="onInstallClick"
+          >
+            添加到主屏幕
+          </button>
+          <button
+            type="button"
+            class="btn-secondary btn-block sm:w-auto"
+            :disabled="refreshing"
+            @click="refresh()"
+          >
+            {{ refreshing ? '正在刷新…' : '刷新最新版' }}
+          </button>
+        </div>
+        <p v-if="refreshError" class="mt-2 text-sm text-bad" role="alert">{{ refreshError }}</p>
+      </section>
+    </template>
 
-      <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <RouterLink v-if="auth.user.value" class="btn btn-block sm:w-auto" to="/banks">
-          进入题库
-        </RouterLink>
-        <RouterLink v-else class="btn btn-block sm:w-auto" to="/login">
-          登录开始
-        </RouterLink>
-        <button
-          v-if="showInstall"
-          type="button"
-          class="btn-secondary btn-block sm:w-auto"
-          :disabled="installing"
-          @click="onInstallClick"
-        >
-          添加到主屏幕
-        </button>
-        <button
-          type="button"
-          class="btn-secondary btn-block sm:w-auto"
-          :disabled="refreshing"
-          @click="refresh()"
-        >
-          {{ refreshing ? '正在刷新…' : '刷新最新版' }}
-        </button>
-      </div>
-      <p v-if="refreshError" class="mt-2 text-sm text-bad" role="alert">
-        {{ refreshError }}
-      </p>
-    </section>
-
-    <section v-if="auth.user.value" class="relative mt-2 flex flex-col gap-4">
+    <section v-else class="relative flex flex-col gap-4 pb-2">
       <p v-if="loading" class="text-sm text-muted">加载学习概览…</p>
       <p v-else-if="error" class="alert-error">{{ error }}</p>
       <template v-else>
-        <div class="grid grid-cols-3 gap-2">
-          <div class="surface px-3 py-3 text-center">
-            <p class="m-0 text-lg font-semibold tabular-nums text-ink">{{ stats.sessionCount }}</p>
-            <p class="m-0 mt-0.5 text-xs text-muted">已完成</p>
-          </div>
-          <div class="surface px-3 py-3 text-center">
-            <p class="m-0 text-lg font-semibold tabular-nums text-ink">{{ stats.rate }}%</p>
-            <p class="m-0 mt-0.5 text-xs text-muted">正确率</p>
-          </div>
-          <div class="surface px-3 py-3 text-center">
-            <p class="m-0 text-lg font-semibold tabular-nums text-ink">{{ wrongCount }}</p>
-            <p class="m-0 mt-0.5 text-xs text-muted">错题</p>
-          </div>
-        </div>
-
-        <button
+        <section
           v-if="continueSession"
-          type="button"
-          class="surface card-link w-full px-4 py-3.5 text-left"
-          @click="router.push(detailPathForSession(continueSession))"
+          aria-labelledby="continue-title"
+          class="rounded-3xl border border-line bg-surface p-5 shadow-lift"
         >
-          <p class="m-0 text-xs text-spark">继续学习</p>
-          <p class="m-0 mt-1 font-semibold text-ink">{{ continueSession.bank_title }}</p>
-          <p class="m-0 mt-1 text-sm text-muted">{{ historyResultText(continueSession) }}</p>
-        </button>
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="m-0 text-[11px] font-medium tracking-[0.14em] text-spark uppercase">继续学习</p>
+              <h2 id="continue-title" class="mt-1.5 m-0 truncate text-[20px] font-semibold tracking-tight text-ink">
+                {{ continueSession.bank_title }}
+              </h2>
+              <p class="mt-1 m-0 truncate text-[13px] text-muted">
+                {{ modeLabel(continueSession.mode) }} · {{ historyResultText(continueSession) }}
+              </p>
+            </div>
+            <div class="shrink-0 text-right">
+              <p class="m-0 font-mono text-[22px] leading-none font-semibold tabular-nums text-ink">
+                {{ continueProgress.done
+                }}<span class="text-[15px] text-muted">/{{ continueProgress.total }}</span>
+              </p>
+              <p class="mt-1 m-0 text-[11px] text-muted">已完成 {{ continueProgress.percent }}%</p>
+            </div>
+          </div>
+          <div
+            class="path-track path-track-thin mt-4 h-2"
+            role="progressbar"
+            :aria-valuenow="continueProgress.done"
+            aria-valuemin="0"
+            :aria-valuemax="continueProgress.total"
+            aria-label="当前题库进度"
+          >
+            <span class="path-fill" :style="{ width: continueProgress.percent + '%' }" />
+          </div>
+          <div class="mt-5 flex items-center gap-3">
+            <button
+              type="button"
+              class="btn min-h-12 flex-1"
+              @click="router.push(detailPathForSession(continueSession))"
+            >
+              继续学习
+              <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M9 6l6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <p class="m-0 flex shrink-0 items-center gap-1.5 text-[12px] text-muted">
+              <svg class="size-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6" />
+                <path
+                  d="M12 8v4.5l3 1.5"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              {{ formatRelativeStudyTime(continueSession.started_at) }}
+            </p>
+          </div>
+        </section>
 
-        <div class="grid grid-cols-2 gap-2">
-          <RouterLink class="surface card-link px-4 py-3 no-underline" to="/wrong-book">
-            <p class="m-0 text-sm font-semibold text-ink">错题本</p>
-            <p class="m-0 mt-1 text-xs text-muted">{{ wrongCount }} 题待复习</p>
-          </RouterLink>
-          <RouterLink class="surface card-link px-4 py-3 no-underline" to="/favorites">
-            <p class="m-0 text-sm font-semibold text-ink">收藏</p>
-            <p class="m-0 mt-1 text-xs text-muted">{{ favoriteCount }} 题</p>
-          </RouterLink>
-          <RouterLink class="surface card-link px-4 py-3 no-underline" to="/notes">
-            <p class="m-0 text-sm font-semibold text-ink">笔记</p>
-            <p class="m-0 mt-1 text-xs text-muted">{{ noteCount }} 条</p>
-          </RouterLink>
-          <RouterLink class="surface card-link px-4 py-3 no-underline" to="/history">
-            <p class="m-0 text-sm font-semibold text-ink">历史</p>
-            <p class="m-0 mt-1 text-xs text-muted">练习与答题记录</p>
-          </RouterLink>
-        </div>
+        <section
+          v-else
+          class="rounded-3xl border border-line bg-surface p-5 shadow-lift"
+          aria-labelledby="start-title"
+        >
+          <p class="m-0 text-[11px] font-medium tracking-[0.14em] text-spark uppercase">开始学习</p>
+          <h2 id="start-title" class="mt-1.5 m-0 text-[20px] font-semibold text-ink">还没有进行中的练习</h2>
+          <p class="mt-1 m-0 text-[13px] text-muted">去题库挑一套，从上次停下或第一题走起。</p>
+          <RouterLink class="btn mt-5 min-h-12 w-full" to="/banks">进入题库</RouterLink>
+        </section>
 
-        <div v-if="recent.length">
-          <h2 class="m-0 mb-2 text-sm font-semibold text-ink">最近学习</h2>
-          <ul class="m-0 flex list-none flex-col gap-2 p-0">
-            <li v-for="session in recent" :key="`${session.kind}-${session.id}`">
-              <button
-                type="button"
-                class="surface card-link w-full px-4 py-3 text-left"
-                @click="router.push(detailPathForSession(session))"
-              >
-                <p class="m-0 text-sm font-medium text-ink">{{ session.bank_title }}</p>
-                <p class="m-0 mt-1 text-xs text-muted">{{ historyResultText(session) }}</p>
-              </button>
-            </li>
-          </ul>
+        <section aria-label="学习数据">
+          <dl class="flex items-stretch rounded-2xl border border-line bg-raise/60 px-1 py-3">
+            <div class="flex flex-1 flex-col items-center justify-center gap-1">
+              <dd class="m-0 font-mono text-[17px] leading-none font-semibold tabular-nums text-ink">
+                {{ stats.answered }}<span class="ml-0.5 text-[11px] font-normal text-muted">题</span>
+              </dd>
+              <dt class="text-[11px] text-muted">累计练习</dt>
+            </div>
+            <div class="flex flex-1 flex-col items-center justify-center gap-1 border-l border-line">
+              <dd class="m-0 font-mono text-[17px] leading-none font-semibold tabular-nums text-ink">
+                {{ stats.rate }}<span class="ml-0.5 text-[11px] font-normal text-muted">%</span>
+              </dd>
+              <dt class="text-[11px] text-muted">正确率</dt>
+            </div>
+            <div class="flex flex-1 flex-col items-center justify-center gap-1 border-l border-line">
+              <dd class="m-0 font-mono text-[17px] leading-none font-semibold tabular-nums text-ink">
+                {{ wrongCount }}<span class="ml-0.5 text-[11px] font-normal text-muted">题</span>
+              </dd>
+              <dt class="text-[11px] text-muted">错题本</dt>
+            </div>
+          </dl>
+        </section>
+
+        <section aria-label="快捷入口">
+          <h3 class="mb-2.5 m-0 px-0.5 text-[13px] font-medium text-muted">我的学习</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <RouterLink
+              class="flex min-h-[88px] flex-col items-start gap-2.5 rounded-2xl border border-line bg-surface p-4 no-underline transition hover:border-spark/30 active:bg-raise/80"
+              to="/wrong-book"
+            >
+              <span class="grid size-9 place-items-center rounded-xl bg-spark/10 text-spark">
+                <svg class="size-[17px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7" />
+                  <path d="M15 9 9 15M9 9l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                </svg>
+              </span>
+              <span class="w-full">
+                <span class="flex items-center justify-between">
+                  <span class="text-[15px] font-medium text-ink">错题本</span>
+                  <svg class="size-4 text-muted/50" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <span class="mt-0.5 block text-[12px] text-muted">{{ wrongCount }} 题待复习</span>
+              </span>
+            </RouterLink>
+            <RouterLink
+              class="flex min-h-[88px] flex-col items-start gap-2.5 rounded-2xl border border-line bg-surface p-4 no-underline transition hover:border-spark/30 active:bg-raise/80"
+              to="/favorites"
+            >
+              <span class="grid size-9 place-items-center rounded-xl bg-spark/10 text-spark">
+                <svg class="size-[17px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 4.8 14.1 9l4.7.6-3.4 3.3.9 4.6L12 15.6 7.7 17.5l.9-4.6L5.2 9.6 9.9 9 12 4.8Z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <span class="w-full">
+                <span class="flex items-center justify-between">
+                  <span class="text-[15px] font-medium text-ink">收藏</span>
+                  <svg class="size-4 text-muted/50" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <span class="mt-0.5 block text-[12px] text-muted">{{ favoriteCount }} 题</span>
+              </span>
+            </RouterLink>
+            <RouterLink
+              class="flex min-h-[88px] flex-col items-start gap-2.5 rounded-2xl border border-line bg-surface p-4 no-underline transition hover:border-spark/30 active:bg-raise/80"
+              to="/notes"
+            >
+              <span class="grid size-9 place-items-center rounded-xl bg-spark/10 text-spark">
+                <svg class="size-[17px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M7 4.5h7.5L18 8v11.5H7V4.5Z"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linejoin="round"
+                  />
+                  <path d="M14.5 4.5V8H18M9 12h6M9 15.5h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                </svg>
+              </span>
+              <span class="w-full">
+                <span class="flex items-center justify-between">
+                  <span class="text-[15px] font-medium text-ink">笔记</span>
+                  <svg class="size-4 text-muted/50" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <span class="mt-0.5 block text-[12px] text-muted">{{ noteCount }} 条</span>
+              </span>
+            </RouterLink>
+            <RouterLink
+              class="flex min-h-[88px] flex-col items-start gap-2.5 rounded-2xl border border-line bg-surface p-4 no-underline transition hover:border-spark/30 active:bg-raise/80"
+              to="/history"
+            >
+              <span class="grid size-9 place-items-center rounded-xl bg-spark/10 text-spark">
+                <svg class="size-[17px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7" />
+                  <path d="M12 8v4.5l3 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                </svg>
+              </span>
+              <span class="w-full">
+                <span class="flex items-center justify-between">
+                  <span class="text-[15px] font-medium text-ink">历史</span>
+                  <svg class="size-4 text-muted/50" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <span class="mt-0.5 block text-[12px] text-muted">近 {{ recent.length }} 次记录</span>
+              </span>
+            </RouterLink>
+          </div>
+        </section>
+
+        <div class="mt-2">
+          <RouterLink
+            class="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl border border-spark/30 bg-spark/8 text-[15px] font-semibold text-spark transition active:scale-[0.98]"
+            to="/banks"
+          >
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10v16H5.5A1.5 1.5 0 0 1 4 18.5v-13ZM14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14V4Z"
+                stroke="currentColor"
+                stroke-width="1.6"
+              />
+            </svg>
+            进入题库
+          </RouterLink>
+          <p class="mt-2.5 m-0 text-center text-[11px] text-muted">
+            已发布 {{ bankCount }} 个题库
+          </p>
         </div>
       </template>
     </section>
