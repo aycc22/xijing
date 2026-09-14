@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyPracticeAnsweredCounts,
   computeHistoryStats,
+  countAnswersBySessionId,
   detailPathForSession,
   examResultPath,
   examReviewPath,
+  historyResultText,
   historyStatusLabel,
   mergeHistorySessions,
   modeLabel,
@@ -23,6 +26,7 @@ function session(partial: Partial<HistorySession> & Pick<HistorySession, 'id'>):
     paper_id: null,
     total_count: 10,
     correct_count: 7,
+    answered_count: undefined,
     current_index: 3,
     started_at: '2026-08-20T12:00:00Z',
     finished_at: null,
@@ -139,6 +143,72 @@ describe('computeHistoryStats', () => {
       session({ id: 'f', finished_at: '2026-08-21T12:00:00Z', total_count: 10, correct_count: 7 }),
       session({ id: 'open', total_count: 5, correct_count: 1 }),
     ])
-    expect(stats).toEqual({ sessionCount: 1, total: 10, correct: 7, rate: 70 })
+    expect(stats).toEqual({ sessionCount: 1, total: 10, answered: 10, correct: 7, rate: 70 })
+  })
+
+  it('uses attempted questions as the accuracy denominator', () => {
+    const stats = computeHistoryStats([
+      session({
+        id: 'early',
+        finished_at: '2026-08-21T12:00:00Z',
+        total_count: 63,
+        correct_count: 3,
+        answered_count: 4,
+      }),
+    ])
+    expect(stats.total).toBe(63)
+    expect(stats.answered).toBe(4)
+    expect(stats.correct).toBe(3)
+    expect(stats.rate).toBe(75)
+  })
+})
+
+describe('historyResultText', () => {
+  it('shows progress for unfinished sessions', () => {
+    expect(historyResultText(session({ id: 'open', current_index: 2, total_count: 10 }))).toBe(
+      '进度 3 / 10',
+    )
+  })
+
+  it('does not treat unanswered as wrong on finished practice', () => {
+    expect(
+      historyResultText(
+        session({
+          id: 'done',
+          finished_at: '2026-08-21T12:00:00Z',
+          total_count: 63,
+          correct_count: 3,
+          answered_count: 4,
+        }),
+      ),
+    ).toBe('3/4 · 75% · 未作答 59')
+  })
+})
+
+describe('practice answered counts', () => {
+  it('aggregates attempt_answers rows by session', () => {
+    const counts = countAnswersBySessionId([
+      { session_id: 's1' },
+      { session_id: 's1' },
+      { session_id: 's2' },
+    ])
+    expect(counts.get('s1')).toBe(2)
+    expect(counts.get('s2')).toBe(1)
+  })
+
+  it('attaches counts only to practice sessions', () => {
+    const counts = new Map([
+      ['p1', 4],
+      ['e1', 99],
+    ])
+    const rows = applyPracticeAnsweredCounts(
+      [
+        session({ id: 'p1', total_count: 63, correct_count: 3 }),
+        session({ id: 'e1', kind: 'exam', mode: 'exam', total_count: 10, correct_count: 8 }),
+      ],
+      counts,
+    )
+    expect(rows[0].answered_count).toBe(4)
+    expect(rows[1].answered_count).toBeUndefined()
   })
 })

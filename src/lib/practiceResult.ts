@@ -3,20 +3,40 @@ import type { QuestionOption, QuestionType } from './types'
 
 export interface PracticeSummary {
   total: number
+  answered: number
   correct: number
   wrong: number
+  unanswered: number
   rate: number
 }
 
 export function computePracticeSummary(session: {
   total_count: number
   correct_count: number
+  answered_count?: number | null
 }): PracticeSummary {
-  const total = session.total_count
-  const correct = session.correct_count
-  const wrong = Math.max(0, total - correct)
-  const rate = total ? Math.round((correct / total) * 100) : 0
-  return { total, correct, wrong, rate }
+  const total = Math.max(0, session.total_count)
+  const correct = Math.max(0, session.correct_count)
+  const answered =
+    session.answered_count == null
+      ? total
+      : Math.min(total, Math.max(0, session.answered_count))
+  const unanswered = Math.max(0, total - answered)
+  const wrong = Math.max(0, answered - correct)
+  const rate = answered ? Math.round((correct / answered) * 100) : 0
+  return { total, answered, correct, wrong, unanswered, rate }
+}
+
+export function computePracticeSummaryFromAnswers(
+  totalCount: number,
+  answers: { is_correct: boolean; is_skipped: boolean }[],
+): PracticeSummary {
+  const correct = answers.filter((answer) => answer.is_correct && !answer.is_skipped).length
+  return computePracticeSummary({
+    total_count: totalCount,
+    correct_count: correct,
+    answered_count: answers.length,
+  })
 }
 
 const JUDGEMENT_LABELS: Record<string, string> = {

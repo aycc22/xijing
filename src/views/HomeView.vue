@@ -12,6 +12,7 @@ import {
   type HistorySession,
 } from '../lib/history'
 import { formatErrorMessage } from '../lib/errors'
+import { hydratePracticeAnsweredCounts } from '../lib/historyAnswers'
 import { supabase } from '../lib/supabase'
 
 const auth = useAuth()
@@ -79,20 +80,23 @@ async function loadDashboard() {
       supabase.from('question_favorites').select('id', { count: 'exact', head: true }).eq('user_id', uid),
       supabase.from('question_notes').select('id', { count: 'exact', head: true }).eq('user_id', uid),
     ])
-    const practice: HistorySession[] = (practiceRes.data ?? []).map((row) => ({
-      id: row.id,
-      bank_id: row.bank_id,
-      bank_title: bankTitleFromJoin(row.question_banks),
-      mode: (row.mode as 'practice' | 'exam') || 'practice',
-      kind: 'practice',
-      paper_id: null,
-      total_count: row.total_count,
-      correct_count: row.correct_count,
-      current_index: row.current_index ?? 0,
-      started_at: row.started_at,
-      finished_at: row.finished_at,
-      expired_at: row.expired_at,
-    }))
+    const practice: HistorySession[] = await hydratePracticeAnsweredCounts(
+      supabase,
+      (practiceRes.data ?? []).map((row) => ({
+        id: row.id,
+        bank_id: row.bank_id,
+        bank_title: bankTitleFromJoin(row.question_banks),
+        mode: (row.mode as 'practice' | 'exam') || 'practice',
+        kind: 'practice',
+        paper_id: null,
+        total_count: row.total_count,
+        correct_count: row.correct_count,
+        current_index: row.current_index ?? 0,
+        started_at: row.started_at,
+        finished_at: row.finished_at,
+        expired_at: row.expired_at,
+      })),
+    )
     const exams: HistorySession[] = (examRes.data ?? []).map((row) => {
       const paper = (Array.isArray(row.paper_instances) ? row.paper_instances[0] : row.paper_instances) as {
         bank_id: string

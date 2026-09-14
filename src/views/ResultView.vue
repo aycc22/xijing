@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AiSessionReportPanel from '../components/AiSessionReportPanel.vue'
 import { useAiSessionAnalysis } from '../composables/useAiSessionAnalysis'
-import { computePracticeSummary, verdictForRate } from '../lib/practiceResult'
+import { computePracticeSummary, computePracticeSummaryFromAnswers, verdictForRate } from '../lib/practiceResult'
 import { formatErrorMessage } from '../lib/errors'
 import { practiceReviewPath } from '../lib/history'
 import { parseQuestionSnapshot } from '../lib/questionSnapshot'
@@ -17,11 +17,12 @@ const bankTitle = ref('')
 const error = ref('')
 const loading = ref(true)
 const analysis = useAiSessionAnalysis()
+const answerRows = ref<{ is_correct: boolean; is_skipped: boolean }[]>([])
 
 const summary = computed(() =>
   session.value
-    ? computePracticeSummary(session.value)
-    : { total: 0, correct: 0, wrong: 0, rate: 0 },
+    ? computePracticeSummaryFromAnswers(session.value.total_count, answerRows.value)
+    : computePracticeSummary({ total_count: 0, correct_count: 0 }),
 )
 const verdict = computed(() => verdictForRate(summary.value.rate))
 
@@ -66,6 +67,10 @@ async function load() {
       qtype: snapshot?.qtype ?? '',
     }
   })
+  answerRows.value = rows.map((row) => ({
+    is_correct: row.isCorrect,
+    is_skipped: row.isSkipped,
+  }))
   void analysis.autoAnalyzeOnce('practice', sessionId, rows)
 }
 
@@ -86,18 +91,21 @@ onMounted(load)
         <p
           class="font-display relative m-0 mt-4 text-[clamp(3.5rem,18vw,5.5rem)] leading-none tracking-wide text-ink tabular-nums"
         >
-          {{ summary.correct }}<span class="text-[0.38em] text-muted"> / {{ summary.total }}</span>
+          {{ summary.correct }}<span class="text-[0.38em] text-muted"> / {{ summary.answered }}</span>
         </p>
         <p class="font-display relative m-0 mt-3 text-xl tracking-wide text-spark">{{ verdict }}</p>
+        <p v-if="summary.unanswered" class="relative m-0 mt-2 text-sm text-muted">
+          已作答 {{ summary.answered }} · 未作答 {{ summary.unanswered }} · 共 {{ summary.total }} 题
+        </p>
         <div class="path-track relative mx-auto mt-6 w-full max-w-2xs">
           <span class="path-fill" :style="{ width: summary.rate + '%' }" />
         </div>
-        <dl class="relative m-0 mt-8 flex justify-center divide-x divide-line/70">
-          <div class="flex flex-col items-center gap-1 px-5 pl-0 sm:px-7">
+        <dl class="relative m-0 mt-8 flex flex-wrap justify-center divide-x divide-line/70">
+          <div class="flex flex-col items-center gap-1 px-4 pl-0 sm:px-7">
             <dd class="m-0 text-2xl font-semibold text-ok tabular-nums">{{ summary.correct }}</dd>
             <dt class="text-xs tracking-widest text-muted">正确</dt>
           </div>
-          <div class="flex flex-col items-center gap-1 px-5 sm:px-7">
+          <div class="flex flex-col items-center gap-1 px-4 sm:px-7">
             <dd
               class="m-0 text-2xl font-semibold tabular-nums"
               :class="summary.wrong ? 'text-bad' : 'text-ink'"
@@ -106,7 +114,11 @@ onMounted(load)
             </dd>
             <dt class="text-xs tracking-widest text-muted">错误</dt>
           </div>
-          <div class="flex flex-col items-center gap-1 px-5 pr-0 sm:px-7">
+          <div v-if="summary.unanswered" class="flex flex-col items-center gap-1 px-4 sm:px-7">
+            <dd class="m-0 text-2xl font-semibold text-ink tabular-nums">{{ summary.unanswered }}</dd>
+            <dt class="text-xs tracking-widest text-muted">未作答</dt>
+          </div>
+          <div class="flex flex-col items-center gap-1 px-4 pr-0 sm:px-7">
             <dd class="m-0 text-2xl font-semibold text-ink tabular-nums">{{ summary.rate }}%</dd>
             <dt class="text-xs tracking-widest text-muted">正确率</dt>
           </div>
@@ -124,7 +136,7 @@ onMounted(load)
 
       <div class="relative mt-2 flex w-full max-w-2xs flex-col items-center gap-5 self-center">
         <RouterLink
-          v-if="summary.total"
+          v-if="summary.answered"
           class="btn w-full"
           :to="practiceReviewPath(session.id)"
         >

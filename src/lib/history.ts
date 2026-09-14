@@ -13,6 +13,7 @@ export interface HistorySession {
   paper_id?: string | null
   total_count: number
   correct_count: number
+  answered_count?: number | null
   current_index: number
   started_at: string
   finished_at: string | null
@@ -63,7 +64,27 @@ export function historyResultText(session: HistorySession): string {
   }
   if (status === 'expired') return '已过期'
   const summary = computePracticeSummary(session)
-  return `${summary.correct}/${summary.total} · ${summary.rate}%`
+  const headline = `${summary.correct}/${summary.answered} · ${summary.rate}%`
+  if (summary.unanswered > 0) return `${headline} · 未作答 ${summary.unanswered}`
+  return headline
+}
+
+export function countAnswersBySessionId(rows: { session_id: string }[]): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const row of rows) {
+    counts.set(row.session_id, (counts.get(row.session_id) ?? 0) + 1)
+  }
+  return counts
+}
+
+export function applyPracticeAnsweredCounts(
+  sessions: HistorySession[],
+  counts: Map<string, number>,
+): HistorySession[] {
+  return sessions.map((session) => {
+    if (session.kind !== 'practice') return session
+    return { ...session, answered_count: counts.get(session.id) ?? 0 }
+  })
 }
 
 export function practiceResultPath(sessionId: string): string {
@@ -100,11 +121,13 @@ export function mergeHistorySessions(rows: HistorySession[]): HistorySession[] {
 export function computeHistoryStats(sessions: HistorySession[]) {
   const finished = sessions.filter((s) => sessionHistoryStatus(s) === 'finished')
   const total = finished.reduce((sum, s) => sum + s.total_count, 0)
+  const answered = finished.reduce((sum, s) => sum + (s.answered_count ?? s.total_count), 0)
   const correct = finished.reduce((sum, s) => sum + s.correct_count, 0)
-  const rate = total ? Math.round((correct / total) * 100) : 0
+  const rate = answered ? Math.round((correct / answered) * 100) : 0
   return {
     sessionCount: finished.length,
     total,
+    answered,
     correct,
     rate,
   }

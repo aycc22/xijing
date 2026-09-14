@@ -457,6 +457,7 @@
   overflow-y: visible;
   touch-action: pan-y;
   overscroll-behavior-x: none;
+  isolation: isolate;
   --qswipe-duration: 480ms;
   --qswipe-snap-duration: 360ms;
   --qswipe-fade-duration: 340ms;
@@ -492,12 +493,12 @@
 }
 
 .qswipe-next-enter-active,
-.qswipe-next-leave-active,
-.qswipe-prev-enter-active,
-.qswipe-prev-leave-active {
+.qswipe-prev-enter-active {
+  position: relative;
+  z-index: 2;
   transition:
     transform var(--qswipe-duration) var(--qswipe-easing),
-    opacity var(--qswipe-duration) var(--qswipe-easing);
+    opacity calc(var(--qswipe-duration) * 0.55) var(--qswipe-easing);
 }
 
 .qswipe-next-leave-active,
@@ -507,6 +508,15 @@
   inset-inline: 0;
   top: 0;
   width: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.qswipe-next-leave-active,
+.qswipe-prev-leave-active {
+  transition:
+    transform var(--qswipe-duration) var(--qswipe-easing),
+    opacity calc(var(--qswipe-duration) * 0.42) var(--qswipe-easing);
 }
 
 .qswipe-next-leave-from {
@@ -514,13 +524,13 @@
 }
 
 .qswipe-next-leave-to {
-  transform: translate3d(-40%, 0, 0);
-  opacity: 0.12;
+  transform: translate3d(-28%, 0, 0);
+  opacity: 0;
 }
 
 .qswipe-next-enter-from {
-  transform: translate3d(18%, 0, 0);
-  opacity: 0.35;
+  transform: translate3d(22%, 0, 0);
+  opacity: 0;
 }
 
 .qswipe-prev-leave-from {
@@ -528,13 +538,13 @@
 }
 
 .qswipe-prev-leave-to {
-  transform: translate3d(40%, 0, 0);
-  opacity: 0.12;
+  transform: translate3d(28%, 0, 0);
+  opacity: 0;
 }
 
 .qswipe-prev-enter-from {
-  transform: translate3d(-18%, 0, 0);
-  opacity: 0.35;
+  transform: translate3d(-22%, 0, 0);
+  opacity: 0;
 }
 
 .qswipe-fade-enter-active,

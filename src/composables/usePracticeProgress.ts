@@ -8,8 +8,9 @@ import {
   rebuildAttemptsFromAnswers,
   isResumableSession,
 } from '../lib/practiceResume'
+import { storedAnswerKeys } from '../lib/scoring'
 import type { QuestionAttempt } from '../lib/practiceSession'
-import type { Question } from '../lib/types'
+import type { Question, QuestionType } from '../lib/types'
 
 export async function expireStaleSessions(userId: string): Promise<void> {
   const { data } = await supabase
@@ -69,6 +70,7 @@ export async function saveSessionProgress(input: {
   draftQuestionId: string | null
   draftSelectedKeys: string[]
   revealed: boolean
+  qtype?: QuestionType
 }): Promise<void> {
   await supabase
     .from('attempt_sessions')
@@ -77,7 +79,9 @@ export async function saveSessionProgress(input: {
       correct_count: input.correctCount,
       total_count: input.totalCount,
       draft_question_id: input.draftQuestionId,
-      draft_selected_keys: input.revealed ? [] : input.draftSelectedKeys.map((k) => k.toUpperCase()),
+      draft_selected_keys: input.revealed
+        ? []
+        : storedAnswerKeys(input.draftSelectedKeys, input.qtype),
     })
     .eq('id', input.sessionId)
 }

@@ -42,7 +42,7 @@ const summary = computed(() =>
         total_count: session.value.total_count,
         correct_count: session.value.correct_count,
       })
-    : { total: 0, correct: 0, wrong: 0, rate: 0 },
+    : computePracticeSummary({ total_count: 0, correct_count: 0 }),
 )
 const verdict = computed(() => verdictForRate(summary.value.rate))
 const rows = computed(() => session.value?.result_items ?? [])

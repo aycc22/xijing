@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { storedAnswerKeys } from './scoring'
+import type { QuestionType } from './types'
 
 export type MasteryStatus = 'pending' | 'reviewing' | 'mastered'
 
@@ -80,6 +82,7 @@ export async function recordWrongQuestion(
   userId: string,
   questionId: string,
   selectedKeys: string[],
+  qtype?: QuestionType,
 ): Promise<void> {
   const { data: existing, error: lookupError } = await supabase
     .from('wrong_question_items')
@@ -89,7 +92,7 @@ export async function recordWrongQuestion(
     .maybeSingle()
   if (lookupError) throw lookupError
 
-  const keys = selectedKeys.map((k) => k.toUpperCase())
+  const keys = storedAnswerKeys(selectedKeys, qtype)
   const now = new Date().toISOString()
   const reset = nextMasteryState({ consecutive_correct: 0 }, false)
 
