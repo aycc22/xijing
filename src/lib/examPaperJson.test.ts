@@ -9,6 +9,8 @@ import { buildPaperItems } from './paperSnapshot'
 
 const samplePath2022 = resolve('public/data/exams/2022-isec-engineer.json')
 const samplePath2021 = resolve('public/data/exams/2021-isec-engineer.json')
+const samplePath2019 = resolve('public/data/exams/2019-isec-engineer.json')
+const samplePath2018 = resolve('public/data/exams/2018-isec-engineer.json')
 const samplePath2022Soft = resolve('public/data/exams/2022-soft-designer.json')
 
 describe('examPaperJson', () => {
@@ -40,6 +42,35 @@ describe('examPaperJson', () => {
     if (result.bundle) {
       expect(examBankTitle(result.bundle)).toContain('2022')
       expect(examBankDescription(result.bundle)).toContain('信息安全工程师')
+    }
+  })
+
+  it('parses 2018 and 2019 information security engineer papers', () => {
+    for (const [path, year, afternoon] of [
+      [samplePath2018, '2018', 19],
+      [samplePath2019, '2019', 20],
+    ] as const) {
+      const result = lintExamPaperJson(readFileSync(path, 'utf8'))
+      expect(result.valid, result.issues.map((issue) => issue.message).join('; ')).toBe(true)
+      expect(result.stats?.morning).toBe(75)
+      expect(result.stats?.afternoon).toBe(afternoon)
+      expect(result.bundle?.exam.year).toBe(Number(year))
+      expect(result.bundle?.exam.session).toBe('上半年')
+      expect(examBankTitle(result.bundle!)).toContain(year)
+      const am = buildFixedPaperPlan(
+        result.rows.map((row, index) => ({
+          id: `q-${index}`,
+          qtype: row.qtype,
+          sort_order: index,
+          score: row.score,
+          section: row.section,
+          is_active: true,
+        })),
+        `${year}-05-am`,
+        sectionLabelsFromBundle(result.bundle),
+      )
+      expect(am.questionIds).toHaveLength(75)
+      expect(am.totalScore).toBe(75)
     }
   })
 

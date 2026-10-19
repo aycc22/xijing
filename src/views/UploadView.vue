@@ -291,6 +291,14 @@ async function submit() {
         </div>
         <p class="m-0 mt-2 text-xs text-muted">
           样例文件：
+          <a class="text-spark underline-offset-2 hover:underline" href="./data/exams/2018-isec-engineer.json" download>
+            2018-isec-engineer.json
+          </a>
+          <span class="text-muted">·</span>
+          <a class="text-spark underline-offset-2 hover:underline" href="./data/exams/2019-isec-engineer.json" download>
+            2019-isec-engineer.json
+          </a>
+          <span class="text-muted">·</span>
           <a class="text-spark underline-offset-2 hover:underline" href="./data/exams/2021-isec-engineer.json" download>
             2021-isec-engineer.json
           </a>
