@@ -462,14 +462,22 @@
   transform: translateY(100%);
 }
 
-/* 显式切题（上一题 / 下一题 / 答题卡）的换页过渡。不接管触摸，纵向滚动仍走浏览器默认。 */
+/* 显式切题（上一题 / 下一题 / 答题卡）的换页过渡。
+   pan-y 只保留纵向滚动，并避免水平拖动被浏览器当成历史前进/后退；不再据此切题。 */
 .qswipe-track {
   overflow-x: clip;
   overflow-y: visible;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
   isolation: isolate;
   --qswipe-duration: 480ms;
   --qswipe-fade-duration: 340ms;
   --qswipe-easing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qswipe-page button,
+.qswipe-page .option {
+  touch-action: pan-y;
 }
 
 .qswipe-next-enter-active,
