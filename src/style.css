@@ -462,45 +462,14 @@
   transform: translateY(100%);
 }
 
-/* 刷题 / 答题切题：跟手滑动 + 缓动换页（时长/曲线由 QuestionSwipePager 注入，与 JS 锁同步） */
+/* 显式切题（上一题 / 下一题 / 答题卡）的换页过渡。不接管触摸，纵向滚动仍走浏览器默认。 */
 .qswipe-track {
-  overflow-x: visible;
+  overflow-x: clip;
   overflow-y: visible;
-  touch-action: pan-y;
-  overscroll-behavior-x: none;
   isolation: isolate;
   --qswipe-duration: 480ms;
-  --qswipe-snap-duration: 360ms;
   --qswipe-fade-duration: 340ms;
   --qswipe-easing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.qswipe-track.qswipe-clip {
-  overflow-x: hidden;
-}
-
-.qswipe-page.qswipe-live {
-  will-change: transform, opacity;
-}
-
-.qswipe-page button,
-.qswipe-page .option {
-  touch-action: pan-y;
-}
-
-.qswipe-page textarea,
-.qswipe-page input,
-.qswipe-page select {
-  touch-action: auto;
-}
-
-.qswipe-page.qswipe-follow,
-.qswipe-page.qswipe-snap {
-  transform: translate3d(var(--qswipe-follow, 0px), 0, 0);
-}
-
-.qswipe-page.qswipe-snap {
-  transition: transform var(--qswipe-snap-duration) var(--qswipe-easing);
 }
 
 .qswipe-next-enter-active,
@@ -530,10 +499,6 @@
     opacity calc(var(--qswipe-duration) * 0.42) var(--qswipe-easing);
 }
 
-.qswipe-next-leave-from {
-  transform: translate3d(var(--qswipe-commit-from, 0px), 0, 0);
-}
-
 .qswipe-next-leave-to {
   transform: translate3d(-28%, 0, 0);
   opacity: 0;
@@ -542,10 +507,6 @@
 .qswipe-next-enter-from {
   transform: translate3d(22%, 0, 0);
   opacity: 0;
-}
-
-.qswipe-prev-leave-from {
-  transform: translate3d(var(--qswipe-commit-from, 0px), 0, 0);
 }
 
 .qswipe-prev-leave-to {
