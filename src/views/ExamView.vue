@@ -355,13 +355,7 @@ function startCountdown() {
           <p class="m-0 text-xs text-muted">请稍候，不要关闭页面</p>
         </div>
       </div>
-      <QuestionSwipePager
-        :page-key="index"
-        :can-prev="index > 0"
-        :can-next="index + 1 < items.length"
-        @prev="goTo(index - 1)"
-        @next="goTo(index + 1)"
-      >
+      <QuestionSwipePager :page-key="index">
       <div class="relative z-10 flex flex-col gap-4">
       <div class="flex flex-wrap items-center gap-2">
         <span class="chip-gold">

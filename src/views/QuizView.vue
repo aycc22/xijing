@@ -422,13 +422,7 @@ async function start() {
     <p v-else-if="error && !current" class="alert-error">{{ error }}</p>
 
     <div v-else-if="current" class="relative flex flex-col gap-4 pb-28">
-      <QuestionSwipePager
-        :page-key="index"
-        :can-prev="canGoPrev(index)"
-        :can-next="Boolean(currentAttempt && canGoNext(index, questions.length, currentAttempt))"
-        @prev="prev"
-        @next="next"
-      >
+      <QuestionSwipePager :page-key="index">
       <div class="relative z-10 flex flex-col gap-4">
       <div class="flex flex-wrap items-center gap-2">
         <span class="chip-gold">{{ questionTypeLabel(current.qtype) }}</span>
@@ -550,7 +544,6 @@ async function start() {
 
         <p v-if="error" class="alert-error">{{ error }}</p>
       </article>
-      <p class="pb-1 text-center text-[11px] tracking-[0.2em] text-muted/40">左右滑动切题</p>
       </div>
       </QuestionSwipePager>
 

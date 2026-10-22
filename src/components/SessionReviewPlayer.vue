@@ -119,13 +119,7 @@ function next() {
 
 <template>
   <div v-if="current" class="relative pb-28">
-    <QuestionSwipePager
-      :page-key="index"
-      :can-prev="canGoReviewPrev(index)"
-      :can-next="primaryAction === 'next'"
-      @prev="prev"
-      @next="next"
-    >
+    <QuestionSwipePager :page-key="index">
     <article class="relative z-10 flex flex-col gap-4">
       <div class="flex min-w-0 flex-wrap items-center gap-1.5">
         <span v-if="snapshot" class="chip-gold">
